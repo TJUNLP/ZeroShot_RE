@@ -459,7 +459,7 @@ def get_word_index(files):
     sourc_idex_word = {}
     target_idex_word = {}
     count = 1
-    tarcount = 1
+    tarcount = 0
 
     max_s = 0
 
@@ -471,11 +471,6 @@ def get_word_index(files):
         source_vob["**UNK**"] = count
         sourc_idex_word[count] = "**UNK**"
         count += 1
-
-    if not target_vob.__contains__("O"):
-        target_vob["O"] = tarcount
-        target_idex_word[tarcount] = "O"
-        tarcount += 1
 
     for testf in files:
 
@@ -807,209 +802,69 @@ def Lists2Set(sen2list_all, tag2list_all, target_idex_word, max_context, max_fra
     return fragment_list, max_context, max_fragment
 
 
-def CreatePairs(fragment_list, max_s, max_posi, target_vob):
+def CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob, max_c):
 
     labels = []
     data_s_all = []
-    data_posi_all = []
-    data_tag_all = []
-
-    for frag in fragment_list:
-        fragment_l = int(frag[0])
-        fragment_r = int(frag[1])
-        fragment_tag = target_vob[frag[2]]
-        sent = frag[3]
-        # print(fragment_l, fragment_r)
-        # print(sent)
-
-        data_s = sent[0:min(len(sent), max_s)] + [0] * max(0, max_s - len(sent))
-
-        list_left = [min(i, max_posi) for i in range(1, fragment_l+1)]
-        list_left.reverse()
-        feature_posi = list_left + [0 for i in range(fragment_l, fragment_r)] + \
-                       [min(i, max_posi) for i in range(1, len(sent) - fragment_r + 1)]
-        data_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
-        data_s_all.append(data_s)
-        data_posi_all.append(data_posi)
-        data_tag_all.append([fragment_tag])
-
-        labels.append(1)
-
-        inc = random.randrange(1, len(target_vob.keys()))
-        dn = (fragment_tag + inc) % len(target_vob.keys())
-        data_s_all.append(data_s)
-        data_posi_all.append(data_posi)
-        data_tag_all.append([dn])
-        labels.append(0)
-
-    pairs = [data_s_all, data_posi_all, data_tag_all]
-    return pairs, labels
-
-
-def CreatePairs2(fragment_list, max_s, max_posi, max_fragment, target_vob, type_W, word_id2word, char_vob, max_c):
-
-    labels = []
-    data_s_all = []
-    data_posi_all = []
+    data_e1_posi_all = []
+    data_e2_posi_all = []
     data_tag_all = []
     classifer_label = []
-    data_context_r_all = []
-    data_context_l_all = []
-    data_fragment_all = []
-    char_fragment_all = []
-    data_c_l_posi_all = []
-    data_c_r_posi_all = []
-    char_context_l_all = []
-    char_context_r_all = []
 
-    for frag in fragment_list:
-        fragment_l = int(frag[0])
-        fragment_r = int(frag[1])
-        fragment_tag = target_vob[frag[2]]
-        sent = frag[3]
-        # print(fragment_l, fragment_r)
-        # print(sent)
+
+    f = codecs.open(trainfile, 'r', encoding='utf-8')
+    for line in f.readlines():
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        sent = jline['sent'].split(' ')
+        rel = jline['rel']
+        e1_l = jline['e1_l']
+        e1_r = jline['e1_r']
+        e2_l = jline['e2_l']
+        e2_r = jline['e2_r']
+
+        data_tag = target_vob[rel]
 
         data_s = sent[0:min(len(sent), max_s)] + [0] * max(0, max_s - len(sent))
-        data_context_r = sent[fragment_l:min(len(sent), max_s)]
-        data_context_r = data_context_r + [0] * max(0, max_s - len(data_context_r))
-        data_context_l = sent[max(0, fragment_r - max_s):fragment_r]
-        data_context_l = [0] * max(0, max_s - len(data_context_l)) + data_context_l
 
-        data_fragment = sent[fragment_l:fragment_r]
-
-        list_left = [min(i, max_posi) for i in range(1, fragment_l+1)]
+        list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
         list_left.reverse()
-        feature_posi = list_left + [0 for i in range(fragment_l, fragment_r)] + \
-                       [min(i, max_posi) for i in range(1, len(sent) - fragment_r + 1)]
-        data_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
+        feature_posi = list_left + [0 for i in range(e1_l, e1_r)] + \
+                       [min(i, max_posi) for i in range(1, len(sent) - e1_r + 1)]
+        data_e1_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
 
-        data_c_l_posi = [min(i, max_posi) for i in range(1, len(data_context_l)-len(data_fragment)+1)]
-        data_c_l_posi.reverse()
-        data_c_l_posi = data_c_l_posi + [0 for i in range(fragment_l, fragment_r+1)]
-        data_c_r_posi = [0 for i in range(fragment_l, fragment_r + 1)] + \
-                        [min(i, max_posi) for i in range(1, len(data_context_r) - len(data_fragment) + 1)]
-
-        padlen = max(0, max_fragment - len(data_fragment))
-        word_fragment = [0] * (padlen // 2) + data_fragment + [0] * (padlen - padlen // 2)
-
-        char_fragment = []
-        for wordindex in data_fragment[0: min(len(data_fragment), max_fragment)]:
-            word = word_id2word[wordindex]
-            data_c = []
-            for chr in range(0, min(len(word), max_c)):
-                if not char_vob.__contains__(word[chr]):
-                    data_c.append(char_vob["**UNK**"])
-                else:
-                    data_c.append(char_vob[word[chr]])
-            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
-            char_fragment.append(data_c)
-        char_fragment = [[0] * max_c] * (padlen // 2) + char_fragment + [[0] * max_c] * (padlen - padlen // 2)
-
-        data_context_r = [1] + data_context_r
-        data_context_l = data_context_l + [1]
-
-        char_context_r = []
-        for wordindex in data_context_r:
-            if wordindex == 0 or wordindex == 1:
-                continue
-            word = word_id2word[wordindex]
-            data_c = []
-            for chr in range(0, min(word.__len__(), max_c)):
-                if not char_vob.__contains__(word[chr]):
-                    data_c.append(char_vob["**UNK**"])
-                else:
-                    data_c.append(char_vob[word[chr]])
-            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
-            char_context_r.append(data_c)
-        char_context_r = [[1] * max_c] + char_context_r + [[0] * max_c] * max(0, max_s - len(char_context_r))
-
-        char_context_l = []
-        for wordindex in data_context_l:
-            if wordindex == 0 or wordindex == 1:
-                continue
-            word = word_id2word[wordindex]
-            data_c = []
-            for chr in range(0, min(word.__len__(), max_c)):
-                if not char_vob.__contains__(word[chr]):
-                    data_c.append(char_vob["**UNK**"])
-                else:
-                    data_c.append(char_vob[word[chr]])
-            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
-            char_context_l.append(data_c)
-        char_context_l = [[0] * max_c] * max(0, max_s - len(char_context_l)) + char_context_l + [[1] * max_c]
+        list_left = [min(i, max_posi) for i in range(1, e2_l + 1)]
+        list_left.reverse()
+        feature_posi = list_left + [0 for i in range(e2_l, e2_r)] + \
+                       [min(i, max_posi) for i in range(1, len(sent) - e2_r + 1)]
+        data_e2_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
 
 
-        # data_s_all.append(data_s)
-        # data_posi_all.append(data_posi)
-        # data_tag_all.append([fragment_tag])
-        # data_context_l_all.append(data_context_l)
-        # data_context_r_all.append(data_context_r)
-        # data_fragment_all.append(data_fragment)
-        # data_c_l_posi_all.append(data_c_l_posi)
-        # data_c_r_posi_all.append(data_c_r_posi)
-        # labels.append(1)
-        #
-        # inc = random.randrange(1, len(target_vob.keys()))
-        # dn = (fragment_tag + inc) % len(target_vob.keys())
-        # data_s_all.append(data_s)
-        # data_posi_all.append(data_posi)
-        # data_tag_all.append([dn])
-        # data_context_l_all.append(data_context_l)
-        # data_context_r_all.append(data_context_r)
-        # data_fragment_all.append(data_fragment)
-        # data_c_l_posi_all.append(data_c_l_posi)
-        # data_c_r_posi_all.append(data_c_r_posi)
-        # labels.append(0)
 
-        for inc in target_vob.values():
+        data_s_all.append(data_s)
+        data_tag_all.append(type_W[data_tag])
+        data_e1_posi_all.append(data_e1_posi)
+        data_e2_posi_all.append(data_e2_posi)
+        labels.append(1)
+        classifer_label.append(data_tag)
 
-            if inc == fragment_tag:
-                # continue
+        inc = random.randrange(1, len(target_vob.keys()))
+        dn = (data_tag + inc) % len(target_vob.keys())
+        data_s_all.append(data_s)
+        data_tag_all.append(type_W[dn])
+        data_e1_posi_all.append(data_e1_posi)
+        data_e2_posi_all.append(data_e2_posi)
+        labels.append(0)
+        classifer_label.append(data_tag)
 
-                data_s_all.append(data_s)
-                data_posi_all.append(data_posi)
-                # data_tag_all.append([fragment_tag])
-                data_tag_all.append(type_W[fragment_tag])
-                data_context_l_all.append(data_context_l)
-                char_context_l_all.append(char_context_l)
-                data_context_r_all.append(data_context_r)
-                char_context_r_all.append(char_context_r)
-                data_fragment_all.append(word_fragment)
-                char_fragment_all.append(char_fragment)
-                data_c_l_posi_all.append(data_c_l_posi)
-                data_c_r_posi_all.append(data_c_r_posi)
-                labels.append([0, 1])
-                classifer_label.append(fragment_tag)
-
-
-            data_s_all.append(data_s)
-            data_posi_all.append(data_posi)
-            # data_tag_all.append([inc])
-            data_tag_all.append(type_W[inc])
-            data_context_l_all.append(data_context_l)
-            char_context_l_all.append(char_context_l)
-            data_context_r_all.append(data_context_r)
-            char_context_r_all.append(char_context_r)
-            data_fragment_all.append(word_fragment)
-            char_fragment_all.append(char_fragment)
-            data_c_l_posi_all.append(data_c_l_posi)
-            data_c_r_posi_all.append(data_c_r_posi)
-            labels.append([1, 0])
-            classifer_label.append(fragment_tag)
-
-
-    pairs = [data_s_all, data_posi_all, data_tag_all,
-             data_context_r_all, data_context_l_all, data_fragment_all,
-             data_c_l_posi_all, data_c_r_posi_all,
-             char_context_l_all, char_context_r_all, char_fragment_all]
+    pairs = [data_s_all, data_tag_all,
+             data_e1_posi_all, data_e2_posi_all]
 
     classifer_labels = keras.utils.to_categorical(classifer_label, len(target_vob))
 
     return pairs, labels, classifer_labels
 
 
-def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
+def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
     """
@@ -1026,11 +881,14 @@ def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, t2v_file, datafil
     #     max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
 
+    char_vob = {}
+    char_id2char = {}
+    max_c = -1
     # char_vob, char_id2char, max_c = get_Character_index({trainfile, devfile, testfile})
     # print("source char size: ", char_vob.__len__())
     # print("max_c: ", max_c)
     # print("source char: " + str(char_id2char))
-
+    char_W = {}
     # char_W, char_k = load_vec_character(c2v_file, char_vob, c2v_k)
     # print('character_W shape:', char_W.shape)
 
@@ -1049,74 +907,22 @@ def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, t2v_file, datafil
     posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
     print('posi_k, posi_W', posi_k, len(posi_W))
 
-    # train = make_idx_word_index(trainfile, max_s, word_vob, target_vob)
-    # dev = make_idx_word_index(devfile, max_s, word_vob, target_vob)
-    # test = make_idx_word_index(testfile, max_s, word_vob, target_vob)
-    # print('train len  ', train.__len__(), len(train[0]))
-    # print('dev len  ', dev.__len__(), len(dev[0]))
-    # print('test len  ', test.__len__(), len(test[1]))
-
-    sen2list_train, tag2list_train = ReadfromTXT2Lists(trainfile, word_vob, target_vob)
-    print('sen2list_train len = ', len(sen2list_train))
-    print('tag2list_all len = ', len(tag2list_train))
-
-    sen2list_dev, tag2list_dev = ReadfromTXT2Lists(devfile, word_vob, target_vob)
-    print('sen2list_dev len = ', len(sen2list_dev))
-    print('tag2list_all len = ', len(tag2list_dev))
-
-    sen2list_test, tag2list_test = ReadfromTXT2Lists(testfile, word_vob, target_vob)
-    print('sen2list_train len = ', len(sen2list_test))
-    print('tag2list_all len = ', len(tag2list_test))
-
-
-    fragment_train, max_context, max_fragment = \
-        Lists2Set(sen2list_train, tag2list_train, target_id2word, max_context=0, max_fragment=1,
-                  hasNeg=hasNeg)
-    print('len(fragment_train) = ', len(fragment_train))
-
-    fragment_test, max_context, max_fragment = \
-        Lists2Set(sen2list_test, tag2list_test, target_id2word, max_context=max_context, max_fragment=max_fragment,
-                  hasNeg=hasNeg)
-    print('len(fragment_train) = ', len(fragment_test))
-
-    fragment_dev, max_context, max_fragment = \
-        Lists2Set(sen2list_dev, tag2list_dev, target_id2word, max_context=max_context, max_fragment=max_fragment,
-                  hasNeg=hasNeg)
-    print('len(fragment_dev) = ', len(fragment_dev))
 
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    pairs_train, labels_train, classifer_labels_train = CreatePairs2(fragment_train, max_s, max_posi, max_fragment, TYPE_vob, type_W, word_id2word, char_vob, max_c)
+    pairs_train, labels_train, classifer_labels_train = CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob=None, max_c=-1)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
-    pairs_dev, labels_dev, classifer_labels_dev = CreatePairs2(fragment_dev, max_s, max_posi, max_fragment, TYPE_vob, type_W, word_id2word, char_vob, max_c)
-    print('CreatePairs dev len = ', len(pairs_dev), len(labels_dev))
-
-
-    # source_char, sourc_idex_char, max_c = get_Character_index({trainfile, devfile, testfile})
-    #
-    # print("source char size: ", source_char.__len__())
-    # print("max_c: ", max_c)
-    # print("source char: " + str(sourc_idex_char))
-    #
-    # character_W, character_k = load_vec_character(c2v_file, source_char,char_emd_dim)
-    # print('character_W shape:',character_W.shape)
-    #
-    # chartrain = make_idx_character_index(trainfile,max_s, max_c, source_char)
-    # chardev = make_idx_character_index(devfile, max_s, max_c, source_char)
-    # chartest = make_idx_character_index(testfile, max_s, max_c, source_char)
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
     pickle.dump([pairs_train, labels_train, classifer_labels_train,
-                 pairs_dev, labels_dev, classifer_labels_dev,
-                 fragment_train, fragment_dev, fragment_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
-                TYPE_vob, TYPE_id2type, type_W, type_k,
+                 target_vob, target_id2word, type_W, type_k,
                  posi_W, posi_k,
-                target_vob, target_id2word, max_s, max_posi, max_fragment, max_c], out, 0)
+                max_s, max_posi, max_c], out, 0)
     out.close()
 
 
