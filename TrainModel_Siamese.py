@@ -11,7 +11,7 @@
 import pickle, datetime, codecs, math
 import os.path
 import numpy as np
-from PrecessData_Siamese import get_data
+from ProcessData_Siamese import get_data
 from Evaluate import evaluation_NER
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from network.NN_Siamese import Model_BiLSTM__MLP, Model_BiLSTM__MLP_context, Model_BiLSTM__MLP_context_withClassifer
@@ -825,7 +825,7 @@ if __name__ == "__main__":
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     trainfile = "./data/CoNLL2003_NER/eng.train.BIOES.txt"
-    devfile = "./data/CoNLL2003_NER/eng.testa.BIOES.txt"
+    devfile = ""
     testfile = "./data/CoNLL2003_NER/eng.testb.BIOES.txt"
     resultdir = "./data/result/"
 
@@ -949,7 +949,7 @@ if __name__ == "__main__":
 
         if Test42Step:
             print("Test42Step ---------------------------------------")
-            from PrecessData_Siamese import ReadfromTXT2Lists
+            from ProcessData_Siamese import ReadfromTXT2Lists
             sen2list_test, tag2list_test = ReadfromTXT2Lists(testfile, word_vob, target_vob)
             print('sen2list_train len = ', len(sen2list_test))
             print('tag2list_all len = ', len(tag2list_test))

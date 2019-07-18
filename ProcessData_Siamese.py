@@ -1,10 +1,10 @@
 #coding=utf-8
 __author__ = 'JIA'
 import numpy as np
-import pickle
+import pickle, codecs
 import json
 import re, random
-import math, keras
+import keras
 
 from Seq2fragment import Seq2frag, Seq2frag4test
 
@@ -23,12 +23,12 @@ def load_vec_pkl(fname,vocab,k=300):
 
 
 def load_vec_txt(fname, vocab, k=300):
-    f = open(fname)
+    f = codecs.open(fname, 'r', encoding='utf-8')
     w2v={}
     W = np.zeros(shape=(vocab.__len__() + 1, k))
     unknowtoken = 0
-    for line in f:
-        values = line.split()
+    for line in f.readlines():
+        values = line.rstrip('\n').split()
         word = values[0]
         coefs = np.asarray(values[1:], dtype='float32')
         w2v[word] = coefs
@@ -47,6 +47,28 @@ def load_vec_txt(fname, vocab, k=300):
     return w2v,k,W
 
 
+def load_vec_KGrepresentation(fname, vocab, k):
+
+    f = codecs.open(fname, 'r', encoding='utf-8')
+    w2v = {}
+    for line in f.readlines():
+        values = line.rstrip('\n').split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        w2v[word] = coefs
+    f.close()
+
+    W = np.zeros(shape=(vocab.__len__(), k))
+    for item in vocab:
+
+        try:
+            W[vocab[item]] = w2v[item]
+        except BaseException:
+            print('the rel is not finded ...')
+
+    return k, W
+
+
 def load_vec_random(vocab_c_inx, k=30):
 
     W = np.zeros(shape=(vocab_c_inx.__len__(), k))
@@ -55,6 +77,7 @@ def load_vec_random(vocab_c_inx, k=30):
         W[vocab_c_inx[i]] = np.random.uniform(-1*math.sqrt(3/k), math.sqrt(3/k), k)
 
     return k, W
+
 
 def load_vec_Charembed(vocab_c_inx, char_vob,  k=30):
 
@@ -73,6 +96,7 @@ def load_vec_Charembed(vocab_c_inx, char_vob,  k=30):
         W[i] += [0 for s in range(max-len(tystr))]
 
     return max, W
+
 
 def load_vec_character(c2vfile, vocab_c_inx, k=50):
 
@@ -269,6 +293,7 @@ def make_idx_character_index(file, max_s, max_c, source_vob):
     f.close()
     return data_s_all
 
+
 def make_idx_character_index_withFix(file, max_s, max_c, source_vob):
 
     data_s_all = []
@@ -427,7 +452,7 @@ def make_idx_POS_index(file, max_s, source_vob, Poswidth=3):
     return data_s_all
 
 
-def get_word_index(train, test):
+def get_word_index(files):
 
     source_vob = {}
     target_vob = {}
@@ -437,8 +462,6 @@ def get_word_index(train, test):
     tarcount = 1
 
     max_s = 0
-    num=0
-    token =0
 
     if not source_vob.__contains__("**PlaceHolder**"):
         source_vob["**PlaceHolder**"] = count
@@ -454,57 +477,28 @@ def get_word_index(train, test):
         target_idex_word[tarcount] = "O"
         tarcount += 1
 
-    f = open(train,'r')
-    fr = f.readlines()
-    for line in fr:
-        if line.__len__() <= 1:
-            if num > max_s:
-                max_s = num
-            # print(max_s, '  ', num)
-            num = 0
-            continue
-        token +=1
+    for testf in files:
 
-        num += 1
-        sourc = line.strip('\r\n').rstrip('\n').split(' ')
-        # print(sourc)
-        if not source_vob.__contains__(sourc[0]):
-            source_vob[sourc[0]] = count
-            sourc_idex_word[count] = sourc[0]
-            count += 1
+        f = codecs.open(testf, 'r', encoding='utf-8')
+        for line in f.readlines():
 
-        if not target_vob.__contains__(sourc[4]):
-            target_vob[sourc[4]] = tarcount
-            target_idex_word[tarcount] = sourc[4]
-            tarcount += 1
-    f.close()
-
-    print('token', token)
-    num = 0
-    for testf in test:
-        f = open(testf, 'r')
-        fr = f.readlines()
-        for line in fr:
-            if line.__len__() <= 1:
-                if num > max_s:
-                    max_s = num
-                # print(max_s, '  ', num)
-                num = 0
-                continue
-
-            num += 1
-            sourc = line.strip('\r\n').rstrip('\n').rstrip('\r').split(' ')
-
-            if not source_vob.__contains__(sourc[0]):
-                source_vob[sourc[0]] = count
-                sourc_idex_word[count] = sourc[0]
-                count += 1
-            if not target_vob.__contains__(sourc[4]):
-                target_vob[sourc[4]] = tarcount
-                target_idex_word[tarcount] = sourc[4]
+            jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+            sent = jline['sent']
+            rel = jline['rel']
+            words = sent.split(' ')
+            for word in words:
+                if not source_vob.__contains__(word):
+                    source_vob[word] = count
+                    sourc_idex_word[count] = word
+                    count += 1
+            if not target_vob.__contains__(rel):
+                target_vob[rel] = tarcount
+                target_idex_word[tarcount] = rel
                 tarcount += 1
 
-    f.close()
+            max_s = max(max_s, len(words))
+
+        f.close()
 
     return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s
 
@@ -592,7 +586,6 @@ def get_Character_index(files):
         count += 1
 
     return source_vob, sourc_idex_word, max_c
-
 
 
 def get_Character_index_withFix(files):
@@ -1016,14 +1009,15 @@ def CreatePairs2(fragment_list, max_s, max_posi, max_fragment, target_vob, type_
     return pairs, labels, classifer_labels
 
 
-def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, datafile, w2v_k=300, c2v_k=25, maxlen = 50,
+def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
     """
     数据处理的入口函数
-    Converts the input files  into the end2end model input formats
+    Converts the input files  into the model input formats
     """
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index(trainfile, {devfile, testfile})
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
     print("source vocab size: ", str(len(word_vob)))
     print("word_id2word size: ", str(len(word_id2word)))
     print("target vocab size: " + str(target_vob))
@@ -1032,34 +1026,26 @@ def get_data(trainfile, devfile, testfile, w2v_file, c2v_file, datafile, w2v_k=3
     #     max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
 
-    char_vob, char_id2char, max_c = get_Character_index({trainfile, devfile, testfile})
-    print("source char size: ", char_vob.__len__())
-    print("max_c: ", max_c)
-    print("source char: " + str(char_id2char))
+    # char_vob, char_id2char, max_c = get_Character_index({trainfile, devfile, testfile})
+    # print("source char size: ", char_vob.__len__())
+    # print("max_c: ", max_c)
+    # print("source char: " + str(char_id2char))
 
-    char_W, char_k = load_vec_character(c2v_file, char_vob, c2v_k)
-    print('character_W shape:', char_W.shape)
+    # char_W, char_k = load_vec_character(c2v_file, char_vob, c2v_k)
+    # print('character_W shape:', char_W.shape)
 
-    TYPE_id2type = {0: 'LOC', 1: 'ORG', 2: 'PER', 3: 'MISC'}
-    TYPE_vob = {'LOC': 0, 'ORG': 1, 'PER': 2, 'MISC': 3}
-
-    if hasNeg:
-        TYPE_id2type = {0: 'LOC', 1: 'ORG', 2: 'PER', 3: 'MISC', 4: 'NULL'}
-        TYPE_vob = {'LOC': 0, 'ORG': 1, 'PER': 2, 'MISC': 3, 'NULL':4}
-
-
-    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file,word_vob,k=w2v_k)
+    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=w2v_k)
     print("word2vec loaded!")
     print("all vocab size: " + str(len(word_vob)))
     print("source_W  size: " + str(len(word_W)))
     print("num words in source word2vec: " + str(len(word_w2v)))
 
     # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
-    type_k, type_W = load_vec_Charembed(TYPE_vob, char_vob, k=w2v_k)
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
     print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
 
-    max_posi = 50
+    max_posi = 20
     posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
     print('posi_k, posi_W', posi_k, len(posi_W))
 
