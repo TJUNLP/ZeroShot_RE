@@ -23,14 +23,14 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     mask_zero=True,
                                     trainable=True,
                                     weights=[word_W])(word_input_sent)
-    word_embedding_sent = Dropout(0.5)(word_embedding_sent)
+    word_embedding_sent = Dropout(0.25)(word_embedding_sent)
 
     input_e1_posi = Input(shape=(input_sent_lenth,), dtype='int32')
     embedding_e1_posi = Embedding(input_dim=posivocabsize,
                                     output_dim=posi2v_k,
                                     input_length=input_sent_lenth,
                                     mask_zero=False,
-                                    trainable=True,
+                                    trainable=False,
                                     weights=[posi_W])(input_e1_posi)
 
     input_e2_posi = Input(shape=(input_sent_lenth,), dtype='int32')
@@ -38,7 +38,7 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     output_dim=posi2v_k,
                                     input_length=input_sent_lenth,
                                     mask_zero=False,
-                                    trainable=True,
+                                    trainable=False,
                                     weights=[posi_W])(input_e2_posi)
 
     input_tag = Input(shape=(1,), dtype='int32')
@@ -51,13 +51,13 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
 
     embedding_x1 = concatenate([word_embedding_sent, embedding_e1_posi, embedding_e2_posi], axis=-1)
     BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(embedding_x1)
-    BiLSTM_x1 = Dropout(0.5)(BiLSTM_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
 
     mlp_x2_0 = Flatten()(tag_embedding)
     mlp_x2_1 = Dense(200, activation='tanh')(mlp_x2_0)
     mlp_x2_1 = Dropout(0.25)(mlp_x2_1)
-    mlp_x2_2 = Dense(400, activation='relu')(mlp_x2_1)
-    mlp_x2_2 = Dropout(0.5)(mlp_x2_2)
+    mlp_x2_2 = Dense(400, activation='tanh')(mlp_x2_1)
+    mlp_x2_2 = Dropout(0.25)(mlp_x2_2)
 
     distance = Lambda(euclidean_distance,
                       output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])

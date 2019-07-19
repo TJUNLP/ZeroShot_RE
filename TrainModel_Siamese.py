@@ -35,12 +35,14 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     for i in range(min(50, len(data_s_list))):
         # print(i)
         for ins in target_vob.values():
+
             data_s_all.append(data_s_list[i])
             data_tag_all.append([ins])
             data_e1_posi_all.append(data_e1_posi_list[i])
             data_e2_posi_all.append(data_e2_posi_list[i])
             if data_tag_list[i][0] == ins:
                 labels_all.append(1)
+                # print(ins)
             else:
                 labels_all.append(0)
 
@@ -77,7 +79,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
 
             if mindis < 0.5:
                 predict += 1
-                if mindis_where == data_tag_list[i]:
+
+                if mindis_where == data_tag_list[i][0]:
                     predict_right += 1
 
 
