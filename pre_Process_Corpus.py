@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import codecs, json
-import re, nltk
+import re, nltk,random
 
 
 def Process_Corpus():
@@ -121,43 +121,110 @@ def review_ents():
     frr2.close()
 
 
+def Split_zeroshotData_2_train_test():
+
+    fw_train = './data/annotated_fb__zeroshot_RE.random.train.txt'
+    fw_test = './data/annotated_fb__zeroshot_RE.random.test.txt'
+    fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
+    fwte = codecs.open(fw_test, 'w', encoding='utf-8')
+
+    fr = './data/annotated_fb__zeroshot_RE.txt'
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+    relDict = {}
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+
+        rel = jline['rel']
+        if rel in relDict.keys():
+            relDict[rel] += 1
+        else:
+            relDict[rel] = 1
+    print(len(relDict))
+    frr.close()
+
+    rel4Test = []
+    relList = list(relDict.keys())
+    i = 0
+    while i * 5 + 4 < len(relList):
+        nd = random.randint(0, 4)
+        rel4Test.append(relList[i * 5 + nd])
+        i += 1
+
+    print(len(rel4Test))
+    print(rel4Test)
+
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        jline.pop('ques')
+        jline.pop('ques_pos')
+
+        rel = jline['rel']
+
+        fj = json.dumps(jline, ensure_ascii=False)
+        if rel in rel4Test:
+            fwte.write(fj + '\n')
+        else:
+            fwtr.write(fj + '\n')
+
+    fwte.close()
+    fwtr.close()
+    frr.close()
+
+    # relList = sorted(relDict.items(), key=lambda s: s[1], reverse=True)
+    # for rr in relList:
+    #     print(rr)
+    # print(len(relList))
+
+
+
+
 def Ques2Sent():
 
     fr = './data/annotated_fb_data_zeroshot_2.txt'
     fw1 = './data/annotated_fb__zeroshot_RE.txt'
     fw2 = './data/annotated_fb_data_zeroshot_3.txt'
-    # fw1w = codecs.open(fw1, 'w', encoding='utf-8')
-    # fw2w = codecs.open(fw2, 'w', encoding='utf-8')
+    fw1w = codecs.open(fw1, 'w', encoding='utf-8')
+    fw2w = codecs.open(fw2, 'w', encoding='utf-8')
     count1w = 0
     count2w = 0
     cc = 0
     max_s = 0
     frr = codecs.open(fr, 'r', encoding='utf-8')
     for line in frr.readlines():
-
+        # print(line)
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         ques = jline['ques']
         en1_name0 = jline['e1_name']
         en2_name0 = jline['e2_name']
         poslist = jline['ques_pos']
         max_s = max(max_s, len(poslist))
-        print(max_s)
+        # print(max_s)
+
+        e1_l = -1
+        e1_r = -1
+        e2_l = -1
+        e2_r = -1
 
         matchObj = re.match(r'Name ', ques)
         if matchObj != None:# name is ...
             count1w += 1
-            sent = []
+            sent = ''
 
             en1_name = re.sub(r'\(', '\\\(', en1_name0)
             en1_name = re.sub(r'\)', '\\\)', en1_name)
+            en2_name = re.sub(r'\(', '\\\(', en2_name0)
+            en2_name = re.sub(r'\)', '\\\)', en2_name)
+
             matchObj = re.search(en1_name, ques, flags=re.I)
             if matchObj != None:
                 pattern = re.compile(en1_name, flags=re.I)
                 sent = re.sub(pattern, en1_name0, ques)
                 sent = re.sub(r'Name ', en2_name0 + ' is ', sent)
             else:
-                en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                en2_name = re.sub(r'\)', '\\\)', en2_name)
                 matchObj = re.search(en2_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en2_name, flags=re.I)
@@ -168,24 +235,53 @@ def Ques2Sent():
                     # print(ques)
                     # print(sent)
                     # print(line)
+
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
+
             continue
 
 
         matchObj = re.match(r'((Whats)|(What\'s)) ', ques)
         if matchObj != None:
             count1w += 1
-            sent = []
+            sent = ''
             
             en1_name = re.sub(r'\(', '\\\(', en1_name0)
             en1_name = re.sub(r'\)', '\\\)', en1_name)
+            en2_name = re.sub(r'\(', '\\\(', en2_name0)
+            en2_name = re.sub(r'\)', '\\\)', en2_name)
             matchObj = re.search(en1_name, ques, flags=re.I)
             if matchObj != None:
                 pattern = re.compile(en1_name, flags=re.I)
                 sent = re.sub(pattern, en1_name0, ques)
                 sent = re.sub(r'((Whats)|(What\'s)) ', en2_name0 + ' is ', sent)
             else:
-                en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                en2_name = re.sub(r'\)', '\\\)', en2_name)
+
                 matchObj = re.search(en2_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en2_name, flags=re.I)
@@ -195,36 +291,90 @@ def Ques2Sent():
                     cc += 1
                     # print(sent)
                     # print(line)
-                    
+
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
             continue
         
 
-        matchObj = re.match(r'((What)|(Which)) ((are)|(is)|(was)|(were)) ', ques)
+        matchObj = re.match(r'^((What)|(Which)) ((are)|(is)|(was)|(were)) ', ques)
         if matchObj != None:
             count1w += 1
-            sent = []
+            sent = ''
             
             en1_name = re.sub(r'\(', '\\\(', en1_name0)
             en1_name = re.sub(r'\)', '\\\)', en1_name)
+            en2_name = re.sub(r'\(', '\\\(', en2_name0)
+            en2_name = re.sub(r'\)', '\\\)', en2_name)
             matchObj = re.search(en1_name, ques, flags=re.I)
             if matchObj != None:
                 pattern = re.compile(en1_name, flags=re.I)
                 sent = re.sub(pattern, en1_name0, ques)
-                sent = re.sub(r'((What)|(Which)) ', en2_name0 + ' ', sent)
+                sent = re.sub(r'^((What)|(Which)) ', en2_name0 + ' ', sent)
             else:
-                en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                en2_name = re.sub(r'\)', '\\\)', en2_name)
+
                 matchObj = re.search(en2_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en2_name, flags=re.I)
                     sent = re.sub(pattern, en2_name0, ques)
-                    sent = re.sub(r'((What)|(Which)) ', en1_name0 + ' ', sent)
+                    sent = re.sub(r'^((What)|(Which)) ', en1_name0 + ' ', sent)
                 else:
                     cc += 1
                     # print(cc, sent)
                     # print(line)
             # print(sent)
             # print(line)
+
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
             continue
 
 
@@ -232,11 +382,6 @@ def Ques2Sent():
         if matchObj0 != None:
             count1w += 1
             sent = ''
-
-            e1_l = -1
-            e1_r = -1
-            e2_l = -1
-            e2_r = -1
 
             en1_name = re.sub(r'\(', '\\\(', en1_name0)
             en1_name = re.sub(r'\)', '\\\)', en1_name)
@@ -294,112 +439,32 @@ def Ques2Sent():
                     # print(cc, sent)
                     # print(line)
 
-            # if sent != '':
-            #
-            #     e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
-            #     # print(e1_0, sent[:e1_0], re.compile(r' ').findall(sent[:e1_0]), e1_1, sent[:e1_1+1], re.compile(r' ').findall(sent[:e1_1+1]))
-            #     e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
-            #     e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
-            #
-            #     e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
-            #     e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
-            #     e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
-            #
-            #     # print(e1_l, e1_r, e2_l, e2_r)
-            #
-            #
-            #     # poslist = nltk.pos_tag(nltk.word_tokenize(sent))
-            #     # e1_l = -1
-            #     # e1_r = -1
-            #     # e2_l = -1
-            #     # e2_r = -1
-            #     # item = 0
-            #     # find_e1 = False
-            #     # find_e2 = False
-            #     # while item < len(poslist):
-            #     #     # print(item, 'e1_l', e1_l)
-            #     #     if (find_e1 == False) and (poslist[item][0] in nltk.word_tokenize(en1_name0)):
-            #     #         e1_l = item
-            #     #         e1_cname = []
-            #     #         e1_cname.append(poslist[item][0])
-            #     #         # print(e1_cname)
-            #     #         j = item + 1
-            #     #
-            #     #         while j < len(poslist):
-            #     #             if poslist[j][0] in nltk.word_tokenize(en1_name0):
-            #     #                 e1_cname.append(poslist[j][0])
-            #     #                 # print(e1_cname)
-            #     #                 j += 1
-            #     #             else:
-            #     #                 # print(e1_cname_l, e1_cname_r)
-            #     #                 if e1_cname == nltk.word_tokenize(en1_name0):
-            #     #                     e1_r = j
-            #     #                     find_e1 = True
-            #     #                     item = j
-            #     #                 else:
-            #     #                     item = item + 1
-            #     #                     e1_l = -1
-            #     #                 break
-            #     #
-            #     #         if j == len(poslist):
-            #     #             # print(e1_cname_l, e1_cname_r)
-            #     #             if e1_cname == nltk.word_tokenize(en1_name0):
-            #     #                 e1_r = j
-            #     #                 find_e1 = True
-            #     #                 item = j
-            #     #             else:
-            #     #                 item = j
-            #     #                 e1_l = -1
-            #     #     else:
-            #     #         item += 1
-            #     #
-            #     # item = 0
-            #     # while item < len(poslist):
-            #     #     # print(item, 'e2_l', e2_l)
-            #     #     if (find_e2 == False) and (poslist[item][0] in nltk.word_tokenize(en2_name0)):
-            #     #         # print(item, '....e2_l', e2_l)
-            #     #         e2_l = item
-            #     #         e2_cname = [poslist[item][0]]
-            #     #         # print(e1_cname)
-            #     #         j = item + 1
-            #     #
-            #     #         while j < len(poslist):
-            #     #             if poslist[j][0] in nltk.word_tokenize(en2_name0):
-            #     #                 e2_cname.append(poslist[j][0])
-            #     #                 # print(e1_cname)
-            #     #                 j += 1
-            #     #             else:
-            #     #                 # print(e2_cname_l, e2_cname_r)
-            #     #                 if e2_cname == nltk.word_tokenize(en2_name0):
-            #     #                     e2_r = j
-            #     #                     find_e2 = True
-            #     #                     item = j
-            #     #                 else:
-            #     #                     item = item + 1
-            #     #                     e2_l = -1
-            #     #                 break
-            #     #
-            #     #         if j == len(poslist):
-            #     #             # print(e1_cname_l, e1_cname_r)
-            #     #             if e2_cname == nltk.word_tokenize(en2_name0):
-            #     #                 e2_r = j
-            #     #                 find_e2 = True
-            #     #                 item = j
-            #     #             else:
-            #     #                 item = j
-            #     #                 e2_l = -1
-            #     #
-            #     #     else:
-            #     #         item += 1
-            #
-            #     if True or e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
-            #         print('>>>>>>>>>>>>>\n', sent)
-            #         print(poslist)
-            #         print('e1 taken.....', nltk.word_tokenize(en1_name0))
-            #         print('e2 taken.....', nltk.word_tokenize(en2_name0))
-            #         print(line)
-            #         print(e1_l, e1_r, e2_l, e2_r)
+            if sent != '':
 
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
             continue
 
 
@@ -466,6 +531,33 @@ def Ques2Sent():
                     # print(line)
             # print(sent)
             # print(line)
+
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
             continue
 
 
@@ -489,6 +581,7 @@ def Ques2Sent():
                 sent_group = matchObj0.group().split(' ')
                 sent = re.sub(r'((What)|(Which)) (\w+) ((are)|(is)|(was)|(were)) of ',
                               'The ' + str(sent_group[1]) + ' ' + en2_name0 + ' ' + str(sent_group[2]) + ' of ', sent)
+
             else:
 
                 matchObj = re.search(en2_name, ques, flags=re.I)
@@ -505,6 +598,32 @@ def Ques2Sent():
 
             # print(sent)
             # print(line)
+
+            if sent != '':
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
 
             continue
 
@@ -573,6 +692,33 @@ def Ques2Sent():
             # print(sent)
             # print(line)
 
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
+
             continue
 
 
@@ -627,6 +773,33 @@ def Ques2Sent():
 
             # print(sent)
             # print(line)
+
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
 
             continue
 
@@ -683,6 +856,33 @@ def Ques2Sent():
             # print(sent)
             # print(line)
 
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
+
             continue
 
 
@@ -737,6 +937,33 @@ def Ques2Sent():
             # print(sent)
             # print(line)
 
+            if sent != '':
+
+                e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                # print(e1_l, e1_r, e2_l, e2_r)
+
+                if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                    print('>>>>>>>>>>>>>\n', sent)
+                    print(poslist)
+                    print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                    print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                    print(line)
+                    print(e1_l, e1_r, e2_l, e2_r)
+                else:
+                    if e1_r >= e2_l or e2_r >= e1_l:
+                        jline['sent'] = sent
+                        jline['e1_posi'] = (e1_l, e1_r)
+                        jline['e2_posi'] = (e2_l, e2_r)
+                        fj = json.dumps(jline, ensure_ascii=False)
+                        fw1w.write(fj + '\n')
+                    else:
+                        print(line)
+
             continue
 
         
@@ -745,10 +972,12 @@ def Ques2Sent():
             if 'VB' in poslist[1][1] or 'MD' == poslist[1][1]:
                 count1w += 1
                 # print(line)
-                sent = []
+                sent = ''
 
                 en1_name = re.sub(r'\(', '\\\(', en1_name0)
                 en1_name = re.sub(r'\)', '\\\)', en1_name)
+                en2_name = re.sub(r'\(', '\\\(', en2_name0)
+                en2_name = re.sub(r'\)', '\\\)', en2_name)
                 matchObj = re.search(en1_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en1_name, flags=re.I)
@@ -757,8 +986,7 @@ def Ques2Sent():
                     # print(sent)
                     # print(line)
                 else:
-                    en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                    en2_name = re.sub(r'\)', '\\\)', en2_name)
+
                     matchObj = re.search(en2_name, ques, flags=re.I)
                     if matchObj != None:
                         pattern = re.compile(en2_name, flags=re.I)
@@ -771,15 +999,45 @@ def Ques2Sent():
                         # print(line)
                 # print(sent)
                 # print(line)
+
+                if sent != '':
+
+                    e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                    e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                    e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                    e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                    e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                    e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                    # print(e1_l, e1_r, e2_l, e2_r)
+
+                    if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                        print('>>>>>>>>>>>>>\n', sent)
+                        print(poslist)
+                        print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                        print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                        print(line)
+                        print(e1_l, e1_r, e2_l, e2_r)
+                    else:
+                        if e1_r >= e2_l or e2_r >= e1_l:
+                            jline['sent'] = sent
+                            jline['e1_posi'] = (e1_l, e1_r)
+                            jline['e2_posi'] = (e2_l, e2_r)
+                            fj = json.dumps(jline, ensure_ascii=False)
+                            fw1w.write(fj + '\n')
+                        else:
+                            print(line)
+
                 continue
 
             elif 'RB' in poslist[1][1] and ('VB' in poslist[2][1] or 'MD' == poslist[2][1]):
                 count1w += 1
                 # print(line)
-                sent = []
+                sent = ''
 
                 en1_name = re.sub(r'\(', '\\\(', en1_name0)
                 en1_name = re.sub(r'\)', '\\\)', en1_name)
+                en2_name = re.sub(r'\(', '\\\(', en2_name0)
+                en2_name = re.sub(r'\)', '\\\)', en2_name)
                 matchObj = re.search(en1_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en1_name, flags=re.I)
@@ -788,8 +1046,7 @@ def Ques2Sent():
                     # print(sent)
                     # print(line)
                 else:
-                    en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                    en2_name = re.sub(r'\)', '\\\)', en2_name)
+
                     matchObj = re.search(en2_name, ques, flags=re.I)
                     if matchObj != None:
                         pattern = re.compile(en2_name, flags=re.I)
@@ -803,16 +1060,45 @@ def Ques2Sent():
                         # print(line)
                 # print(sent)
                 # print(line)
+
+                if sent != '':
+
+                    e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                    e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                    e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                    e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                    e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                    e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                    # print(e1_l, e1_r, e2_l, e2_r)
+
+                    if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                        print('>>>>>>>>>>>>>\n', sent)
+                        print(poslist)
+                        print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                        print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                        print(line)
+                        print(e1_l, e1_r, e2_l, e2_r)
+                    else:
+                        if e1_r >= e2_l or e2_r >= e1_l:
+                            jline['sent'] = sent
+                            jline['e1_posi'] = (e1_l, e1_r)
+                            jline['e2_posi'] = (e2_l, e2_r)
+                            fj = json.dumps(jline, ensure_ascii=False)
+                            fw1w.write(fj + '\n')
+                        else:
+                            print(line)
 
                 continue
 
             elif 'IN' in poslist[1][1]:
                 count1w += 1
                 # print(line)
-                sent = []
+                sent = ''
 
                 en1_name = re.sub(r'\(', '\\\(', en1_name0)
                 en1_name = re.sub(r'\)', '\\\)', en1_name)
+                en2_name = re.sub(r'\(', '\\\(', en2_name0)
+                en2_name = re.sub(r'\)', '\\\)', en2_name)
                 matchObj = re.search(en1_name, ques, flags=re.I)
                 if matchObj != None:
                     pattern = re.compile(en1_name, flags=re.I)
@@ -821,8 +1107,7 @@ def Ques2Sent():
                     # print(sent)
                     # print(line)
                 else:
-                    en2_name = re.sub(r'\(', '\\\(', en2_name0)
-                    en2_name = re.sub(r'\)', '\\\)', en2_name)
+
                     matchObj = re.search(en2_name, ques, flags=re.I)
                     if matchObj != None:
                         pattern = re.compile(en2_name, flags=re.I)
@@ -837,9 +1122,37 @@ def Ques2Sent():
                 # print(sent)
                 # print(line)
 
+                if sent != '':
+
+                    e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                    e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                    e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                    e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                    e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                    e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                    # print(e1_l, e1_r, e2_l, e2_r)
+
+                    if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                        print('>>>>>>>>>>>>>\n', sent)
+                        print(poslist)
+                        print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                        print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                        print(line)
+                        print(e1_l, e1_r, e2_l, e2_r)
+                    else:
+                        if e1_r >= e2_l or e2_r >= e1_l:
+                            jline['sent'] = sent
+                            jline['e1_posi'] = (e1_l, e1_r)
+                            jline['e2_posi'] = (e2_l, e2_r)
+                            fj = json.dumps(jline, ensure_ascii=False)
+                            fw1w.write(fj + '\n')
+                        else:
+                            print(line)
+
                 continue
 
-        matchObj = re.match(r'((Which)|(What)) ', ques)
+
+        matchObj = re.match(r'^((Which)|(What)) ', ques)
         if matchObj != None:
             if 'VB' in poslist[2][1] and 'NN' in poslist[1][1]:
                 count1w += 1
@@ -857,12 +1170,9 @@ def Ques2Sent():
                 if matchObj != None:
                     pattern = re.compile(en1_name, flags=re.I)
                     sent = re.sub(pattern, en1_name0, ques)
-
-                    sent = re.sub(r'((What)|(Which)) (\w+) ',
+                    sent = re.sub(r'^((What)|(Which)) (\S+) ',
                                       'The ' + str(poslist[1][0]) + ' ' + en2_name0 + ' ', sent)
 
-                    # print(sent)
-                    # print(line)
                 else:
 
                     matchObj = re.search(en2_name, ques, flags=re.I)
@@ -870,7 +1180,7 @@ def Ques2Sent():
                         pattern = re.compile(en2_name, flags=re.I)
                         sent = re.sub(pattern, en2_name0, ques)
 
-                        sent = re.sub(r'((What)|(Which)) (\w+) ',
+                        sent = re.sub(r'^((What)|(Which)) (\S+) ',
                                       'The ' + str(poslist[1][0]) + ' ' + en1_name0 + ' ', sent)
                         # print(sent)
                         # print(line)
@@ -883,24 +1193,164 @@ def Ques2Sent():
                 # print(sent)
                 # print(line)
 
+                if sent != '':
+                    e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+                    e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+                    e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+                    e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+                    e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+                    e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+                    # print(e1_l, e1_r, e2_l, e2_r)
+
+                    if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+                        print('>>>>>>>>>>>>>\n', sent)
+                        print(poslist)
+                        print('e1 taken.....', nltk.word_tokenize(en1_name0))
+                        print('e2 taken.....', nltk.word_tokenize(en2_name0))
+                        print(line)
+                        print(e1_l, e1_r, e2_l, e2_r)
+                    else:
+                        if e1_r >= e2_l or e2_r >= e1_l:
+                            jline['sent'] = sent
+                            jline['e1_posi'] = (e1_l, e1_r)
+                            jline['e2_posi'] = (e2_l, e2_r)
+                            fj = json.dumps(jline, ensure_ascii=False)
+                            fw1w.write(fj + '\n')
+                        else:
+                            print(line)
+
                 continue
 
-        # fw2w.write(line)
+
+
+        fw2w.write(line)
         count2w += 1
 
     frr.close()
-    # fw1w.close()
-    # fw2w.close()
+    fw1w.close()
+    fw2w.close()
     print(count1w, count2w, count1w+count2w)
 
 
+def Write2file(sent, en1_name, en2_name):
+
+    if sent != '':
+
+        e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+        e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+        e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+
+        e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+        e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+        e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+
+        # print(e1_l, e1_r, e2_l, e2_r)
+
+        # poslist = nltk.pos_tag(nltk.word_tokenize(sent))
+        # e1_l = -1
+        # e1_r = -1
+        # e2_l = -1
+        # e2_r = -1
+        # item = 0
+        # find_e1 = False
+        # find_e2 = False
+        # while item < len(poslist):
+        #     # print(item, 'e1_l', e1_l)
+        #     if (find_e1 == False) and (poslist[item][0] in nltk.word_tokenize(en1_name0)):
+        #         e1_l = item
+        #         e1_cname = []
+        #         e1_cname.append(poslist[item][0])
+        #         # print(e1_cname)
+        #         j = item + 1
+        #
+        #         while j < len(poslist):
+        #             if poslist[j][0] in nltk.word_tokenize(en1_name0):
+        #                 e1_cname.append(poslist[j][0])
+        #                 # print(e1_cname)
+        #                 j += 1
+        #             else:
+        #                 # print(e1_cname_l, e1_cname_r)
+        #                 if e1_cname == nltk.word_tokenize(en1_name0):
+        #                     e1_r = j
+        #                     find_e1 = True
+        #                     item = j
+        #                 else:
+        #                     item = item + 1
+        #                     e1_l = -1
+        #                 break
+        #
+        #         if j == len(poslist):
+        #             # print(e1_cname_l, e1_cname_r)
+        #             if e1_cname == nltk.word_tokenize(en1_name0):
+        #                 e1_r = j
+        #                 find_e1 = True
+        #                 item = j
+        #             else:
+        #                 item = j
+        #                 e1_l = -1
+        #     else:
+        #         item += 1
+        #
+        # item = 0
+        # while item < len(poslist):
+        #     # print(item, 'e2_l', e2_l)
+        #     if (find_e2 == False) and (poslist[item][0] in nltk.word_tokenize(en2_name0)):
+        #         # print(item, '....e2_l', e2_l)
+        #         e2_l = item
+        #         e2_cname = [poslist[item][0]]
+        #         # print(e1_cname)
+        #         j = item + 1
+        #
+        #         while j < len(poslist):
+        #             if poslist[j][0] in nltk.word_tokenize(en2_name0):
+        #                 e2_cname.append(poslist[j][0])
+        #                 # print(e1_cname)
+        #                 j += 1
+        #             else:
+        #                 # print(e2_cname_l, e2_cname_r)
+        #                 if e2_cname == nltk.word_tokenize(en2_name0):
+        #                     e2_r = j
+        #                     find_e2 = True
+        #                     item = j
+        #                 else:
+        #                     item = item + 1
+        #                     e2_l = -1
+        #                 break
+        #
+        #         if j == len(poslist):
+        #             # print(e1_cname_l, e1_cname_r)
+        #             if e2_cname == nltk.word_tokenize(en2_name0):
+        #                 e2_r = j
+        #                 find_e2 = True
+        #                 item = j
+        #             else:
+        #                 item = j
+        #                 e2_l = -1
+        #
+        #     else:
+        #         item += 1
+
+        if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+            print('>>>>>>>>>>>>>\n', sent)
+            # print(poslist)
+            # print('e1 taken.....', nltk.word_tokenize(en1_name0))
+            # print('e2 taken.....', nltk.word_tokenize(en2_name0))
+            # print(line)
+            print(e1_l, e1_r, e2_l, e2_r)
 
 
 if __name__ == '__main__':
+
     print('---')
-    Ques2Sent()
+
+    # Ques2Sent()
+
     # Process_Corpus()
+
     # review_ents()
+
+    Split_zeroshotData_2_train_test()
+
 
     # print(re.search('www', 'www.runoobwww.com').group())  # 在起始位置匹配
     # print(re.match('com', 'www.runoob.com'))  # 不在起始位置匹配
