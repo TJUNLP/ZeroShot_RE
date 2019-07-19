@@ -79,7 +79,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
 
             if mindis < 0.5:
                 predict += 1
-
+                print(subpredictions[data_tag_list[i][0]])
                 if mindis_where == data_tag_list[i][0]:
                     predict_right += 1
 

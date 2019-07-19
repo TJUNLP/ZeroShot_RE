@@ -21,7 +21,7 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     output_dim=w2v_k,
                                     input_length=input_sent_lenth,
                                     mask_zero=True,
-                                    trainable=True,
+                                    trainable=False,
                                     weights=[word_W])(word_input_sent)
     word_embedding_sent = Dropout(0.25)(word_embedding_sent)
 
