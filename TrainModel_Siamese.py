@@ -61,17 +61,26 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
         print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1')
         assert len(predictions) // len(target_vob) == totel_right
         predict_rank = 0
-        for i in range(len(predictions)//len(target_vob)):
-            subpredictions = predictions[i*len(target_vob):i*len(target_vob) + len(target_vob)]
-            subpredictions = subpredictions.flatten().tolist()
 
+        for i in range(len(predictions)//len(target_vob)):
+            left = i*len(target_vob)
+            right = (i+1)*len(target_vob)
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
 
             distantDict = {}
             for num, disvlaue in enumerate(subpredictions):
                 distantDict[num] = disvlaue
 
+            # for dd in distantDict:
+            #     print('!!!', dd)
+
             distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=False)
-            target_where = list(dict(distantList).keys()).index(data_tag_list[i][0])
+
+            distantList = list(dict(distantList).keys())
+
+            target_where = distantList.index(data_tag_list[i][0])
+
             predict_rank += target_where
 
 
