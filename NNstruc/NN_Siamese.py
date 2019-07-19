@@ -50,13 +50,13 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     weights=[tag_W])(input_tag)
 
     embedding_x1 = concatenate([word_embedding_sent, embedding_e1_posi, embedding_e2_posi], axis=-1)
-    BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(embedding_x1)
+    BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='ave')(embedding_x1)
     BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
 
     # mlp_x1_0 = Flatten()(BiLSTM_x1)
-    mlp_x1_1 = Dense(400, activation='tanh')(BiLSTM_x1)
+    mlp_x1_1 = Dense(200, activation='tanh')(BiLSTM_x1)
     mlp_x1_1 = Dropout(0.25)(mlp_x1_1)
-    mlp_x1_2 = Dense(400, activation='tanh')(mlp_x1_1)
+    mlp_x1_2 = Dense(100, activation='tanh')(mlp_x1_1)
     mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
 
     distance = Lambda(euclidean_distance,
