@@ -10,7 +10,7 @@ import tensorflow as tf
 from keras import backend as K
 from keras.layers import merge, Lambda,Flatten
 
-def Model_BiLSTM__MLP(wordvocabsize, tagvocabsize, posivocabsize,
+def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                      word_W, posi_W, tag_W,
                      input_sent_lenth,
                      w2v_k, posi2v_k, tag2v_k,
@@ -25,41 +25,44 @@ def Model_BiLSTM__MLP(wordvocabsize, tagvocabsize, posivocabsize,
                                     weights=[word_W])(word_input_sent)
     word_embedding_sent = Dropout(0.5)(word_embedding_sent)
 
-    input_posi = Input(shape=(input_sent_lenth,), dtype='int32')
-    embedding_posi = Embedding(input_dim=posivocabsize,
+    input_e1_posi = Input(shape=(input_sent_lenth,), dtype='int32')
+    embedding_e1_posi = Embedding(input_dim=posivocabsize,
                                     output_dim=posi2v_k,
                                     input_length=input_sent_lenth,
                                     mask_zero=False,
                                     trainable=True,
-                                    weights=[posi_W])(input_posi)
-    embedding_posi = Dropout(0.5)(embedding_posi)
+                                    weights=[posi_W])(input_e1_posi)
+
+    input_e2_posi = Input(shape=(input_sent_lenth,), dtype='int32')
+    embedding_e2_posi = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=True,
+                                    weights=[posi_W])(input_e2_posi)
 
     input_tag = Input(shape=(1,), dtype='int32')
     tag_embedding = Embedding(input_dim=tagvocabsize,
                                     output_dim=tag2v_k,
                                     input_length=1,
                                     mask_zero=False,
-                                    trainable=True,
+                                    trainable=False,
                                     weights=[tag_W])(input_tag)
 
-    embedding_x1 = concatenate([word_embedding_sent, embedding_posi], axis=-1)
+    embedding_x1 = concatenate([word_embedding_sent, embedding_e1_posi, embedding_e2_posi], axis=-1)
     BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(embedding_x1)
     BiLSTM_x1 = Dropout(0.5)(BiLSTM_x1)
 
     mlp_x2_0 = Flatten()(tag_embedding)
-    mlp_x2_0 = Dropout(0.5)(mlp_x2_0)
-    mlp_x2_1_1 = Dense(200, activation='tanh')(mlp_x2_0)
-    mlp_x2_1_1 = Dropout(0.5)(mlp_x2_1_1)
-    mlp_x2_1_2 = Dense(200, activation='relu')(mlp_x2_0)
-    mlp_x2_1_2 = Dropout(0.5)(mlp_x2_1_2)
-    mlp_x2_1 = concatenate([mlp_x2_1_1, mlp_x2_1_2])
+    mlp_x2_1 = Dense(200, activation='tanh')(mlp_x2_0)
+    mlp_x2_1 = Dropout(0.25)(mlp_x2_1)
     mlp_x2_2 = Dense(400, activation='relu')(mlp_x2_1)
     mlp_x2_2 = Dropout(0.5)(mlp_x2_2)
 
     distance = Lambda(euclidean_distance,
                       output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
 
-    mymodel = Model([word_input_sent, input_posi, input_tag], distance)
+    mymodel = Model([word_input_sent, input_e1_posi, input_e2_posi, input_tag], distance)
 
     mymodel.compile(loss=contrastive_loss, optimizer=optimizers.RMSprop(lr=0.001), metrics=[acc_siamese])
 

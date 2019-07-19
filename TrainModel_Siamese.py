@@ -14,334 +14,7 @@ import numpy as np
 from ProcessData_Siamese import get_data
 from Evaluate import evaluation_NER
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from network.NN_Siamese import Model_BiLSTM__MLP, Model_BiLSTM__MLP_context, Model_BiLSTM__MLP_context_withClassifer
-from network.NN_Siamese import Model_BiLSTM__MLP_context_withClassifer_charembedTYPE
-
-def Train41stsegment(sen2list_test):
-
-    model1name = 'Model_BiLSTM_CRF'
-
-    print(model1name)
-
-    w2v_file = "./data/w2v/glove.6B.100d.txt"
-    c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    # trainfile = "./data/CoNLL2003_NER/eng.train.BIOES.txt"
-    # devfile = "./data/CoNLL2003_NER/eng.testa.BIOES.txt"
-    trainfile = "./data/CoNLL2003_NER/eng.train.testa.BIOES.txt"
-    testfile = "./data/CoNLL2003_NER/eng.testb.BIOES.txt"
-    resultdir = "./data/result/"
-
-
-    datafname = 'data_2step.BIOES.A_B.1'
-    datafile = "./model_data/" + datafname + ".pkl"
-
-    model1file = 'model1file'
-
-    batch_size = 50
-    Test = True
-
-    if not os.path.exists(datafile):
-        print("Precess data....")
-        from ProcessData_BIOES2F import get_data_4segment_BIOES
-        get_data_4segment_BIOES(trainfile, testfile, w2v_file, c2v_file, datafile, w2v_k=100, c2v_k=50, maxlen=maxlen)
-
-    print('Loading data ...')
-    train_A_4segment_BIOES, train_B_4segment_BIOES, test_4segment_BIOES, \
-    word_W, character_W, \
-    word_vob, word_idex_word, char_vob, \
-    max_s, w2v_k, max_c, c2v_k = pickle.load(open(datafile, 'rb'))
-    print("data has extisted: " + datafile)
-
-    target1_idex_word = {1: 'O', 2: 'I', 3: 'B', 4: 'E', 5: 'S'}
-    target1_vob = {'O': 1, 'I': 2, 'B': 3, 'E': 4, 'S': 5}
-
-    trainx_word = np.asarray(train_A_4segment_BIOES[0], dtype="int32")
-    trainx_char = np.asarray(train_A_4segment_BIOES[2], dtype="int32")
-    trainy = np.asarray(train_A_4segment_BIOES[1], dtype="int32")
-
-    testx_word = np.asarray(test_4segment_BIOES[0], dtype="int32")
-    testx_char = np.asarray(test_4segment_BIOES[2], dtype="int32")
-    testy = np.asarray(test_4segment_BIOES[1], dtype="int32")
-
-    import TrainModel_segment
-    model_segment = TrainModel_segment.SelectModel(modelname=model1name,
-                                                   sourcevocabsize=len(word_vob),
-                                                   targetvocabsize=len(target1_vob),
-                                                   source_W=word_W,
-                                                   input_seq_lenth=max_s,
-                                                   output_seq_lenth=max_s,
-                                                   hidden_dim=200,
-                                                   emd_dim=w2v_k,
-                                                   sourcecharsize=len(char_vob),
-                                                   character_W=character_W,
-                                                   input_word_length=max_c,
-                                                   char_emd_dim=c2v_k,
-                                                   batch_size=batch_size)
-
-    if os.path.exists(model1file):
-        model_segment.load_weights(model1file)
-
-    inputs_train_x = [trainx_word, trainx_char]
-    inputs_train_y = [trainy]
-    inputs_test_x = [testx_word, testx_char]
-    inputs_test_y = [testy]
-    print("model_segment has extisted...")
-
-
-    inum = 1
-    model1file = "./model/" + model1name + "__" + datafname + "_segment_" + str(inum) + ".h5"
-
-    if Test:
-        print("test model_segment ....")
-        print(datafile)
-        print(model1file)
-        TrainModel_segment.infer_e2e_model(model=model_segment, modelname=model1name,
-                                           modelfile=model1file,
-                                           inputs=[inputs_test_x, inputs_test_y],
-                                           target_idex_word=target1_idex_word,
-                                           resultdir=resultdir,
-                                           batch_size=batch_size)
-
-    fragment_test, target_right = get_data_fromBIOES_2Test(model_segment, test_4segment_BIOES, target1_idex_word, sen2list_test)
-
-    return fragment_test, target_right
-
-
-def get_data_fromBIOES_2Test(nn_model, test_4segment_BIOES, index2BIOES, sen2list_test):
-
-    index2BIOES[0] = ''
-
-    testx_word = np.asarray(test_4segment_BIOES[0], dtype="int32")
-    testx_char = np.asarray(test_4segment_BIOES[2], dtype="int32")
-    testy = np.asarray(test_4segment_BIOES[1], dtype="int32")
-    testt = test_4segment_BIOES[3]
-
-    predictions = nn_model.predict([testx_word, testx_char], batch_size=512, verbose=1)
-
-    ptag_BIOES_all = []
-    for si in range(0, len(predictions)):
-
-        ptag_BIOES = []
-        for word in predictions[si]:
-            next_index = np.argmax(word)
-            next_token = index2BIOES[next_index]
-            if next_token == '':
-                break
-            ptag_BIOES.append(next_token)
-
-        ptag_BIOES_all.append(ptag_BIOES)
-
-    fragment_list, target_right = Lists2Set_2Test(ptag_BIOES_all, test_4segment_BIOES[0], testt, sen2list_test)
-
-    print('len(fragment_list) = ', len(fragment_list))
-    print('the count right target is ', target_right)
-
-    return fragment_list, target_right
-
-
-def Lists2Set_2Test(ptag_BIOES_all, testx_word, testt, sen2list_test):
-    reall_right = 0
-    predict = 0
-    fragment_list = []
-    fragtuples_list = []
-    print('start processing ptag_BIOES_all ...')
-    for id, ptag2list in enumerate(ptag_BIOES_all):
-
-        assert len(ptag2list) == len(testt[id])
-        index = 0
-        while index < len(ptag2list):
-
-            if ptag2list[index] == 'O' or ptag2list[index] == '':
-                index += 1
-                continue
-
-            elif ptag2list[index] == 'B':
-                target_left = index
-                index += 1
-                while index < len(ptag2list):
-                    if ptag2list[index] == 'I':
-                        index += 1
-                        continue
-                    elif ptag2list[index] == 'E':
-                        target_right = index + 1
-                        reltag = 'NULL'
-                        if 'B-' in testt[id][target_left] and 'E-' in testt[id][index]:
-                            reltag = testt[id][target_left][2:]
-                            reall_right += 1
-                        predict += 1
-                        tuple = (target_left, target_right, reltag, sen2list_test[id])
-                        fragtuples_list.append(tuple)
-                        index += 1
-                        break
-                    else:
-                        break
-
-            elif ptag2list[index] == 'S':
-                target_left = index
-                target_right = index + 1
-                reltag = 'NULL'
-                if 'S-' in testt[id][index]:
-                    reltag = testt[id][target_left][2:]
-                    reall_right += 1
-                predict += 1
-                tuple = (target_left, target_right, reltag, sen2list_test[id])
-                fragtuples_list.append(tuple)
-                index += 1
-
-            else:
-                index += 1
-
-    P = reall_right / predict
-    R = reall_right / 5648.0
-    F = 2 * P * R / (P + R)
-    print('Lists2Set_42ndTest----', 'P=', P, 'R=', R, 'F=', F)
-
-    return fragtuples_list, reall_right
-
-
-def test_model_withBIOES(nn_model, fragment_test, target_vob, max_s, max_posi, max_fragment):
-
-    predict = 0
-    predict_right = 0
-    totel_right = 5648
-
-    data_s_all = []
-    data_posi_all = []
-    data_tag_all = []
-    data_context_r_all = []
-    data_context_l_all = []
-    data_fragment_all = []
-    data_c_l_posi_all = []
-    data_c_r_posi_all = []
-
-    fragment_tag_list = []
-    for frag in fragment_test:
-        fragment_l = int(frag[0])
-        fragment_r = int(frag[1])
-        if frag[2] == 'NULL':
-            fragment_tag = len(target_vob)
-        else:
-            fragment_tag = target_vob[frag[2]]
-        sent = frag[3]
-
-        fragment_tag_list.append(fragment_tag)
-
-        data_s = sent[0:min(len(sent), max_s)] + [0] * max(0, max_s - len(sent))
-        data_context_r = sent[fragment_l:min(len(sent), max_s)]
-        data_context_r = data_context_r + [0] * max(0, max_s - len(data_context_r))
-        data_context_l = sent[max(0, fragment_r - max_s):fragment_r]
-        data_context_l = [0] * max(0, max_s - len(data_context_l)) + data_context_l
-
-        data_fragment = sent[fragment_l:fragment_r]
-
-        list_left = [min(i, max_posi) for i in range(1, fragment_l+1)]
-        list_left.reverse()
-        feature_posi = list_left + [0 for i in range(fragment_l, fragment_r)] + \
-                       [min(i, max_posi) for i in range(1, len(sent) - fragment_r + 1)]
-        data_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
-
-        data_c_l_posi = [min(i, max_posi) for i in range(1, len(data_context_l)-len(data_fragment)+1)]
-        data_c_l_posi.reverse()
-        data_c_l_posi = data_c_l_posi + [0 for i in range(fragment_l, fragment_r+1)]
-        data_c_r_posi = [0 for i in range(fragment_l, fragment_r + 1)] + \
-                        [min(i, max_posi) for i in range(1, len(data_context_r) - len(data_fragment) + 1)]
-
-        padlen = max(0, max_fragment - len(data_fragment))
-        data_fragment = [0] * (padlen // 2) + data_fragment + [0] * (padlen - padlen // 2)
-
-        data_context_r = [1] + data_context_r
-        data_context_l = data_context_l + [1]
-
-        for ins in target_vob.values():
-            data_s_all.append(data_s)
-            data_posi_all.append(data_posi)
-            data_tag_all.append([ins])
-            data_context_l_all.append(data_context_l)
-            data_context_r_all.append(data_context_r)
-            data_fragment_all.append(data_fragment)
-            data_c_l_posi_all.append(data_c_l_posi)
-            data_c_r_posi_all.append(data_c_r_posi)
-
-    pairs = [data_s_all, data_posi_all, data_tag_all,
-             data_context_r_all, data_context_l_all, data_fragment_all, data_c_l_posi_all, data_c_r_posi_all]
-
-    x1_sent = np.asarray(pairs[0], dtype="int32")
-    x1_posi = np.asarray(pairs[1], dtype="int32")
-    x2_tag = np.asarray(pairs[2], dtype="int32")
-    x1_context_r = np.asarray(pairs[3], dtype="int32")
-    x1_context_l = np.asarray(pairs[4], dtype="int32")
-    x1_fragment = np.asarray(pairs[5], dtype="int32")
-    x1_c_l_posi = np.asarray(pairs[6], dtype="int32")
-    x1_c_r_posi = np.asarray(pairs[7], dtype="int32")
-
-
-    # predictions = nn_model.predict([x1_sent, x1_posi, x2_tag], batch_size=512, verbose=0)
-    predictions = nn_model.predict([x1_context_l, x1_c_l_posi,
-                                    x1_context_r, x1_c_r_posi,
-                                    x1_fragment, x2_tag], batch_size=512, verbose=0)
-    Ddict = {}
-    Vdict = {}
-    assert len(predictions)//len(target_vob) == len(fragment_tag_list)
-    for i in range(len(predictions)//len(target_vob)):
-        subpredictions = predictions[i*len(target_vob):i*len(target_vob) + len(target_vob)]
-        subpredictions = subpredictions.flatten().tolist()
-
-        u = 0.25 * (subpredictions[0] + subpredictions[1] + subpredictions[2] + subpredictions[3])
-        D = 0
-        for v in subpredictions:
-            D += math.pow(v-u, 2)
-        D = 0.25 * D
-
-        mindis = min(subpredictions)
-        mindis_where = subpredictions.index(min(subpredictions))
-
-        # for num, disvlaue in enumerate(predictions):
-        #     if disvlaue < mindis:
-        #         mindis = disvlaue
-        #         mindis_where = pairs[2][num]
-        if mindis < 0.5:
-            predict += 1
-            if mindis_where == fragment_tag_list[i]:
-                predict_right += 1
-
-                if mindis//0.01 not in Ddict:
-                    Ddict[mindis//0.01] = 1
-                else:
-                    Ddict[mindis//0.01] += 1
-
-                # if D//0.001 not in Ddict:
-                #     Ddict[D//0.001] = 1
-                # else:
-                #     Ddict[D//0.001] += 1
-
-                # if mindis // 0.01 not in Vdict:
-                #     Vdict[mindis // 0.01] = 1
-                # else:
-                #     Vdict[mindis // 0.01] += 1
-
-        if len(target_vob) == fragment_tag_list[i]:
-            if mindis//0.01 not in Vdict:
-                Vdict[mindis//0.01] = 1
-            else:
-                Vdict[mindis//0.01] += 1
-
-
-
-
-
-
-    P = predict_right / predict
-    R = predict_right / totel_right
-    F = 2 * P * R / (P + R)
-    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-    # Dlist = sorted(Ddict.items(), key=lambda x:x[0], reverse=True)
-    # print(Dlist)
-    # Vlist = sorted(Vdict.items(), key=lambda x:x[0], reverse=True)
-    # print(Vlist)
-
-    return P, R, F
+from NNstruc.NN_Siamese import Model_BiLSTM_sent__MLP_KGembed
 
 
 def test_model(nn_model, fragment_test, target_vob, max_s, max_posi, max_fragment):
@@ -363,7 +36,7 @@ def test_model(nn_model, fragment_test, target_vob, max_s, max_posi, max_fragmen
     char_fragment_all = []
     char_context_l_all = []
     char_context_r_all = []
-    candidate_tag_list = []
+    # candidate_tag_list = []
 
     fragment_tag_list = []
     for frag in fragment_test:
@@ -759,13 +432,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, fragment_test, resultdir, typ
 
 def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabsize,
                      word_W, posi_W, tag_W, char_W,
-                     input_sent_lenth, input_frament_lenth,
+                     input_sent_lenth,
                      w2v_k, posi2v_k, tag2v_k, c2v_k, tag_k,
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM__MLP':
-        nn_model = Model_BiLSTM__MLP(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_sent__MLP_KGembed':
+        nn_model = Model_BiLSTM_sent__MLP_KGembed(wordvocabsize=wordvocabsize,
                                      tagvocabsize=tagvocabsize,
                                      posivocabsize=posivocabsize,
                                      word_W=word_W, posi_W=posi_W, tag_W=tag_W,
@@ -773,67 +446,28 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                      w2v_k=w2v_k, posi2v_k=posi2v_k, tag2v_k=tag2v_k,
                                      batch_size=batch_size)
 
-    elif modelname is 'Model_BiLSTM__MLP_context':
-        nn_model = Model_BiLSTM__MLP_context(wordvocabsize=wordvocabsize,
-                                             tagvocabsize=tagvocabsize,
-                                             posivocabsize=posivocabsize,
-                                             word_W=word_W, posi_W=posi_W, tag_W=tag_W,
-                                             input_sent_lenth=input_sent_lenth,
-                                             input_frament_lenth=input_frament_lenth,
-                                             w2v_k=w2v_k, posi2v_k=posi2v_k, tag2v_k=tag2v_k,
-                                             batch_size=batch_size)
-
-    elif modelname is 'Model_BiLSTM__MLP_context_withClassifer':
-        nn_model = Model_BiLSTM__MLP_context_withClassifer(wordvocabsize=wordvocabsize,
-                                             tagvocabsize=tagvocabsize,
-                                             posivocabsize=posivocabsize,
-                                             word_W=word_W, posi_W=posi_W, tag_W=tag_W,
-                                             input_sent_lenth=input_sent_lenth,
-                                             input_frament_lenth=input_frament_lenth,
-                                             w2v_k=w2v_k, posi2v_k=posi2v_k, tag2v_k=tag2v_k,
-                                             batch_size=batch_size)
-
-    elif modelname is 'Model_BiLSTM__MLP_context_withClassifer_charembedTYPE':
-        nn_model = Model_BiLSTM__MLP_context_withClassifer_charembedTYPE(wordvocabsize=wordvocabsize,
-                                                           posivocabsize=posivocabsize,
-                                                           charvocabsize=charvocabsize,
-                                                           word_W=word_W, posi_W=posi_W, char_W=char_W,
-                                                           input_sent_lenth=input_sent_lenth,
-                                                           input_frament_lenth=input_frament_lenth,
-                                                           w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag_k=tag_k,
-                                                           batch_size=batch_size)
-
     return nn_model
-
 
 
 if __name__ == "__main__":
 
     maxlen = 50
 
-
-
-    modelname = 'Model_BiLSTM__MLP'
-    # modelname = 'Model_BiLSTM__MLP_attention'
-    # modelname = 'Model_BiLSTM__MLP_attention'
-    # modelname = 'Model_BiLSTM__MLP_context'
-    modelname = 'Model_BiLSTM__MLP_context_withClassifer'
-    modelname = 'Model_BiLSTM__MLP_context_withClassifer_charembedTYPE'
+    modelname = 'Model_BiLSTM_sent__MLP_KGembed'
 
     print(modelname)
 
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    trainfile = "./data/CoNLL2003_NER/eng.train.BIOES.txt"
+    t2v_file = ''
+    trainfile = ".txt"
     devfile = ""
-    testfile = "./data/CoNLL2003_NER/eng.testb.BIOES.txt"
+    testfile = "./data/.txt"
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Siamese.4_withClassifer'
-    datafname = 'data_Siamese.4fold_0.05'
-    datafname = 'data_Siamese.4fold_BiC.2'
-    datafname = 'data_Siamese.4fold_BiC.charembedTYPE'
+    datafname = 'data_Siamese.4.onlyword.onlyKGem'
+
     datafile = "./model_data/" + datafname + ".pkl"
 
     modelfile = "next ...."
@@ -841,83 +475,44 @@ if __name__ == "__main__":
     hasNeg = False
 
     batch_size = 256 #16,
-    hidden_dim = 200
+
     retrain = False
     Test = True
-    Test42Step = False
 
     if not os.path.exists(datafile):
         print("Precess data....")
 
-        get_data(trainfile, devfile, testfile, w2v_file, c2v_file, datafile,
-                 w2v_k=100, c2v_k=50, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
-
-    # pairs_train, labels_train, classifer_labels_train, \
-    # pairs_dev, labels_dev, classifer_labels_dev, \
-    # fragment_train, fragment_dev, fragment_test,\
-    # word_vob, word_id2word, word_W, w2v_k,\
-    # TYPE_vob, TYPE_id2type, type_W, type_k,\
-    # posi_W, posi_W,\
-    # target_vob, target_id2word, max_s, max_posi, max_fragment = pickle.load(open(datafile, 'rb'))
+        get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile,
+                 w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
     pairs_train, labels_train, classifer_labels_train,\
-    pairs_dev, labels_dev, classifer_labels_dev,\
-    fragment_train, fragment_dev, fragment_test,\
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
-    TYPE_vob, TYPE_id2type, type_W, type_k,\
+    target_vob, target_id2word, type_W, type_k,\
     posi_W, posi_k,\
-    target_vob, target_id2word, max_s, max_posi, max_fragment, max_c = pickle.load(open(datafile, 'rb'))
+    max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
     train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
-    train_x1_posi = np.asarray(pairs_train[1], dtype="int32")
-    train_x2_tag = np.asarray(pairs_train[2], dtype="int32")
-    train_x1_context_r = np.asarray(pairs_train[3], dtype="int32")
-    train_x1_context_l = np.asarray(pairs_train[4], dtype="int32")
-    train_x1_fragment = np.asarray(pairs_train[5], dtype="int32")
-    train_x1_c_l_posi = np.asarray(pairs_train[6], dtype="int32")
-    train_x1_c_r_posi = np.asarray(pairs_train[7], dtype="int32")
-    train_x1_c_l_char = np.asarray(pairs_train[8], dtype="int32")
-    train_x1_c_r_char = np.asarray(pairs_train[9], dtype="int32")
-    train_x1_fragment_char = np.asarray(pairs_train[10], dtype="int32")
+    train_x2_tag = np.asarray(pairs_train[1], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs_train[2], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs_train[3], dtype="int32")
     train_y = np.asarray(labels_train, dtype="int32")
     train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
-    dev_x1_sent = np.asarray(pairs_dev[0], dtype="int32")
-    dev_x1_posi = np.asarray(pairs_dev[1], dtype="int32")
-    dev_x2_tag = np.asarray(pairs_dev[2], dtype="int32")
-    dev_x1_context_r = np.asarray(pairs_dev[3], dtype="int32")
-    dev_x1_context_l = np.asarray(pairs_dev[4], dtype="int32")
-    dev_x1_fragment = np.asarray(pairs_dev[5], dtype="int32")
-    dev_x1_c_l_posi = np.asarray(pairs_dev[6], dtype="int32")
-    dev_x1_c_r_posi = np.asarray(pairs_dev[7], dtype="int32")
-    dev_x1_c_l_char = np.asarray(pairs_dev[8], dtype="int32")
-    dev_x1_c_r_char = np.asarray(pairs_dev[9], dtype="int32")
-    dev_x1_fragment_char = np.asarray(pairs_dev[10], dtype="int32")
-    dev_y = np.asarray(labels_dev, dtype="int32")
-    dev_y_classifer = np.asarray(classifer_labels_dev, dtype="int32")
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x2_tag]
+    inputs_train_y = [train_y]
 
     nn_model = SelectModel(modelname,
                            wordvocabsize=len(word_vob),
-                           tagvocabsize=len(TYPE_vob),
+                           tagvocabsize=len(target_vob),
                            posivocabsize=max_posi+1,
                            charvocabsize=len(char_vob)+1,
                            word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
-                           input_sent_lenth=max_s, input_frament_lenth=max_fragment,
+                           input_sent_lenth=max_s,
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k, tag_k=type_k,
                            batch_size=batch_size)
 
-    # inputs_train_x = [train_x1_sent, train_x1_posi, train_x2_tag]
-    inputs_train_x = [train_x1_context_l, train_x1_c_l_posi, train_x1_c_l_char,
-                      train_x1_context_r, train_x1_c_r_posi, train_x1_c_r_char,
-                      train_x1_fragment, train_x1_fragment_char, train_x2_tag]
-    inputs_train_y = [train_y]
 
-    # inputs_dev_x = [dev_x1_sent, dev_x1_posi, dev_x2_tag]
-    inputs_dev_x = [dev_x1_context_l, dev_x1_c_l_posi, dev_x1_c_l_char,
-                    dev_x1_context_r, dev_x1_c_r_posi, dev_x1_c_r_char,
-                    dev_x1_fragment, dev_x1_fragment_char, dev_x2_tag]
-    inputs_dev_y = [dev_y]
 
 
     for inum in range(3, 6):
