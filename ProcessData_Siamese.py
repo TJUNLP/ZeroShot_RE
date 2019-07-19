@@ -384,74 +384,6 @@ def make_idx_character_index_withFix(file, max_s, max_c, source_vob):
     return data_s_all
 
 
-def make_idx_POS_index(file, max_s, source_vob, Poswidth=3):
-
-    width = (Poswidth-1)//2
-
-    count = 0
-    data_s_all = []
-    data_s = []
-
-    f = open(file,'r')
-    fr = f.readlines()
-    sen_i = 0
-
-    for i, line in enumerate(fr):
-
-        if line.__len__() <= 1:
-            num = max_s - count
-            # print('num ', num, 'max_s', max_s, 'count', count)
-            for inum in range(0, num):
-                data_s.append([0] * Poswidth)
-            # print(data_s)
-            # print(data_t)
-            data_s_all.append(data_s)
-            data_s = []
-            count = 0
-            sen_i = 0
-            continue
-
-        data_w = []
-
-
-        for k in range(width, 0, -1):
-            if sen_i - k < 0:
-                data_w.append(0)
-                # print('>>>')
-            else:
-                sourc_pre = fr[i - k].strip('\r\n').rstrip('\n').split(' ')[1]
-                data_w.append(source_vob[sourc_pre])
-                # print(sourc_pre)
-
-        sent = line.strip('\r\n').rstrip('\n').split(' ')[1]
-        if not source_vob.__contains__(sent):
-            data_w.append(source_vob["**UNK**"])
-        else:
-            data_w.append(source_vob[sent])
-        # print(sent)
-
-        for k in range(1, width+1):
-            if i + k >= fr.__len__() or fr[i + k].__len__() <= 1:
-                for s in range(k, width+1):
-                    data_w.append(0)
-                    # print('<<<')
-                break
-            else:
-                sourc_back = fr[i + k].strip('\r\n').rstrip('\n').split(' ')[1]
-                data_w.append(source_vob[sourc_back])
-                # print(sourc_back)
-
-        data_s.append(data_w)
-        if len(data_w) is not Poswidth:
-            print('____________________', data_w)
-        count += 1
-        sen_i += 1
-
-    f.close()
-    # print(data_t_all)
-    return data_s_all
-
-
 def get_word_index(files):
 
     source_vob = {}
@@ -496,43 +428,6 @@ def get_word_index(files):
         f.close()
 
     return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s
-
-
-def get_Feature_index(file):
-    """
-    Give each feature labelling an index
-    :param the entlabelingfile file
-    :return: the word_index map, the index_word map,
-    the max lenth of word sentence
-    """
-    label_vob = {}
-    label_idex_word = {}
-    count = 1
-    # count = 0
-
-    for labelingfile in file:
-        f = open(labelingfile, 'r')
-        fr = f.readlines()
-        for line in fr:
-            if line.__len__() <= 1:
-
-                continue
-
-            sourc = line.strip('\r\n').rstrip('\n').split(' ')[1]
-            # print(sourc)
-            if not label_vob.__contains__(sourc):
-                label_vob[sourc] = count
-                label_idex_word[count] = sourc
-                count += 1
-
-        f.close()
-    if not label_vob.__contains__("**UNK**"):
-        label_vob["**UNK**"] = count
-        label_idex_word[count] = "**UNK**"
-        count += 1
-
-
-    return label_vob, label_idex_word
 
 
 def get_Character_index(files):
@@ -583,226 +478,7 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def get_Character_index_withFix(files):
-
-
-    source_vob = {}
-    sourc_idex_word = {}
-    max_c = 18-5
-    count = 1
-
-    # prefixs =[]
-    # prefix = open("./data/EnFix/EnPrefix.txt", 'r')
-    # pf = prefix.readlines()
-    # for line in pf:
-    #     prefixs.append(line)
-
-    suffixs = []
-    suffix = open("./data/EnFix/EnSuffix.txt", 'r')
-    sf = suffix.readlines()
-    for line in sf:
-        suffixs.append(line)
-
-    for file in files:
-        f = open(file, 'r')
-        fr = f.readlines()
-        for line in fr:
-            if line.__len__() <= 1:
-                continue
-
-            sourc = line.strip('\r\n').rstrip('\n').rstrip('\r').split(' ')[0]
-            # if sourc.__len__() > max_c:
-            #     max_c = sourc.__len__()
-            #     print(sourc)
-            start = 0
-            end = 0
-            # for pre in prefixs:
-            #     pre = pre.strip('\r\n').rstrip('\n').rstrip('\r')
-            #     if re.match(pre, sourc, flags=re.I) is not None:
-            #         # print('1@@@@@@@@@@@@@', pre)
-            #         character = pre
-            #         if not source_vob.__contains__(character):
-            #             source_vob[character] = count
-            #             sourc_idex_word[count] = character
-            #             count += 1
-            #             start = character.__len__()
-            #         break
-
-            for suf in suffixs:
-                suf = suf.strip('\r\n').rstrip('\n').rstrip('\r')
-                if re.search(suf + '$', sourc, flags=re.I) is not None:
-                    # print('2#############', suf)
-                    character = suf
-                    if not source_vob.__contains__(character):
-                        source_vob[character] = count
-                        sourc_idex_word[count] = character
-                        count += 1
-                        end = character.__len__()
-                    break
-            # t = sourc.__len__()
-            # if end is not 0:
-            #     t = sourc.__len__() - end + 1
-            # if t > max_c:
-            #     max_c = t
-            #     print('max_c', max_c, sourc)
-
-            for i in range(start, sourc.__len__()-end):
-                character = sourc[i]
-                if not source_vob.__contains__(character):
-                    source_vob[character] = count
-                    sourc_idex_word[count] = character
-                    count += 1
-
-        f.close()
-    if not source_vob.__contains__("**PAD**"):
-        source_vob["**PAD**"] = 0
-        sourc_idex_word[0] = "**PAD**"
-
-    if not source_vob.__contains__("**UNK**"):
-        source_vob["**UNK**"] = count
-        sourc_idex_word[count] = "**UNK**"
-        count += 1
-
-    return source_vob, sourc_idex_word, max_c
-
-
-def ReadfromTXT2Lists(file, source_vob, target_vob):
-
-    ner_count = 0
-
-    sen2list = []
-    tag2list = []
-
-    sen2list_all = []
-    tag2list_all = []
-
-    f = open(file, 'r')
-    fr = f.readlines()
-    for line in fr:
-
-        if line.__len__() <= 1:
-
-            sen2list_all.append(sen2list)
-            tag2list_all.append(tag2list)
-
-            sen2list = []
-            tag2list = []
-
-            continue
-
-        sent = line.strip('\r\n').rstrip('\n').split(' ')
-
-        if not source_vob.__contains__(sent[0]):
-            sen2list.append(source_vob["**UNK**"])
-        else:
-            sen2list.append(source_vob[sent[0]])
-
-        tag2list.append(target_vob[sent[4]])
-
-    f.close()
-
-    return sen2list_all, tag2list_all
-
-
-def Lists2Set(sen2list_all, tag2list_all, target_idex_word, max_context, max_fragment, hasNeg=False):
-    fragment_list = []
-
-    assert len(sen2list_all) == len(tag2list_all)
-    for id, tag2list in enumerate(tag2list_all):
-
-        target_left = 0
-        fragtuples_list = []
-        for index, tag in enumerate(tag2list):
-
-            if target_idex_word[tag] == 'O':
-                target_left = index
-                continue
-
-            else:
-                if target_idex_word[tag].__contains__('B-'):
-                    target_left = index
-
-                elif target_idex_word[tag].__contains__('I-'):
-                    continue
-
-                elif target_idex_word[tag].__contains__('S-'):
-
-                    target_left = index
-                    target_right = index+1
-                    reltag = target_idex_word[tag][2:]
-                    tuple = (0, target_right, target_left, target_right, target_left, len(tag2list), reltag)
-                    fragtuples_list.append(tuple)
-                    if hasNeg:
-                        inc = random.randrange(0, 5)
-                        if inc == 0:
-                            inc = random.randrange(-2, 3)
-                            reltag = 'NULL'
-
-                            if inc == 0:
-                                target_left = max(0, target_left-1)
-                                target_right = min(len(tag2list), target_right+1)
-                            elif inc < 0:
-                                target_left = max(0, target_left + inc)
-                            else:
-                                target_right = min(len(tag2list), target_right + inc)
-
-                            tuple = (0, target_right, target_left, target_right, target_left, len(tag2list), reltag)
-                            fragtuples_list.append(tuple)
-
-
-                    flens = max(index+1, len(tag2list)-index)
-                    if flens > max_context:
-                        max_context = flens
-
-                    target_left = index
-
-                elif target_idex_word[tag].__contains__('E-'):
-                    target_right = index+1
-                    reltag = target_idex_word[tag][2:]
-                    tuple = (0, target_right, target_left, target_right, target_left, len(tag2list), reltag)
-                    fragtuples_list.append(tuple)
-
-                    flens = max(index+1, len(tag2list)-target_left)
-                    if flens > max_context:
-                        max_context = flens
-
-                    max_fragment = max(max_fragment, target_right-target_left)
-
-                    if hasNeg:
-                        inc = random.randrange(0, 5)
-                        if inc == 0:
-                            inc = random.randrange(-2, 3)
-                            reltag = 'NULL'
-
-                            if inc == 0:
-                                target_left = max(0, target_left - 1)
-                                target_right = min(len(tag2list), target_right + 1)
-                            elif inc < 0:
-                                target_left = max(0, target_left + inc)
-                            else:
-                                target_right = min(len(tag2list), target_right + inc)
-
-                            tuple = (0, target_right, target_left, target_right, target_left, len(tag2list), reltag)
-                            fragtuples_list.append(tuple)
-                            max_fragment = max(max_fragment, target_right - target_left)
-
-                    target_left = index
-
-                else:
-                    print("Seq2frag error !!!!!!!!")
-
-        for tup in fragtuples_list:
-            context_left = tup[1]
-            fragment_left = tup[2]
-            fragment_right = tup[3]
-            context_right = tup[4]
-            fragment_tag = tup[6]
-            fragment_list.append((fragment_left, fragment_right, fragment_tag, sen2list_all[id], context_left, context_right))
-
-    return fragment_list, max_context, max_fragment
-
-
-def CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob, max_c):
+def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=False):
 
     labels = []
     data_s_all = []
@@ -811,20 +487,20 @@ def CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, ch
     data_tag_all = []
     classifer_label = []
 
-
     f = codecs.open(trainfile, 'r', encoding='utf-8')
+
     for line in f.readlines():
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         sent = jline['sent'].split(' ')
         rel = jline['rel']
-        e1_l = jline['e1_l']
-        e1_r = jline['e1_r']
-        e2_l = jline['e2_l']
-        e2_r = jline['e2_r']
+        e1_l = jline['e1_posi'][0]
+        e1_r = jline['e1_posi'][1]
+        e2_l = jline['e2_posi'][0]
+        e2_r = jline['e2_posi'][1]
 
         data_tag = target_vob[rel]
 
-        data_s = sent[0:min(len(sent), max_s)] + [0] * max(0, max_s - len(sent))
+        data_s = [word_vob[ww] for ww in sent[0:min(len(sent), max_s)]]+ [0] * max(0, max_s - len(sent))
 
         list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
         list_left.reverse()
@@ -841,20 +517,21 @@ def CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, ch
 
 
         data_s_all.append(data_s)
-        data_tag_all.append(type_W[data_tag])
+        data_tag_all.append([data_tag])
         data_e1_posi_all.append(data_e1_posi)
         data_e2_posi_all.append(data_e2_posi)
         labels.append(1)
         classifer_label.append(data_tag)
 
-        inc = random.randrange(1, len(target_vob.keys()))
-        dn = (data_tag + inc) % len(target_vob.keys())
-        data_s_all.append(data_s)
-        data_tag_all.append(type_W[dn])
-        data_e1_posi_all.append(data_e1_posi)
-        data_e2_posi_all.append(data_e2_posi)
-        labels.append(0)
-        classifer_label.append(data_tag)
+        if istest == False:
+            inc = random.randrange(1, len(target_vob.keys()))
+            dn = (data_tag + inc) % len(target_vob.keys())
+            data_s_all.append(data_s)
+            data_tag_all.append([dn])
+            data_e1_posi_all.append(data_e1_posi)
+            data_e2_posi_all.append(data_e2_posi)
+            labels.append(0)
+            classifer_label.append(data_tag)
 
     pairs = [data_s_all, data_tag_all,
              data_e1_posi_all, data_e2_posi_all]
@@ -875,8 +552,8 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
     print("source vocab size: ", str(len(word_vob)))
     print("word_id2word size: ", str(len(word_id2word)))
-    print("target vocab size: " + str(target_vob))
-    print("target_id2word size: " + str(target_id2word))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
     # if max_s > maxlen:
     #     max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
@@ -911,13 +588,19 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    pairs_train, labels_train, classifer_labels_train = CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob=None, max_c=-1)
+    pairs_train, labels_train, classifer_labels_train = \
+        CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob=None, max_c=-1, istest=False)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
+
+    pairs_test, labels_test, classifer_labels_test = \
+        CreatePairs(testfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob=None, max_c=-1, istest=True)
+    print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
 
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
     pickle.dump([pairs_train, labels_train, classifer_labels_train,
+                 pairs_test, labels_test, classifer_labels_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word, type_W, type_k,
@@ -931,12 +614,38 @@ if __name__=="__main__":
 
     alpha = 10
     maxlen = 50
-    trainfile = "./data/CoNLL2003_NER/eng.train.BIOES.txt"
-    devfile = "./data/CoNLL2003_NER/eng.testa.BIOES.txt"
-    testfile = "./data/CoNLL2003_NER/eng.testb.BIOES.txt"
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    datafile = "./data/model/data.pkl"
-    modelfile = "./data/model/model.pkl"
+    t2v_file = './data/KG2v/FB15K_OpenKETransE_Relation2Vec_100.txt'
+    trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
+    testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+
+    # if max_s > maxlen:
+    #     max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
+
+
+
+    # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+
+
+    max_posi = 20
+    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
+    print('posi_k, posi_W', posi_k, len(posi_W))
+
+
+    # weigtnum = int(len(fragment_train) * percent)
+    # fragment_train = fragment_train[:weigtnum]
+
+    pairs_train, labels_train, classifer_labels_train = \
+        CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob=None, max_c=-1, istest=False)
+    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
+
 
