@@ -33,7 +33,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     data_tag_all = []
 
     for i in range(min(50, len(data_s_list))):
-        print(i)
+        # print(i)
         for ins in target_vob.values():
             data_s_all.append(data_s_list[i])
             data_tag_all.append([ins])
