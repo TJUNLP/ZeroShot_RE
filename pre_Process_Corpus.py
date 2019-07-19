@@ -1352,7 +1352,7 @@ if __name__ == '__main__':
 
     # review_ents()
 
-    Split_zeroshotData_2_train_test()
+    # Split_zeroshotData_2_train_test()
 
 
     # print(re.search('www', 'www.runoobwww.com').group())  # 在起始位置匹配
@@ -1374,3 +1374,4 @@ if __name__ == '__main__':
     # matchObj = re.match(r'What (\w+) (are)|(is)|(was)|(were)', s)
     #
     # print(matchObj)
+

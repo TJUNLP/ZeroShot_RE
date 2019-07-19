@@ -60,31 +60,34 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     if len(predictions) > 2 and len(predictions[0]) == 1:
         print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1')
         assert len(predictions) // len(target_vob) == totel_right
+        predict_rank = 0
         for i in range(len(predictions)//len(target_vob)):
             subpredictions = predictions[i*len(target_vob):i*len(target_vob) + len(target_vob)]
             subpredictions = subpredictions.flatten().tolist()
 
-            mindis = min(subpredictions)
-            mindis_where = subpredictions.index(min(subpredictions))
 
-            # mincount = 0
-            # for num, disvlaue in enumerate(subpredictions):
-            #     if disvlaue < 0.5:
-            #         mindis_where = num
-            #         mincount += 1
-            # if mincount == 1:
-            #     predict += 1
-            #     if mindis_where == fragment_tag_list[i]:
-            #         predict_right += 1
+            distantDict = {}
+            for num, disvlaue in enumerate(subpredictions):
+                distantDict[num] = disvlaue
 
-            if mindis < 0.5:
-                predict += 1
-                print(subpredictions[data_tag_list[i][0]])
-                if mindis_where == data_tag_list[i][0]:
-                    predict_right += 1
+            distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=False)
+            target_where = list(dict(distantList).keys()).index(data_tag_list[i][0])
+            predict_rank += target_where
+
+
+        print('test predict_rank = ', predict_rank / totel_right)
 
 
 
+            # mindis = min(subpredictions)
+            # mindis_where = subpredictions.index(min(subpredictions))
+
+        #     if mindis < 0.5:
+        #         predict += 1
+        #         print(subpredictions[data_tag_list[i][0]])
+        #         if mindis_where == data_tag_list[i][0]:
+        #             predict_right += 1
+        #
         P = predict_right / max(predict, 0.000001)
         R = predict_right / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
