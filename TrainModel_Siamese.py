@@ -80,6 +80,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     data_tag_all = []
     char_s_all = []
 
+    truth_tag_list = []
+
     for i in range(len(data_s_list[:1000])):
         if labels_test[i] == 0:
             continue
@@ -93,6 +95,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             data_e2_posi_all.append(data_e2_posi_list[i])
             if data_tag_list[i][0] == ins:
                 labels_all.append(1)
+                truth_tag_list.append(ins)
                 # print(ins)
             else:
                 labels_all.append(0)
@@ -113,6 +116,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     if len(predictions) > 2 and len(predictions[0]) == 1:
         print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1', len(predictions))
         assert len(predictions) // len(target_vob) == totel_right
+        assert truth_tag_list == totel_right
         predict_rank = 0
 
         for i in range(len(predictions)//len(target_vob)):
@@ -131,7 +135,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
             distantDict = dict(distantList)
             distantList = list(distantDict.keys())
-            target_where = distantList.index(data_tag_list[i][0])
+            target_where = distantList.index(truth_tag_list[i][0])
 
             predict_rank += target_where
 
@@ -141,11 +145,11 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
 
             predict += 1
 
-            if mindis_where == data_tag_list[i][0]:
+            if mindis_where == truth_tag_list[i][0]:
                 predict_right += 1
 
 
-            if subpredictions[data_tag_list[i][0]] > 0.5:
+            if subpredictions[truth_tag_list[i][0]] > 0.5:
                 predict_right05 += 1
 
 
