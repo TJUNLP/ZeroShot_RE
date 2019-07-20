@@ -48,19 +48,19 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
         if labels_test[i] == 0:
             continue
         # print(i)
-        # for ins in target_vob.values():
-        #
-        #     if data_tag_list[i][0] == ins:
-        #         labels_all.append(1)
-        #         # print(ins)
-        #     else:
-        #         continue
+        for ins in target_vob.values():
 
-        data_s_all.append(data_s_list[i])
-        data_tag_all.append([data_tag_list[i][0]])
-        data_e1_posi_all.append(data_e1_posi_list[i])
-        data_e2_posi_all.append(data_e2_posi_list[i])
-        char_s_all.append(char_s_list[i])
+            if data_tag_list[i][0] == ins:
+                labels_all.append(1)
+                # print(ins)
+            else:
+                continue
+
+            data_s_all.append(data_s_list[i])
+            data_tag_all.append([data_tag_list[i][0]])
+            data_e1_posi_all.append(data_e1_posi_list[i])
+            data_e2_posi_all.append(data_e2_posi_list[i])
+            char_s_all.append(char_s_list[i])
 
 
     pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
@@ -78,12 +78,12 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     for i in range(len(predictions)):
 
         predict += 1
-        if labels_test[i] == 1 and predictions[i] > 0.5:
+        if labels_all[i] == 1 and predictions[i] > 0.5:
             predict_right += 1
             predict_right05 += 1
 
 
-        if labels_test[i] == 0 and predictions[i] < 0.5:
+        if labels_all[i] == 0 and predictions[i] < 0.5:
             predict_right += 1
 
     P = predict_right / max(predict, 0.000001)
