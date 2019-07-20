@@ -338,7 +338,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the test_model_4trainset result-----------------------')
-    P, R, F = test_model_4trainset(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train result-----------------------')
