@@ -478,7 +478,7 @@ def contrastive_loss(y_true, y_pred):
 def anti_contrastive_loss(y_true, y_pred):
 
     margin = 0.5
-    return K.mean((1 - y_true) * K.square(K.maximum(y_pred - margin, 0)) +
+    return K.mean((1 - y_true) * K.square(y_pred) +
                   y_true * K.square(1 - y_pred))
 
 def Model3_LSTM_BiLSTM_LSTM(wordvocabsize, targetvocabsize, charvobsize,
