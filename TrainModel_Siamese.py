@@ -116,7 +116,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     if len(predictions) > 2 and len(predictions[0]) == 1:
         print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1', len(predictions))
         assert len(predictions) // len(target_vob) == totel_right
-        assert truth_tag_list == totel_right
+        assert len(truth_tag_list) == totel_right
         predict_rank = 0
 
         for i in range(len(predictions)//len(target_vob)):
