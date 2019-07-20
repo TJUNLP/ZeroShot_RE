@@ -38,6 +38,40 @@ def Process_Corpus():
             print(pos[1])
 
 
+def analysis_entity_type():
+
+    fty = '/Users/shengbinjia/Downloads/FB5M-extra/FB5M.type.txt'
+    frty = codecs.open(fty, 'r', encoding='utf-8')
+
+    entDict = {}
+    typeDict = {}
+    line = frty.readline()
+    while line:
+        sp = line.rstrip('\n').split('\t')
+        if sp[0] not in entDict.keys():
+            entDict[sp[0]] = 1
+        else:
+            entDict[sp[0]] += 1
+
+        if sp[2] not in typeDict.keys():
+            typeDict[sp[2]] = 1
+        else:
+            typeDict[sp[2]] += 1
+
+        line = frty.readline()
+
+    print(len(entDict), len(typeDict))
+
+    entlist = sorted(entDict.items(), key=lambda x: x[1], reverse=False)
+    print(entlist)
+
+    typelist = sorted(typeDict.items(), key=lambda x: x[1], reverse=False)
+    print(typelist)
+    
+
+
+
+
 def review_ents():
     fr = './data/annotated_fb_data_zeroshot_2.txt'
     frr2 = codecs.open(fr, 'r', encoding='utf-8')
@@ -1352,8 +1386,9 @@ if __name__ == '__main__':
 
     # review_ents()
 
-    Split_zeroshotData_2_train_test()
+    # Split_zeroshotData_2_train_test()
 
+    analysis_entity_type()
 
     # print(re.search('www', 'www.runoobwww.com').group())  # 在起始位置匹配
     # print(re.match('com', 'www.runoob.com'))  # 不在起始位置匹配

@@ -78,7 +78,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             # for dd in distantDict:
             #     print('!!!', dd)
 
-            distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=False)
+            distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
             distantDict = dict(distantList)
             distantList = list(distantDict.keys())
             target_where = distantList.index(data_tag_list[i][0])
@@ -86,11 +86,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             predict_rank += target_where
 
 
-
-
-
-            mindis = min(subpredictions)
-            mindis_where = subpredictions.index(min(subpredictions))
+            mindis = max(subpredictions)
+            mindis_where = subpredictions.index(mindis)
 
             predict += 1
 
