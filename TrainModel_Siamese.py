@@ -133,9 +133,13 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             #     print('!!!', dd)
 
             distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-            distantDict = dict(distantList)
-            distantList = list(distantDict.keys())
-            target_where = distantList.index(truth_tag_list[i][0])
+            # distantDict = dict(distantList)
+            # distantList = list(distantDict.keys())
+            target_where = -99999999999
+            for ii, item in enumerate(distantList):
+                if item[0] == truth_tag_list[i][0]:
+                    target_where = ii
+            # target_where = distantList.index(truth_tag_list[i][0]) + 1
 
             predict_rank += target_where
 
