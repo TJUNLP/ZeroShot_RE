@@ -80,6 +80,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     char_s_all = []
 
     for i in range(len(data_s_list)):
+        if labels_test[i] == 0:
+            continue
         # print(i)
         for ins in target_vob.values():
 
@@ -342,8 +344,8 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train result-----------------------')
-    # P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
+    P, R, F = test_model(nnmodel, pairs_train[:2000], labels_train[:2000], classifer_labels_train[:2000], target_vob)
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
 
 def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabsize,
