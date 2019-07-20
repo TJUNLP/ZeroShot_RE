@@ -9,6 +9,7 @@ from keras.layers.normalization import BatchNormalization
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import merge, Lambda,Flatten
+from keras.layers.merge import dot
 
 def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize, charvocabsize,
                      word_W, posi_W, tag_W, char_W,
@@ -72,12 +73,12 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize, c
     mlp_x2_2 = Dense(400, activation='tanh')(mlp_x2_1)
     mlp_x2_2 = Dropout(0.25)(mlp_x2_2)
 
-    distance = Lambda(euclidean_distance,
-                      output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
+    distance = dot([BiLSTM_x1, mlp_x2_2], axes=-1, normalize=True)
 
     mymodel = Model([word_input_sent, input_e1_posi, input_e2_posi, input_tag, char_input_sent], distance)
 
-    mymodel.compile(loss=contrastive_loss, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_siamese])
+    mymodel.compile(loss=anti_contrastive_loss, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_siamese])
 
     return mymodel
 
@@ -474,7 +475,11 @@ def contrastive_loss(y_true, y_pred):
     return K.mean(y_true * K.square(y_pred) +
                   (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
 
+def anti_contrastive_loss(y_true, y_pred):
 
+    margin = 0.5
+    return K.mean((1 - y_true) * K.square(K.maximum(y_pred - margin, 0)) +
+                  y_true * K.square(K.maximum(margin - y_pred, 0)))
 
 def Model3_LSTM_BiLSTM_LSTM(wordvocabsize, targetvocabsize, charvobsize,
                      word_W, char_W,
