@@ -288,8 +288,12 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
-    print('the test result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    # print('the test result-----------------------')
+    # P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the train result-----------------------')
+    P, R, F = test_model(nnmodel, pairs_test[:1000], labels_test[:1000], classifer_labels_test[:1000], target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
 
