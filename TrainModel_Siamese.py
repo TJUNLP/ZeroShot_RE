@@ -18,21 +18,22 @@ from NNstruc.NN_Siamese import Model_BiLSTM_sent__MLP_KGembed
 
 def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
-    data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list = pairs_test0
+    data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
 
     predict = 0
     predict_right = 0
     predict_right_c = 0
     predict_c = 0
-    totel_right = min(50, len(data_s_list))
+    totel_right = len(data_s_list)
 
     labels_all = []
     data_s_all = []
     data_e1_posi_all = []
     data_e2_posi_all = []
     data_tag_all = []
+    char_s_all = []
 
-    for i in range(min(50, len(data_s_list))):
+    for i in range(len(data_s_list)):
         # print(i)
         for ins in target_vob.values():
 
@@ -45,17 +46,19 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
                 # print(ins)
             else:
                 labels_all.append(0)
+            char_s_all.append(char_s_list[i])
 
-    pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all]
+    pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
 
     test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
     test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
     test_x1_e1_posi = np.asarray(pairs_test[2], dtype="int32")
     test_x1_e2_posi = np.asarray(pairs_test[3], dtype="int32")
+    test_x1_sent_cahr = np.asarray(pairs_test[4], dtype="int32")
     test_y = np.asarray(labels_all, dtype="int32")
 
     predictions = nn_model.predict([test_x1_sent, test_x1_e1_posi, test_x1_e2_posi,
-                                    test_x2_tag], batch_size=512, verbose=0)
+                                    test_x2_tag, test_x1_sent_cahr], batch_size=len(target_vob), verbose=0)
 
     if len(predictions) > 2 and len(predictions[0]) == 1:
         print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1')
@@ -76,31 +79,30 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             #     print('!!!', dd)
 
             distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=False)
-
-            distantList = list(dict(distantList).keys())
-
+            distantDict = dict(distantList)
+            distantList = list(distantDict.keys())
             target_where = distantList.index(data_tag_list[i][0])
 
             predict_rank += target_where
 
 
-        print('test predict_rank = ', predict_rank / totel_right)
 
 
 
-            # mindis = min(subpredictions)
-            # mindis_where = subpredictions.index(min(subpredictions))
+            mindis = min(subpredictions)
+            mindis_where = subpredictions.index(min(subpredictions))
 
-        #     if mindis < 0.5:
-        #         predict += 1
-        #         print(subpredictions[data_tag_list[i][0]])
-        #         if mindis_where == data_tag_list[i][0]:
-        #             predict_right += 1
-        #
+            predict += 1
+
+            if mindis_where == data_tag_list[i][0]:
+                predict_right += 1
+
         P = predict_right / max(predict, 0.000001)
         R = predict_right / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
         print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+        print('test predict_rank = ', predict_rank / totel_right)
+
 
 
     elif len(predictions) > 2 and len(predictions[0]) == 2:
@@ -253,7 +255,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
-                               validation_split=0.2,
+                               validation_split=0.1,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
@@ -288,18 +290,20 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
 def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabsize,
                      word_W, posi_W, tag_W, char_W,
                      input_sent_lenth,
-                     w2v_k, posi2v_k, tag2v_k, c2v_k, tag_k,
+                     w2v_k, posi2v_k, tag2v_k, c2v_k,
                      batch_size=32):
     nn_model = None
 
     if modelname is 'Model_BiLSTM_sent__MLP_KGembed':
         nn_model = Model_BiLSTM_sent__MLP_KGembed(wordvocabsize=wordvocabsize,
-                                     tagvocabsize=tagvocabsize,
-                                     posivocabsize=posivocabsize,
-                                     word_W=word_W, posi_W=posi_W, tag_W=tag_W,
-                                     input_sent_lenth=input_sent_lenth,
-                                     w2v_k=w2v_k, posi2v_k=posi2v_k, tag2v_k=tag2v_k,
-                                     batch_size=batch_size)
+                                                  tagvocabsize=tagvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, tag_W=tag_W, char_W=char_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, tag2v_k=tag2v_k,c2v_k=c2v_k,
+                                                  batch_size=batch_size)
 
     return nn_model
 
@@ -351,20 +355,21 @@ if __name__ == "__main__":
     train_x2_tag = np.asarray(pairs_train[1], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs_train[2], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs_train[3], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs_train[4], dtype="int32")
     train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x2_tag]
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x2_tag, train_x1_sent_cahr]
     inputs_train_y = [train_y]
 
     nn_model = SelectModel(modelname,
                            wordvocabsize=len(word_vob),
                            tagvocabsize=len(target_vob),
                            posivocabsize=max_posi+1,
-                           charvocabsize=len(char_vob)+1,
+                           charvocabsize=len(char_vob),
                            word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
                            input_sent_lenth=max_s,
-                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k, tag_k=type_k,
+                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
     for inum in range(1, 3):

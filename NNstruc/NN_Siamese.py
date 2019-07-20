@@ -10,10 +10,10 @@ import tensorflow as tf
 from keras import backend as K
 from keras.layers import merge, Lambda,Flatten
 
-def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
-                     word_W, posi_W, tag_W,
-                     input_sent_lenth,
-                     w2v_k, posi2v_k, tag2v_k,
+def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize, charvocabsize,
+                     word_W, posi_W, tag_W, char_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, tag2v_k, c2v_k,
                     batch_size=32):
 
     word_input_sent = Input(shape=(input_sent_lenth,), dtype='int32')
@@ -24,6 +24,19 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     trainable=False,
                                     weights=[word_W])(word_input_sent)
     word_embedding_sent = Dropout(0.25)(word_embedding_sent)
+
+    char_input_sent = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_embedding_sent = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))(char_input_sent)
+
+    char_cnn_sent = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+    char_embedding_sent = char_cnn_sent(char_embedding_sent)
+    char_embedding_sent = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent)
+    char_embedding_sent = Dropout(0.25)(char_embedding_sent)
 
     input_e1_posi = Input(shape=(input_sent_lenth,), dtype='int32')
     embedding_e1_posi = Embedding(input_dim=posivocabsize,
@@ -49,7 +62,7 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
                                     trainable=False,
                                     weights=[tag_W])(input_tag)
 
-    embedding_x1 = concatenate([word_embedding_sent, embedding_e1_posi, embedding_e2_posi], axis=-1)
+    embedding_x1 = concatenate([word_embedding_sent, char_embedding_sent, embedding_e1_posi, embedding_e2_posi], axis=-1)
     BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(embedding_x1)
     BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
 
@@ -62,9 +75,9 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize,
     distance = Lambda(euclidean_distance,
                       output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
 
-    mymodel = Model([word_input_sent, input_e1_posi, input_e2_posi, input_tag], distance)
+    mymodel = Model([word_input_sent, input_e1_posi, input_e2_posi, input_tag, char_input_sent], distance)
 
-    mymodel.compile(loss=contrastive_loss, optimizer=optimizers.RMSprop(lr=0.001), metrics=[acc_siamese])
+    mymodel.compile(loss=contrastive_loss, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_siamese])
 
     return mymodel
 

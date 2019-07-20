@@ -3,7 +3,7 @@ __author__ = 'JIA'
 import numpy as np
 import pickle, codecs
 import json
-import re, random
+import re, random, math
 import keras
 
 from Seq2fragment import Seq2frag, Seq2frag4test
@@ -294,96 +294,6 @@ def make_idx_character_index(file, max_s, max_c, source_vob):
     return data_s_all
 
 
-def make_idx_character_index_withFix(file, max_s, max_c, source_vob):
-
-    data_s_all = []
-    count = 0
-    f = open(file,'r')
-    fr = f.readlines()
-
-    # prefixs = []
-    # prefix = open("./data/EnFix/EnPrefix.txt", 'r')
-    # pf = prefix.readlines()
-    # for line in pf:
-    #     prefixs.append(line)
-
-    suffixs = []
-    suffix = open("./data/EnFix/EnSuffix.txt", 'r')
-    sf = suffix.readlines()
-    for line in sf:
-        suffixs.append(line)
-
-    data_w = []
-    for line in fr:
-
-        if line.__len__() <= 1:
-            num = max_s - count
-            # print('num ', num, 'max_s', max_s, 'count', count)
-
-            for inum in range(0, num):
-                data_tmp = []
-                for i in range(0, max_c):
-                    data_tmp.append(0)
-                data_w.append(data_tmp)
-            # print(data_s)
-            # print(data_t)
-            data_s_all.append(data_w)
-
-            data_w = []
-            count = 0
-            continue
-
-        data_c = []
-        word = line.strip('\r\n').rstrip('\n').split(' ')[0]
-        count_c = 0
-        start = 0
-        end = 0
-        # print(word)
-        # for pre in prefixs:
-        #     pre = pre.strip('\r\n').rstrip('\n').rstrip('\r')
-        #     if re.match(pre, word, flags=re.I) is not None:
-        #         character = pre
-        #         data_c.append(source_vob[character])
-        #         start = character.__len__()
-        #         count_c +=1
-        #         break
-
-        endidex = 0
-        for suf in suffixs:
-            suf = suf.strip('\r\n').rstrip('\n').rstrip('\r')
-            if re.search(suf + '$', word, flags=re.I) is not None:
-
-                character = suf
-                endidex=source_vob[character]
-                end = character.__len__()
-
-                break
-
-        for chr in range(start, min(word.__len__() - end, max_c)):
-            count_c += 1
-            if not source_vob.__contains__(word[chr]):
-                data_c.append(source_vob["**UNK**"])
-            else:
-                data_c.append(source_vob[word[chr]])
-        if count_c < max_c:
-            data_c.append(endidex)
-            count_c += 1
-
-        num = max_c - count_c
-        for i in range(0, max(num, 0)):
-            data_c.append(0)
-        count +=1
-        # print(data_c.__len__())
-        # print(data_c)
-        if data_c.__len__() != max_c:
-            while 1>0:
-                i=1
-        data_w.append(data_c)
-
-    f.close()
-    return data_s_all
-
-
 def get_word_index(files):
 
     source_vob = {}
@@ -448,27 +358,22 @@ def get_Character_index(files):
         count += 1
 
     for file in files:
-        f = open(file, 'r')
-        fr = f.readlines()
-        for line in fr:
-            if line.__len__() <= 1:
-                continue
 
-            sourc = line.strip('\r\n').rstrip('\n').rstrip('\r').split(' ')[0]
-            # if sourc.__len__() > max_c:
-            #     max_c = sourc.__len__()
-            #     print(sourc)
+        f = codecs.open(file, 'r', encoding='utf-8')
+        for line in f.readlines():
+            jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+            sent = jline['sent']
+            rel = jline['rel']
+            words = sent.split(' ')
 
-            for character in sourc:
-                if not source_vob.__contains__(character):
-                    source_vob[character] = count
-                    sourc_idex_word[count] = character
-                    count += 1
+            for word in words:
+                for character in word:
+                    if not source_vob.__contains__(character):
+                        source_vob[character] = count
+                        sourc_idex_word[count] = character
+                        count += 1
 
         f.close()
-    if not source_vob.__contains__("**PAD**"):
-        source_vob["**PAD**"] = 0
-        sourc_idex_word[0] = "**PAD**"
 
     if not source_vob.__contains__("**UNK**"):
         source_vob["**UNK**"] = count
@@ -486,6 +391,7 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
     data_e2_posi_all = []
     data_tag_all = []
     classifer_label = []
+    char_s_all = []
 
     f = codecs.open(trainfile, 'r', encoding='utf-8')
 
@@ -514,6 +420,18 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
                        [min(i, max_posi) for i in range(1, len(sent) - e2_r + 1)]
         data_e2_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
 
+        char_s = []
+        for word in sent:
+            data_c = []
+            for chr in range(0, min(word.__len__(), max_c)):
+                if not char_vob.__contains__(word[chr]):
+                    data_c.append(char_vob["**UNK**"])
+                else:
+                    data_c.append(char_vob[word[chr]])
+            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
+            char_s.append(data_c)
+        char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
+
 
 
         data_s_all.append(data_s)
@@ -522,6 +440,7 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
         data_e2_posi_all.append(data_e2_posi)
         labels.append(1)
         classifer_label.append(data_tag)
+        char_s_all.append(char_s)
 
         if istest == False:
             inc = random.randrange(1, len(target_vob.keys()))
@@ -532,9 +451,10 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
             data_e2_posi_all.append(data_e2_posi)
             labels.append(0)
             classifer_label.append(data_tag)
+            char_s_all.append(char_s)
 
     pairs = [data_s_all, data_tag_all,
-             data_e1_posi_all, data_e2_posi_all]
+             data_e1_posi_all, data_e2_posi_all, char_s_all]
 
     classifer_labels = keras.utils.to_categorical(classifer_label, len(target_vob))
 
@@ -558,16 +478,14 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     #     max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
 
-    char_vob = {}
-    char_id2char = {}
-    max_c = -1
-    # char_vob, char_id2char, max_c = get_Character_index({trainfile, devfile, testfile})
-    # print("source char size: ", char_vob.__len__())
-    # print("max_c: ", max_c)
-    # print("source char: " + str(char_id2char))
-    char_W = {}
-    # char_W, char_k = load_vec_character(c2v_file, char_vob, c2v_k)
-    # print('character_W shape:', char_W.shape)
+
+    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
+    print("source char size: ", char_vob.__len__())
+    print("max_c: ", max_c)
+    print("source char: " + str(char_id2char))
+
+    c2v_k, char_W, = load_vec_random(char_vob, k=c2v_k)
+    print('character_W shape:', char_W.shape)
 
     word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=w2v_k)
     print("word2vec loaded!")
@@ -589,11 +507,11 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # fragment_train = fragment_train[:weigtnum]
 
     pairs_train, labels_train, classifer_labels_train = \
-        CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob=None, max_c=-1, istest=False)
+        CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=False)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
     pairs_test, labels_test, classifer_labels_test = \
-        CreatePairs(testfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob=None, max_c=-1, istest=True)
+        CreatePairs(testfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=True)
     print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
 
 

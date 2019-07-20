@@ -125,8 +125,8 @@ def Split_zeroshotData_2_train_test():
 
     fw_train = './data/annotated_fb__zeroshot_RE.random.train.txt'
     fw_test = './data/annotated_fb__zeroshot_RE.random.test.txt'
-    # fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
-    # fwte = codecs.open(fw_test, 'w', encoding='utf-8')
+    fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
+    fwte = codecs.open(fw_test, 'w', encoding='utf-8')
 
     fr = './data/annotated_fb__zeroshot_RE.txt'
     frr = codecs.open(fr, 'r', encoding='utf-8')
@@ -137,7 +137,7 @@ def Split_zeroshotData_2_train_test():
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         words = jline['sent'].split(' ')
         max_s = max(max_s, len(words))
-        print(max_s)
+        # print(max_s)
         rel = jline['rel']
         if rel in relDict.keys():
             relDict[rel] += 1
@@ -146,36 +146,36 @@ def Split_zeroshotData_2_train_test():
     print(len(relDict))
     frr.close()
 
-    # rel4Test = []
-    # relList = list(relDict.keys())
-    # i = 0
-    # while i * 5 + 4 < len(relList):
-    #     nd = random.randint(0, 4)
-    #     rel4Test.append(relList[i * 5 + nd])
-    #     i += 1
-    #
-    # print(len(rel4Test))
-    # print(rel4Test)
-    #
-    # frr = codecs.open(fr, 'r', encoding='utf-8')
-    #
-    # for line in frr.readlines():
-    #     # print(line)
-    #     jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-    #     jline.pop('ques')
-    #     jline.pop('ques_pos')
-    #
-    #     rel = jline['rel']
-    #
-    #     fj = json.dumps(jline, ensure_ascii=False)
-    #     if rel in rel4Test:
-    #         fwte.write(fj + '\n')
-    #     else:
-    #         fwtr.write(fj + '\n')
-    #
-    # fwte.close()
-    # fwtr.close()
-    # frr.close()
+    rel4Test = []
+    relList = list(relDict.keys())
+    i = 0
+    while i * 10 + 9 < len(relList):
+        nd = random.randint(0, 9)
+        rel4Test.append(relList[i * 10 + nd])
+        i += 1
+
+    print(len(rel4Test))
+    print(rel4Test)
+
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        jline.pop('ques')
+        jline.pop('ques_pos')
+
+        rel = jline['rel']
+
+        fj = json.dumps(jline, ensure_ascii=False)
+        if rel in rel4Test:
+            fwte.write(fj + '\n')
+        else:
+            fwtr.write(fj + '\n')
+
+    fwte.close()
+    fwtr.close()
+    frr.close()
 
     # relList = sorted(relDict.items(), key=lambda s: s[1], reverse=True)
     # for rr in relList:
@@ -1352,7 +1352,7 @@ if __name__ == '__main__':
 
     # review_ents()
 
-    # Split_zeroshotData_2_train_test()
+    Split_zeroshotData_2_train_test()
 
 
     # print(re.search('www', 'www.runoobwww.com').group())  # 在起始位置匹配
