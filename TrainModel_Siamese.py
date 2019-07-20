@@ -95,7 +95,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             data_e2_posi_all.append(data_e2_posi_list[i])
             if data_tag_list[i][0] == ins:
                 labels_all.append(1)
-                truth_tag_list.append(ins)
+                truth_tag_list.append([ins])
                 # print(ins)
             else:
                 labels_all.append(0)
