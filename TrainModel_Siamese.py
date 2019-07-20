@@ -18,15 +18,50 @@ from NNstruc.NN_Siamese import Model_BiLSTM_sent__MLP_KGembed
 
 def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
-    data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all = pairs_test0
+    # data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all = pairs_test0
+    #
+    # predict = 0
+    # predict_right = 0
+    # predict_right_c = 0
+    # predict_c = 0
+    # predict_right05 = 0
+    # totel_right = len(data_s_all)
+
+    data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
 
     predict = 0
     predict_right = 0
     predict_right_c = 0
     predict_c = 0
     predict_right05 = 0
-    totel_right = len(data_s_all)
+    # totel_right = len(data_s_list)
+    totel_right = len(data_s_list[:1000]) /2
 
+    labels_all = []
+    data_s_all = []
+    data_e1_posi_all = []
+    data_e2_posi_all = []
+    data_tag_all = []
+    char_s_all = []
+
+    for i in range(len(data_s_list[:1000])):
+        if labels_test[i] == 0:
+            continue
+        # print(i)
+        for ins in target_vob.values():
+
+            if data_tag_list[i][0] == ins:
+                labels_all.append(1)
+                # print(ins)
+            else:
+                continue
+
+            data_s_all.append(data_s_list[i])
+            data_tag_all.append([ins])
+            data_e1_posi_all.append(data_e1_posi_list[i])
+            data_e2_posi_all.append(data_e2_posi_list[i])
+
+            char_s_all.append(char_s_list[i])
 
 
     pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
