@@ -70,7 +70,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     predict_right_c = 0
     predict_c = 0
     predict_right05 = 0
-    totel_right = len(data_s_list)
+    # totel_right = len(data_s_list)
+    totel_right = len(data_s_list[:1000]) /2
 
     labels_all = []
     data_s_all = []
@@ -79,7 +80,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     data_tag_all = []
     char_s_all = []
 
-    for i in range(len(data_s_list)):
+    for i in range(len(data_s_list[:1000])):
         if labels_test[i] == 0:
             continue
         # print(i)
@@ -344,7 +345,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_train[:2000], labels_train[:2000], classifer_labels_train[:2000], target_vob)
+    P, R, F = test_model(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
 
