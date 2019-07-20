@@ -58,6 +58,8 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
 
     print('test distance > 0.5  = ', predict_right05 / totel_right)
 
+    return P, R, F
+
 
 def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
@@ -335,9 +337,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
     # print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the train result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    print('the test_model_4trainset result-----------------------')
+    P, R, F = test_model_4trainset(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the train result-----------------------')
+    # P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
 
 
 def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabsize,
