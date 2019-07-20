@@ -35,7 +35,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     predict_c = 0
     predict_right05 = 0
     # totel_right = len(data_s_list)
-    totel_right = len(data_s_list[:1000]) /2
+    totel_right = len(data_s_list[:2000]) /2
 
     labels_all = []
     data_s_all = []
@@ -44,7 +44,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     data_tag_all = []
     char_s_all = []
 
-    for i in range(len(data_s_list[:1000])):
+    for i in range(len(data_s_list[:2000])):
         if labels_test[i] == 0:
             continue
         # print(i)
@@ -81,6 +81,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
         if labels_test[i] == 1 and predictions[i] > 0.5:
             predict_right += 1
             predict_right05 += 1
+
 
         if labels_test[i] == 0 and predictions[i] < 0.5:
             predict_right += 1
