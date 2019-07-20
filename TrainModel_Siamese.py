@@ -61,7 +61,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
                                     test_x2_tag, test_x1_sent_cahr], batch_size=len(target_vob), verbose=0)
 
     if len(predictions) > 2 and len(predictions[0]) == 1:
-        print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1')
+        print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1', len(predictions))
         assert len(predictions) // len(target_vob) == totel_right
         predict_rank = 0
 
@@ -232,47 +232,49 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                    save_best_only=True, save_weights_only=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
 
-    # nn_model.fit(x_word, y,
-    #              batch_size=batch_size,
-    #              epochs=npochos,
-    #              verbose=1,
-    #              shuffle=True,
-    #              # validation_split=0.2,
-    #              validation_data=(x_word_val, y_val),
-    #              callbacks=[reduce_lr, checkpointer, early_stopping])
+    nn_model.fit(inputs_train_x, inputs_train_y,
+                 batch_size=batch_size,
+                 epochs=npoches,
+                 verbose=1,
+                 shuffle=True,
+                 validation_split=0.1,
+
+                 callbacks=[reduce_lr, checkpointer, early_stopping])
+
+    nn_model.save_weights(modelfile, overwrite=True)
+
+    print('the test result-----------------------')
+    P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
+
+    # nowepoch = 1
+    # increment = 1
+    # earlystop = 0
+    # maxF = 0.
+    # while nowepoch <= npoches:
+    #     nowepoch += increment
+    #     earlystop += 1
     #
-    # save_model(nn_model, modelfile)
-    # # nn_model.save(modelfile, overwrite=True)
-
-    nowepoch = 1
-    increment = 1
-    earlystop = 0
-    maxF = 0.
-    while nowepoch <= npoches:
-        nowepoch += increment
-        earlystop += 1
-
-        nn_model.fit(inputs_train_x, inputs_train_y,
-                               batch_size=batch_size,
-                               epochs=increment,
-                               validation_split=0.1,
-                               shuffle=True,
-                               # class_weight={0: 1., 1: 3.},
-                               verbose=1,
-                               callbacks=[reduce_lr, checkpointer])
-
-        print('the test result-----------------------')
-        P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
-
-        if F > maxF:
-            earlystop = 0
-            maxF = F
-            nn_model.save_weights(modelfile, overwrite=True)
-
-        print(str(inum), nowepoch, P, R, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
-
-        if earlystop >= 50:
-            break
+    #     nn_model.fit(inputs_train_x, inputs_train_y,
+    #                            batch_size=batch_size,
+    #                            epochs=increment,
+    #                            validation_split=0.1,
+    #                            shuffle=True,
+    #                            # class_weight={0: 1., 1: 3.},
+    #                            verbose=1,
+    #                            callbacks=[reduce_lr, checkpointer])
+    #
+    #     print('the test result-----------------------')
+    #     P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
+    #
+    #     if F > maxF:
+    #         earlystop = 0
+    #         maxF = F
+    #         nn_model.save_weights(modelfile, overwrite=True)
+    #
+    #     print(str(inum), nowepoch, P, R, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+    #
+    #     if earlystop >= 50:
+    #         break
 
     return nn_model
 
@@ -332,7 +334,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 256 #16,
+    batch_size = 128 #16,
 
     retrain = False
     Test = True
