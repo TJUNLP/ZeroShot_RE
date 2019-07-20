@@ -16,6 +16,49 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese import Model_BiLSTM_sent__MLP_KGembed
 
 
+def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
+
+    data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all = pairs_test0
+
+    predict = 0
+    predict_right = 0
+    predict_right_c = 0
+    predict_c = 0
+    predict_right05 = 0
+    totel_right = len(data_s_all)
+
+
+
+    pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
+
+    test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
+    test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
+    test_x1_e1_posi = np.asarray(pairs_test[2], dtype="int32")
+    test_x1_e2_posi = np.asarray(pairs_test[3], dtype="int32")
+    test_x1_sent_cahr = np.asarray(pairs_test[4], dtype="int32")
+
+    predictions = nn_model.predict([test_x1_sent, test_x1_e1_posi, test_x1_e2_posi,
+                                    test_x2_tag, test_x1_sent_cahr], batch_size=len(target_vob), verbose=0)
+
+
+    for i in range(len(predictions)):
+
+        predict += 1
+        if labels_test[i] == 1 and predictions[i] > 0.5:
+            predict_right += 1
+            predict_right05 += 1
+
+        if labels_test[i] == 0 and predictions[i] < 0.5:
+            predict_right += 1
+
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+
+
 def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
     data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
@@ -293,7 +336,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_test[:1000], labels_test[:1000], classifer_labels_test[:1000], target_vob)
+    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
 
