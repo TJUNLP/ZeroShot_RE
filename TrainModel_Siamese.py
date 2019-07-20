@@ -24,6 +24,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     predict_right = 0
     predict_right_c = 0
     predict_c = 0
+    predict_right05 = 0
     totel_right = len(data_s_list)
 
     labels_all = []
@@ -94,11 +95,17 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             if mindis_where == data_tag_list[i][0]:
                 predict_right += 1
 
+
+            if subpredictions[data_tag_list[i][0]] > 0.5:
+                predict_right05 += 1
+
+
         P = predict_right / max(predict, 0.000001)
         R = predict_right / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
         print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
         print('test predict_rank = ', predict_rank / totel_right)
+        print('test distance > 0.5  = ', predict_right05 / totel_right)
 
 
 

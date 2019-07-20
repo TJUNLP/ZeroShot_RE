@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import codecs, json
-import re, nltk,random
+import re, nltk, random
 
 
 def Process_Corpus():
@@ -48,26 +48,87 @@ def analysis_entity_type():
     line = frty.readline()
     while line:
         sp = line.rstrip('\n').split('\t')
-        if sp[0] not in entDict.keys():
-            entDict[sp[0]] = 1
-        else:
-            entDict[sp[0]] += 1
 
-        if sp[2] not in typeDict.keys():
-            typeDict[sp[2]] = 1
+        if '<fb:common.topic>' == sp[2]:
+            line = frty.readline()
+            continue
+
+        en = '/m/'+sp[0][6:-1]
+        if en not in entDict.keys():
+            entDict[en] = [sp[2]]
         else:
-            typeDict[sp[2]] += 1
+            entDict[en].append(sp[2])
+
+        # if sp[2] not in typeDict.keys():
+        #     typeDict[sp[2]] = 1
+        # else:
+        #     typeDict[sp[2]] += 1
 
         line = frty.readline()
 
-    print(len(entDict), len(typeDict))
+    frty.close()
 
-    entlist = sorted(entDict.items(), key=lambda x: x[1], reverse=False)
-    print(entlist)
+    # entlist = sorted(entDict.items(), key=lambda x: x[1], reverse=False)
+    # print(entlist)
 
     typelist = sorted(typeDict.items(), key=lambda x: x[1], reverse=False)
     print(typelist)
-    
+
+    # 3970427   500
+    print(len(entDict), len(typeDict))
+
+    f = './data/annotated_fb_data_zeroshot_2.txt'
+    frr = codecs.open(f, 'r', encoding='utf-8')
+    rel_ep_1_Dict = {}
+    rel_ep_2_Dict = {}
+    for line in frr.readlines():
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        en1_id = jline['e1_id']
+        en2_id = jline['e2_id']
+        rel = jline['rel']
+
+        if en1_id not in entDict or en2_id not in entDict:
+            print(en1_id, en2_id, rel)
+            continue
+        en1_type = entDict[en1_id]
+        en2_type = entDict[en2_id]
+
+        assert rel_ep_1_Dict.keys() == rel_ep_2_Dict.keys()
+        if rel not in rel_ep_1_Dict.keys():
+            rel_ep_1_Dict[rel] = en1_type
+        else:
+            rel_ep_1_Dict[rel] += en1_type
+        if rel not in rel_ep_2_Dict.keys():
+            rel_ep_2_Dict[rel] = en2_type
+        else:
+            rel_ep_2_Dict[rel] += en2_type
+
+    frr.close()
+
+    print(len(rel_ep_1_Dict), len(rel_ep_2_Dict))
+
+    fw = codecs.open('./data/rel_entpair_Dict.txt','w', encoding='utf=8')
+
+    assert rel_ep_1_Dict.keys() == rel_ep_2_Dict.keys()
+    for reli in rel_ep_1_Dict.keys():
+        if reli not in rel_ep_1_Dict.keys():
+            continue
+        dicts = {}
+        dicts['rel'] = reli
+
+        print(rel_ep_1_Dict[reli])
+
+        dicts['e1_types'] = rel_ep_1_Dict[reli]
+        dicts['e2_types'] = rel_ep_2_Dict[reli]
+
+        fj = json.dumps(dicts, ensure_ascii=False)
+        fw.write(fj + '\n')
+
+    fw.close()
+
+
+
+
 
 
 
