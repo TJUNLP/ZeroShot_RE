@@ -67,6 +67,14 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize, c
     BiLSTM_x1 = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(embedding_x1)
     BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
 
+    attention_self = Dense(1, activation='tanh')(BiLSTM_x1)
+    # attention_probs = Activation('softmax')(attention_concat)
+    attention_probs = Dense(1, activation='softmax')(attention_self)
+    # attention_probs = Flatten()(attention_probs)
+    # attention_multi = Lambda(lambda x: (x[0] + x[1])*0.5)([attention_self, attention_hard])
+    representation = Lambda(lambda x: x[0] * x[1])([attention_probs, BiLSTM_x1])
+    attention_x1 = Dropout(0.25)(representation)
+
     mlp_x2_0 = Flatten()(tag_embedding)
     mlp_x2_1 = Dense(200, activation='tanh')(mlp_x2_0)
     mlp_x2_1 = Dropout(0.25)(mlp_x2_1)
@@ -74,7 +82,7 @@ def Model_BiLSTM_sent__MLP_KGembed(wordvocabsize, tagvocabsize, posivocabsize, c
     mlp_x2_2 = Dropout(0.25)(mlp_x2_2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
-    distance = dot([BiLSTM_x1, mlp_x2_2], axes=-1, normalize=True)
+    distance = dot([attention_x1, mlp_x2_2], axes=-1, normalize=True)
 
     mymodel = Model([word_input_sent, input_e1_posi, input_e2_posi, input_tag, char_input_sent], distance)
 

@@ -70,8 +70,8 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
     predict_right_c = 0
     predict_c = 0
     predict_right05 = 0
-    # totel_right = len(data_s_list)
-    totel_right = len(data_s_list[:1000]) /2
+    totel_right = len(data_s_list)
+    # totel_right = len(data_s_list[:1000]) /2
 
     labels_all = []
     data_s_all = []
@@ -82,7 +82,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
 
     truth_tag_list = []
 
-    for i in range(len(data_s_list[:1000])):
+    for i in range(len(data_s_list)):
         if labels_test[i] == 0:
             continue
         # print(i)
@@ -133,13 +133,9 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
             #     print('!!!', dd)
 
             distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-            # distantDict = dict(distantList)
-            # distantList = list(distantDict.keys())
-            target_where = -99999999999
-            for ii, item in enumerate(distantList):
-                if item[0] == truth_tag_list[i][0]:
-                    target_where = ii
-            # target_where = distantList.index(truth_tag_list[i][0]) + 1
+            distantDict = dict(distantList)
+            distantList = list(distantDict.keys())
+            target_where = distantList.index(truth_tag_list[i][0]) + 1
 
             predict_rank += target_where
 
@@ -345,13 +341,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
-    # print('the test result-----------------------')
-    # P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
-
-    print('the test_model_4trainset result-----------------------')
-    P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
+    print('the test result-----------------------')
+    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
+
+    # print('the test_model_4trainset result-----------------------')
+    # P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train result-----------------------')
     P, R, F = test_model(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
@@ -443,7 +439,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(1, 3):
+    for inum in range(3, 5):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
