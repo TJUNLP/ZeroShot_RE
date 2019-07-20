@@ -464,7 +464,7 @@ def eucl_dist_output_shape(shapes):
 
 # 创建训练时计算acc的方法
 def acc_siamese(y_true, y_pred):
-    return K.mean(K.equal(y_true, K.cast(y_pred < 0.5, y_true.dtype)))
+    return K.mean(K.equal(y_true, K.cast(y_pred > 0.5, y_true.dtype)))
 
 
 def contrastive_loss(y_true, y_pred):
