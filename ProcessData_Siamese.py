@@ -432,26 +432,37 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
             char_s.append(data_c)
         char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
 
-
-
-        data_s_all.append(data_s)
-        data_tag_all.append([data_tag])
-        data_e1_posi_all.append(data_e1_posi)
-        data_e2_posi_all.append(data_e2_posi)
-        labels.append(1)
-        classifer_label.append(data_tag)
-        char_s_all.append(char_s)
-
-        if istest == False:
-            inc = random.randrange(1, len(target_vob.keys()))
-            dn = (data_tag + inc) % len(target_vob.keys())
+        if istest == True:
             data_s_all.append(data_s)
-            data_tag_all.append([dn])
+            data_tag_all.append([data_tag])
             data_e1_posi_all.append(data_e1_posi)
             data_e2_posi_all.append(data_e2_posi)
-            labels.append(0)
+            labels.append(1)
             classifer_label.append(data_tag)
             char_s_all.append(char_s)
+
+        if istest == False:
+            # inc = random.randrange(1, len(target_vob.keys()))
+            # dn = (data_tag + inc) % len(target_vob.keys())
+            # data_s_all.append(data_s)
+            # data_tag_all.append([dn])
+            # data_e1_posi_all.append(data_e1_posi)
+            # data_e2_posi_all.append(data_e2_posi)
+            # labels.append(0)
+            # classifer_label.append(data_tag)
+            # char_s_all.append(char_s)
+
+            for numi, ins in enumerate(target_vob.values()):
+                assert numi == ins
+                if data_tag == ins:
+                    labels.append(1)
+                else:
+                    labels.append(0)
+                data_s_all.append(data_s)
+                data_tag_all.append([ins])
+                data_e1_posi_all.append(data_e1_posi)
+                data_e2_posi_all.append(data_e2_posi)
+                char_s_all.append(char_s)
 
     pairs = [data_s_all, data_tag_all,
              data_e1_posi_all, data_e2_posi_all, char_s_all]

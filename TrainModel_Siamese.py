@@ -271,6 +271,7 @@ def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target
         print('Classifer!!!!!!!!!! predict_right =, predict =, target =, ', predict_right_c, predict_c, totel_right)
         print('classifer!!!!!!!!!! P= ', P, 'R= ', R, 'F= ', F)
 
+
     return P, R, F
 
 
@@ -302,6 +303,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
     print('the test result-----------------------')
     P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
     # nowepoch = 1
     # increment = 1
@@ -349,10 +351,6 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
     # print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the train result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
 
 def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabsize,
                      word_W, posi_W, tag_W, char_W,
@@ -391,7 +389,7 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Siamese.WordChar.PTransE'
+    datafname = 'data_Siamese.WordChar.PTransE.1-to-n'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
