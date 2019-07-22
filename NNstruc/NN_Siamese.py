@@ -79,8 +79,8 @@ def Model_BiLSTM_sent_MLP__KGembed(wordvocabsize, tagvocabsize, posivocabsize, c
     mlp_x2_0 = Flatten()(tag_embedding)
     mlp_x1_1 = Dense(200, activation='tanh')(attention_x1)
     mlp_x1_1 = Dropout(0.25)(mlp_x1_1)
-    mlp_x1_2 = Dense(400, activation='tanh')(mlp_x1_1)
-    mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
+    mlp_x1_2 = Dense(100, activation='tanh')(mlp_x1_1)
+    # mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     distance = dot([mlp_x1_2, mlp_x2_0], axes=-1, normalize=True)
