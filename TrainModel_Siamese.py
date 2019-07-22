@@ -13,7 +13,7 @@ import os.path
 import numpy as np
 from ProcessData_Siamese import get_data
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese import Model_BiLSTM_sent__MLP_KGembed
+from NNstruc.NN_Siamese import Model_BiLSTM_sent_MLP__KGembed
 
 
 def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
@@ -361,8 +361,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_sent__MLP_KGembed':
-        nn_model = Model_BiLSTM_sent__MLP_KGembed(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_sent_MLP__KGembed':
+        nn_model = Model_BiLSTM_sent_MLP__KGembed(wordvocabsize=wordvocabsize,
                                                   tagvocabsize=tagvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -379,19 +379,19 @@ if __name__ == "__main__":
 
     maxlen = 50
 
-    modelname = 'Model_BiLSTM_sent__MLP_KGembed'
+    modelname = 'Model_BiLSTM_sent_MLP__KGembed'
 
     print(modelname)
 
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    t2v_file = './data/KG2v/FB15K_OpenKETransE_Relation2Vec_100.txt'
+    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
     trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Siamese.4.onlyword.onlyKGem'
+    datafname = 'data_Siamese.WordChar.PTransE'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -439,7 +439,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(3, 5):
+    for inum in range(1, 3):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
