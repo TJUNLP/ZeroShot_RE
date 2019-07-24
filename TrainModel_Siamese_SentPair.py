@@ -61,107 +61,65 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     return P, R, F
 
 
-def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
+def test_model(nn_model, tagDict_test):
 
-    data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
 
-    P = 0
-    R = 0
-    F = 0
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+    for tag in tagDict_test.keys():
+        if len(tagDict_test[tag]) < 2:
+            continue
+        for i in range(1, len(tagDict_test[tag])):
+
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][i]
+            data_s_all_1.append(data_s)
+            data_e1_posi_all_1.append(data_e1_posi)
+            data_e2_posi_all_1.append(data_e2_posi)
+            char_s_all_1.append(char_s)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
+
+    train_x1_sent = np.asarray(pairs[0], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+    train_x2_sent = np.asarray(pairs[4], dtype="int32")
+    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
+    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
+    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
+
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr]
+
     predict = 0
     predict_right = 0
-    predict_right_c = 0
-    predict_c = 0
-    predict_right05 = 0
-    totel_right = len(data_s_list)
-    # totel_right = len(data_s_list[:1000]) /2
+    totel_right = len(pairs[0])
 
-    labels_all = []
-    data_s_all = []
-    data_e1_posi_all = []
-    data_e2_posi_all = []
-    data_tag_all = []
-    char_s_all = []
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    truth_tag_list = []
+    for pre in predictions:
 
-    for i in range(len(data_s_list)):
-        if labels_test[i] == 0:
-            continue
-        # print(i)
-        for numi, ins in enumerate(target_vob.values()):
-            assert numi == ins
+        if pre > 0.5:
+            predict_right += 1
 
-            data_s_all.append(data_s_list[i])
-            data_tag_all.append([ins])
-            data_e1_posi_all.append(data_e1_posi_list[i])
-            data_e2_posi_all.append(data_e2_posi_list[i])
-            if data_tag_list[i][0] == ins:
-                labels_all.append(1)
-                truth_tag_list.append([ins])
-                # print(ins)
-            else:
-                labels_all.append(0)
-            char_s_all.append(char_s_list[i])
-
-    pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
-
-    test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
-    test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
-    test_x1_e1_posi = np.asarray(pairs_test[2], dtype="int32")
-    test_x1_e2_posi = np.asarray(pairs_test[3], dtype="int32")
-    test_x1_sent_cahr = np.asarray(pairs_test[4], dtype="int32")
-    test_y = np.asarray(labels_all, dtype="int32")
-
-    predictions = nn_model.predict([test_x1_sent, test_x1_e1_posi, test_x1_e2_posi,
-                                    test_x2_tag, test_x1_sent_cahr], batch_size=len(target_vob), verbose=0)
-
-    if len(predictions) > 2 and len(predictions[0]) == 1:
-        print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1', len(predictions))
-        assert len(predictions) // len(target_vob) == totel_right
-        assert len(truth_tag_list) == totel_right
-        predict_rank = 0
-
-        for i in range(len(predictions)//len(target_vob)):
-            left = i*len(target_vob)
-            right = (i+1)*len(target_vob)
-            subpredictions = predictions[left:right]
-            subpredictions = subpredictions.flatten().tolist()
-
-            distantDict = {}
-            for num, disvlaue in enumerate(subpredictions):
-                distantDict[num] = disvlaue
-
-            # for dd in distantDict:
-            #     print('!!!', dd)
-
-            distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-            distantDict = dict(distantList)
-            distantList = list(distantDict.keys())
-            target_where = distantList.index(truth_tag_list[i][0]) + 1
-
-            predict_rank += target_where
-
-
-            mindis = max(subpredictions)
-            mindis_where = subpredictions.index(mindis)
-
-            predict += 1
-
-            if mindis_where == truth_tag_list[i][0]:
-                predict_right += 1
-
-
-            if subpredictions[truth_tag_list[i][0]] > 0.5:
-                predict_right05 += 1
-
-
-        P = predict_right / max(predict, 0.000001)
-        R = predict_right / totel_right
-        F = 2 * P * R / max((P + R), 0.000001)
-        print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-        print('test predict_rank = ', predict_rank / totel_right)
-        print('test distance > 0.5  = ', predict_right05 / totel_right)
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
 
     return P, R, F
 
@@ -238,7 +196,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
     print('the test result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    P, R, F = test_model(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
@@ -368,7 +326,7 @@ if __name__ == "__main__":
             print("test EE model....")
             print(datafile)
             print(modelfile)
-            # infer_e2e_model(nn_model, modelname, modelfile, resultdir)
+            infer_e2e_model(nn_model, modelname, modelfile, resultdir)
 
 
 # import tensorflow as tf

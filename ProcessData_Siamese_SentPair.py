@@ -477,8 +477,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
-    pickle.dump([tagDict_train,
-                 tagDict_test,
+    pickle.dump([tagDict_train, tagDict_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word, type_W, type_k,
