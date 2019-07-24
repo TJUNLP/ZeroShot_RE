@@ -114,6 +114,7 @@ def test_model(nn_model, tagDict_test):
     for pre in predictions:
 
         if pre > 0.5:
+            predict += 1
             predict_right += 1
 
     P = predict_right / max(predict, 0.000001)
