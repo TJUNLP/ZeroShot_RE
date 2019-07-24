@@ -217,7 +217,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                callbacks=[reduce_lr, checkpointer])
 
         print('the test result-----------------------')
-        acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
+        loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
 
         if acc > maxF:
             earlystop = 0
