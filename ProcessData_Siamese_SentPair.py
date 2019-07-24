@@ -338,6 +338,8 @@ def CreatePairs(tagDict_train, istest=False):
 
     for tag in tagDict_train.keys():
         sents = tagDict_train[tag]
+        if len(sents) < 2:
+            continue
         inc = random.randrange(1, len(sents))
         i = 0
         while i < ((inc + 1) // 2):
@@ -364,9 +366,12 @@ def CreatePairs(tagDict_train, istest=False):
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
-            ran1 = random.randrange(0, len(tagDict_train))
-            ran2 = random.randrange(0, len(tagDict_train[ran1]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[ran1][ran2]
+            keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
             data_s_all_1.append(data_s)
             data_e1_posi_all_1.append(data_e1_posi)
             data_e2_posi_all_1.append(data_e2_posi)
@@ -397,9 +402,12 @@ def CreatePairs(tagDict_train, istest=False):
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
-            ran1 = random.randrange(0, len(tagDict_train))
-            ran2 = random.randrange(0, len(tagDict_train[ran1]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[ran1][ran2]
+            keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
             data_s_all_1.append(data_s)
             data_e1_posi_all_1.append(data_e1_posi)
             data_e2_posi_all_1.append(data_e2_posi)
@@ -490,5 +498,45 @@ if __name__=="__main__":
     trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
+    # if max_s > maxlen:
+    #     max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
+
+    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
+    print("source char size: ", char_vob.__len__())
+    print("max_c: ", max_c)
+    print("source char: " + str(char_id2char))
+
+    c2v_k, char_W, = load_vec_random(char_vob, k=50)
+    print('character_W shape:', char_W.shape)
+
+    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=100)
+    print("word2vec loaded!")
+    print("all vocab size: " + str(len(word_vob)))
+    print("source_W  size: " + str(len(word_W)))
+    print("num words in source word2vec: " + str(len(word_w2v)))
+
+    max_posi = 20
+    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
+    print('posi_k, posi_W', posi_k, len(posi_W))
+
+    # weigtnum = int(len(fragment_train) * percent)
+    # fragment_train = fragment_train[:weigtnum]
+
+    tagDict_train = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    tagDict_test = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    print('tagDict_train len', len(tagDict_train), 'tagDict_test len', len(tagDict_test))
+
+    pairs_train, labels_train = CreatePairs(tagDict_train, istest=False)
+    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
+
+    pairs_test, labels_test = CreatePairs(tagDict_test, istest=True)
+    print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
 
 
