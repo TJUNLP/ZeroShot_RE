@@ -80,7 +80,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
         key = (inx, tagIndex[i])
         sent_vob[key] = op
         inx += 1
-        fw.write(key + '\t' + str(op) + '\n')
+        fw.write(str(key) + '\t' + str(op) + '\n')
 
         # key = (inx, tagIndex[1])
         # sent_vob[key] = intermediate_output_x2[i]

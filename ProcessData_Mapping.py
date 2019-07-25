@@ -478,7 +478,7 @@ def get_data(sentpair_datafile, trainfile, testfile, w2v_file, c2v_file, t2v_fil
     posi_W, posi_k,\
     max_s, max_posi, max_c = pickle.load(open(sentpair_datafile, 'rb'))
 
-
+    sent_vob,
 
     sent_k, sent_W = load_vec_Sentrepresentation(s2v_file, sent_vob, k=t2v_k)
 
