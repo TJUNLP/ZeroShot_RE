@@ -262,7 +262,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_1':
+    if modelname is 'Model_BiLSTM_SentPair_2':
         nn_model = Model_BiLSTM_SentPair_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
