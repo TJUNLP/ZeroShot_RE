@@ -69,7 +69,7 @@ def Model_BiLSTM_SentPair_1(wordvocabsize, posivocabsize, charvocabsize,
     embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
     embedding_e2_posi_x2 = embedding_posi_layer(input_e2_posi_x2)
 
-    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='avg')
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
