@@ -136,7 +136,7 @@ def test_model(nn_model, tagDict_test, needembed=False):
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
     if needembed == True:
-        pass
+        get_sent_index(nn_model, inputs_train_x, tagIndex)
 
     for pre in predictions:
 
@@ -224,7 +224,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
     print('the test result-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test)
+    P, R, F = test_model(nn_model, tagDict_test, needembed=True)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
