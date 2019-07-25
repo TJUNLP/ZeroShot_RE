@@ -65,11 +65,11 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex):
 
     sent_vob = {}
 
-    intermediate_layer_model = keras.models.Model(inputs=input,
+    intermediate_layer_model = keras.models.Model(inputs=inputs_train_x,
                                                   outputs=nn_model.get_layer('bidirectional_1').output)
 
-    intermediate_output_x1 = intermediate_layer_model.predict(inputs_train_x)
-    intermediate_output_x2 = intermediate_output_x1
+    intermediate_output_x1 = intermediate_layer_model.get_output_at(0)
+    intermediate_output_x2 = intermediate_layer_model.get_output_at(1)
 
     inx = 0
     for i, op in enumerate(intermediate_output_x1):
