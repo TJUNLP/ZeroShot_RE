@@ -104,11 +104,14 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
     tagIndex = []
 
     for tag in tagDict_test.keys():
-        if len(tagDict_test[tag]) < 2:
-            continue
-        star = 1
+
         if needembed == True:
             star = 0
+        else:
+            star = 1
+            if len(tagDict_test[tag]) < 2:
+                continue
+
         for i in range(star, len(tagDict_test[tag])):
 
             data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][0]

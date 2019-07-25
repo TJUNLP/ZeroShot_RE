@@ -532,10 +532,3 @@ if __name__=="__main__":
     tagDict_test = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
     print('tagDict_train len', len(tagDict_train), 'tagDict_test len', len(tagDict_test))
 
-    pairs_train, labels_train = CreatePairs(tagDict_train, istest=False)
-    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
-
-    pairs_test, labels_test = CreatePairs(tagDict_test, istest=True)
-    print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
-
-
