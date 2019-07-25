@@ -65,9 +65,9 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex):
 
     sent_vob = {}
 
-    intermediate_layer_model_x1 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('bidirectional_1').get_output_at(0))
-    intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
+    # intermediate_layer_model_x1 = keras.models.Model(inputs=nn_model.input,
+    #                                               outputs=nn_model.get_layer('bidirectional_1').get_output_at(0))
+    # intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
 
     intermediate_layer_model_x2 = keras.models.Model(inputs=nn_model.input,
                                                   outputs=nn_model.get_layer('bidirectional_1').get_output_at(1))
@@ -75,16 +75,17 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex):
 
 
     inx = 0
-    for i, op in enumerate(intermediate_output_x1):
-        print(i, len(op))
-        key = (inx, tagIndex[0])
-        sent_vob[key] = op
+    for i, op in enumerate(intermediate_output_x2):
 
+        key = (inx, tagIndex[i])
+        sent_vob[key] = op
         inx += 1
-        key = (inx, tagIndex[1])
-        sent_vob[key] = intermediate_output_x2[i]
-        print(i, len(sent_vob[key]))
-        inx += 1
+
+        # key = (inx, tagIndex[1])
+        # sent_vob[key] = intermediate_output_x2[i]
+        # print(i, len(sent_vob[key]))
+        # inx += 1
+    print(inx, len(sent_vob))
 
 
 def test_model(nn_model, tagDict_test, needembed=False):
@@ -104,7 +105,10 @@ def test_model(nn_model, tagDict_test, needembed=False):
     for tag in tagDict_test.keys():
         if len(tagDict_test[tag]) < 2:
             continue
-        for i in range(1, len(tagDict_test[tag])):
+        star = 1
+        if needembed == True:
+            star = 0
+        for i in range(star, len(tagDict_test[tag])):
 
             data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][0]
             data_s_all_0.append(data_s)
@@ -117,7 +121,7 @@ def test_model(nn_model, tagDict_test, needembed=False):
             data_e1_posi_all_1.append(data_e1_posi)
             data_e2_posi_all_1.append(data_e2_posi)
             char_s_all_1.append(char_s)
-            tagIndex.append((tag,tag))
+            tagIndex.append(tag)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
