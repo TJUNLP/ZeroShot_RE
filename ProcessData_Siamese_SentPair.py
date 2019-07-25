@@ -269,13 +269,17 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c):
+def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False):
 
     tagDict = {}
-
+    tagDict_dev = {}
+    thd = -1
     f = codecs.open(trainfile, 'r', encoding='utf-8')
+    lines = f.readlines()
+    if needDEV == True:
+        thd = len(lines) // 5
 
-    for line in f.readlines():
+    for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         sent = jline['sent'].split(' ')
         rel = jline['rel']
@@ -285,8 +289,6 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         e2_r = jline['e2_posi'][1]
 
         data_tag = target_vob[rel]
-        if data_tag not in tagDict.keys():
-            tagDict[data_tag] = []
 
         data_s = [word_vob[ww] for ww in sent[0:min(len(sent), max_s)]]+ [0] * max(0, max_s - len(sent))
 
@@ -316,9 +318,19 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
         pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
 
-        tagDict[data_tag].append(pairs)
+        if needDEV == True and si < thd:
 
-    return tagDict
+            if data_tag not in tagDict_dev.keys():
+                tagDict_dev[data_tag] = []
+            tagDict_dev[data_tag].append(pairs)
+        else:
+            if data_tag not in tagDict.keys():
+                tagDict[data_tag] = []
+            tagDict[data_tag].append(pairs)
+
+    f.close()
+
+    return tagDict, tagDict_dev
 
 
 
@@ -464,9 +476,11 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    tagDict_train = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    tagDict_test = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    print('tagDict_train len', len(tagDict_train), 'tagDict_test len', len(tagDict_test))
+    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    assert tagDict_dev == {}
+    print('tagDict_test len', len(tagDict_test))
+    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=True)
+    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
 
     # pairs_train, labels_train = CreatePairs(tagDict_train, istest=False)
     # print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
@@ -477,7 +491,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
-    pickle.dump([tagDict_train, tagDict_test,
+    pickle.dump([tagDict_train, tagDict_dev, tagDict_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word, type_W, type_k,
@@ -528,7 +542,9 @@ if __name__=="__main__":
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    tagDict_train = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    tagDict_test = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    print('tagDict_train len', len(tagDict_train), 'tagDict_test len', len(tagDict_test))
+    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    assert tagDict_dev == {}
+    print('tagDict_test len', len(tagDict_test))
+    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=True)
 
+    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))

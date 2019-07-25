@@ -276,11 +276,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(istest):
 
-    split = len(tagDict_train) // 5
     if istest == True:
-        tagDict = tagDict_train[:split]
+        tagDict = tagDict_dev
     else:
-        tagDict = tagDict_train[split:]
+        tagDict = tagDict_train
 
     pairs_train, labels_train = ProcessData_Siamese_SentPair.CreatePairs(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
@@ -340,7 +339,7 @@ if __name__ == "__main__":
         ProcessData_Siamese_SentPair.get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
-    tagDict_train, tagDict_test,\
+    tagDict_train, tagDict_dev, tagDict_test,\
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
     target_vob, target_id2word, type_W, type_k,\
