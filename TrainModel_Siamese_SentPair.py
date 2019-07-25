@@ -218,14 +218,14 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                callbacks=[reduce_lr, checkpointer])
 
         print('the test result-----------------------')
-        loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
-
-        if acc > maxF:
+        # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
+        P, R, F = test_model(nn_model, tagDict_test, needembed=False)
+        if F > maxF:
             earlystop = 0
-            maxF = acc
+            maxF = F
             nn_model.save_weights(modelfile, overwrite=True)
 
-        print(str(inum), nowepoch, acc, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
         if earlystop >= 50:
             break
@@ -242,13 +242,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the train sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-    print('the test sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
-    print('P = ', P, 'R = ', R, 'F = ', F)
+    # print('the train sent representation-----------------------')
+    # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
+    # print('P = ', P, 'R = ', R, 'F = ', F)
+    #
+    # print('the test sent representation-----------------------')
+    # P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
+    # print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
     # P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
@@ -276,10 +276,11 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(istest):
 
+    split = len(tagDict_train) // 5
     if istest == True:
-        tagDict = tagDict_test
+        tagDict = tagDict_train[:split]
     else:
-        tagDict = tagDict_train
+        tagDict = tagDict_train[split:]
 
     pairs_train, labels_train = ProcessData_Siamese_SentPair.CreatePairs(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
@@ -308,7 +309,7 @@ if __name__ == "__main__":
 
     maxlen = 50
 
-    modelname = 'Model_BiLSTM_SentPair_1'
+    modelname = 'Model_BiLSTM_SentPair_2'
 
     print(modelname)
 

@@ -33,13 +33,13 @@ def Model_sent_MLP__KGembed(sentvocabsize, tagvocabsize,
 
     x1_0 = Flatten()(sent_embedding)
     x2_0 = Flatten()(tag_embedding)
-    mlp_x1_1 = Dense(200, activation='tanh')(x1_0)
-    mlp_x1_1 = Dropout(0.25)(mlp_x1_1)
-    mlp_x1_2 = Dense(100, activation='tanh')(mlp_x1_1)
+    # mlp_x1_1 = Dense(200, activation='tanh')(x1_0)
+    # mlp_x1_1 = Dropout(0.5)(x1_0)
+    mlp_x1_2 = Dense(100, activation=None)(x1_0)
     # mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
 
-    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
-    distance = dot([mlp_x1_2, x2_0], axes=-1, normalize=True)
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([mlp_x1_2, x2_0])
+    distance = dot([x1_0, x2_0], axes=-1, normalize=True)
 
     mymodel = Model([input_sent, input_tag], distance)
 

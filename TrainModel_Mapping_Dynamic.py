@@ -96,7 +96,7 @@ def test_model(nn_model, tag2sentDict_test):
 
 
 def Dynamic_get_trainSet():
-    pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict_test)
+    pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict_train)
 
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
