@@ -80,7 +80,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
         key = (inx, tagIndex[i])
         sent_vob[key] = op
         inx += 1
-        fw.write(str(key))
+        fw.write(str(key[0]) + ' ' + str(key[1]))
         for item in op:
             fw.write(' ' + str(item))
         fw.write('\n')
