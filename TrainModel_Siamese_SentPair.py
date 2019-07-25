@@ -61,7 +61,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     return P, R, F
 
 
-def get_sent_index(nn_model, inputs_train_x, tagIndex):
+def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
 
     sent_vob = {}
 
@@ -73,13 +73,14 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex):
                                                   outputs=nn_model.get_layer('bidirectional_1').get_output_at(1))
     intermediate_output_x2 = intermediate_layer_model_x2.predict(inputs_train_x)
 
-
+    fw = codecs.open(w2file, 'w', encoding='utf-8')
     inx = 0
     for i, op in enumerate(intermediate_output_x2):
 
         key = (inx, tagIndex[i])
         sent_vob[key] = op
         inx += 1
+        fw.write(key + '\t' + str(op) + '\n')
 
         # key = (inx, tagIndex[1])
         # sent_vob[key] = intermediate_output_x2[i]
@@ -88,7 +89,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex):
     print(inx, len(sent_vob))
 
 
-def test_model(nn_model, tagDict_test, needembed=False):
+def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -145,7 +146,7 @@ def test_model(nn_model, tagDict_test, needembed=False):
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
     if needembed == True:
-        get_sent_index(nn_model, inputs_train_x, tagIndex)
+        get_sent_index(nn_model, inputs_train_x, tagIndex, w2file)
 
     for pre in predictions:
 
@@ -227,7 +228,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     return nn_model
 
 
-def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
+def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
 
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
@@ -237,11 +238,11 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_train, needembed=True)
+    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'train.txt')
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the test sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test, needembed=True)
+    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'test.txt')
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
@@ -371,7 +372,7 @@ if __name__ == "__main__":
             print("test EE model....")
             print(datafile)
             print(modelfile)
-            infer_e2e_model(nn_model, modelname, modelfile, resultdir)
+            infer_e2e_model(nn_model, modelname, modelfile, resultdir,w2file=modelfile)
 
 
 # import tensorflow as tf
