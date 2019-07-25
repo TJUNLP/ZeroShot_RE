@@ -71,6 +71,28 @@ def load_vec_KGrepresentation(fname, vocab, k):
     return k, W
 
 
+def load_vec_Sentrepresentation(s2v_file, s2v_k, s2v):
+
+    tag2sent_Dict = {}
+
+    f = codecs.open(s2v_file, 'r', encoding='utf-8')
+
+    for line in f.readlines():
+        values = line.rstrip('\n').split('\t')
+        sent = tuple(values[0])
+        coefs = np.asarray(values[1:], dtype='float32')
+        assert sent[0] not in s2v.keys()
+        s2v[sent[0]] = coefs
+
+        if sent[1] not in tag2sent_Dict.keys():
+            tag2sent_Dict[sent[1]] = []
+        tag2sent_Dict[sent[1]] += [sent[0]]
+
+    f.close()
+
+    return s2v_k, s2v, tag2sent_Dict
+
+
 def load_vec_random(vocab_c_inx, k=30):
 
     W = np.zeros(shape=(vocab_c_inx.__len__(), k))
@@ -464,7 +486,7 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
     return pairs, labels, classifer_labels
 
 
-def get_data(sentpair_datafile, trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
+def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, w2v_file, c2v_file, t2v_file, datafile, s2v_k=400, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
     """
@@ -478,11 +500,13 @@ def get_data(sentpair_datafile, trainfile, testfile, w2v_file, c2v_file, t2v_fil
     posi_W, posi_k,\
     max_s, max_posi, max_c = pickle.load(open(sentpair_datafile, 'rb'))
 
-    sent_vob,
+    sent_W = {}
+    sent_k, sent_W, tag2sentDict_train = load_vec_Sentrepresentation(s2v_trainfile, s2v_k, sent_W)
+    print('sent_k, sent_W, tag2sentDict_train len', sent_k, len(sent_W), len(tag2sentDict_train))
 
-    sent_k, sent_W = load_vec_Sentrepresentation(s2v_file, sent_vob, k=t2v_k)
+    sent_k, sent_W, tag2sentDict_test = load_vec_Sentrepresentation(s2v_testfile, s2v_k, sent_W)
+    print('sent_k, sent_W, tag2sentDict_test len', sent_k, len(sent_W), len(tag2sentDict_test))
 
-    # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
     type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
     print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
@@ -522,32 +546,3 @@ if __name__=="__main__":
     trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
-
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-
-    # if max_s > maxlen:
-    #     max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
-
-
-
-    # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
-
-
-    max_posi = 20
-    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
-    print('posi_k, posi_W', posi_k, len(posi_W))
-
-
-    # weigtnum = int(len(fragment_train) * percent)
-    # fragment_train = fragment_train[:weigtnum]
-
-    pairs_train, labels_train, classifer_labels_train = \
-        CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob=None, max_c=-1, istest=False)
-    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
-
-

@@ -80,7 +80,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
         key = (inx, tagIndex[i])
         sent_vob[key] = op
         inx += 1
-        fw.write(str(key) + '\t' + str(op) + '\n')
+        fw.write(str(key) + '\t' + str(np.asarray(op, dtype='float32')) + '\n')
 
         # key = (inx, tagIndex[1])
         # sent_vob[key] = intermediate_output_x2[i]
@@ -241,11 +241,11 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the train sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'train.txt')
+    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the test sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'test.txt')
+    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
