@@ -98,10 +98,20 @@ def test_model2(nn_model, tag2sentDict_test):
     predict_right = 0
     predict_right05 = 0
 
-    data_s_all = []
-    data_tag_all = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
     labels_all = []
     totel_right = 0
+
     truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
@@ -111,8 +121,18 @@ def test_model2(nn_model, tag2sentDict_test):
             totel_right += 1
 
             for si, ty in enumerate(tag2sentDict_test.keys()):
-                data_s_all.append([sents[s]])
-                data_tag_all.append([tag2sentDict_test[ty][0]])
+
+                data_s, data_e1_posi, data_e2_posi, char_s = tag2sentDict_test[ty][0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s_all_1.append(data_s)
+                data_e1_posi_all_1.append(data_e1_posi)
+                data_e2_posi_all_1.append(data_e2_posi)
+                char_s_all_1.append(char_s)
 
                 if tag == ty:
                     labels_all.append(1)
@@ -120,12 +140,20 @@ def test_model2(nn_model, tag2sentDict_test):
                 else:
                     labels_all.append(0)
 
-    pairs_test = [data_s_all, data_tag_all]
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
 
-    test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
-    test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
+    train_x1_sent = np.asarray(pairs[0], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+    train_x2_sent = np.asarray(pairs[4], dtype="int32")
+    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
+    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
+    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
 
-    inputs_train_x = [test_x1_sent, test_x2_tag]
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr]
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
