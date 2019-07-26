@@ -91,6 +91,87 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
+
+def test_model2(nn_model, tag2sentDict_test):
+
+    predict = 0
+    predict_right = 0
+    predict_right05 = 0
+
+    data_s_all = []
+    data_tag_all = []
+    labels_all = []
+    totel_right = 0
+    truth_tag_list = []
+    for tag in tag2sentDict_test.keys():
+        sents = tag2sentDict_test[tag]
+        if len(sents) < 2:
+            continue
+        for s in range(1, len(sents)):
+            totel_right += 1
+
+            for si, ty in enumerate(tag2sentDict_test.keys()):
+                data_s_all.append([sents[s]])
+                data_tag_all.append([tag2sentDict_test[ty][0]])
+
+                if tag == ty:
+                    labels_all.append(1)
+                    truth_tag_list.append(si)
+                else:
+                    labels_all.append(0)
+
+    pairs_test = [data_s_all, data_tag_all]
+
+    test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
+    test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
+
+    inputs_train_x = [test_x1_sent, test_x2_tag]
+
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
+
+    width = len(tag2sentDict_test.keys())
+    assert len(predictions) // width == totel_right
+    assert len(truth_tag_list) == totel_right
+    predict_rank = 0
+
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
+        subpredictions = predictions[left:right]
+        subpredictions = subpredictions.flatten().tolist()
+
+        distantDict = {}
+        for num, disvlaue in enumerate(subpredictions):
+            distantDict[num] = disvlaue
+
+        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+        distantDict = dict(distantList)
+        distantList = list(distantDict.keys())
+        target_where = distantList.index(truth_tag_list[i]) + 1
+        predict_rank += target_where
+
+        mindis = max(subpredictions)
+        mindis_where = subpredictions.index(mindis)
+
+        if mindis > 0.5:
+            predict += 1
+
+            if mindis_where == truth_tag_list[i]:
+                predict_right += 1
+
+        if subpredictions[truth_tag_list[i]] > 0.5:
+            predict_right05 += 1
+
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('test predict_rank = ', predict_rank / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+
+    return P, R, F
+
+
 def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
 
     data_s_all_0 = []
@@ -163,6 +244,7 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
     R = predict_right / totel_right
     F = 2 * P * R / (P + R)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('P =, R =, F = ', P, R, F)
 
     return P, R, F
 
@@ -220,6 +302,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model(nn_model, tagDict_test, needembed=False)
+        P, R, F = test_model2(nn_model, tagDict_test)
         if F > maxF:
             earlystop = 0
             maxF = F
