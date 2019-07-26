@@ -17,6 +17,86 @@ from NNstruc.NN_Mapping import Model_sent_MLP__KGembed
 
 
 
+# def test_model(nn_model, tag2sentDict_test):
+#
+#     predict = 0
+#     predict_right = 0
+#     predict_right05 = 0
+#
+#     data_s_all = []
+#     data_tag_all = []
+#     labels_all = []
+#     totel_right = 0
+#     truth_tag_list = []
+#     for tag in tag2sentDict_test.keys():
+#         for sent in tag2sentDict_test[tag]:
+#             totel_right += 1
+#
+#             for numi, ins in enumerate(target_vob.values()):
+#                 assert numi == ins
+#
+#                 data_s_all.append([sent])
+#                 data_tag_all.append([ins])
+#
+#                 if tag == ins:
+#                     labels_all.append(1)
+#                     truth_tag_list.append(tag)
+#                 else:
+#                     labels_all.append(0)
+#
+#     pairs_test = [data_s_all, data_tag_all]
+#
+#     test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
+#     test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
+#
+#     inputs_train_x = [test_x1_sent, test_x2_tag]
+#
+#     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
+#
+#     assert len(predictions) // len(target_vob) == totel_right
+#     assert len(truth_tag_list) == totel_right
+#     predict_rank = 0
+#
+#     for i in range(len(predictions) // len(target_vob)):
+#         left = i * len(target_vob)
+#         right = (i + 1) * len(target_vob)
+#         subpredictions = predictions[left:right]
+#         subpredictions = subpredictions.flatten().tolist()
+#
+#         distantDict = {}
+#         for num, disvlaue in enumerate(subpredictions):
+#             distantDict[num] = disvlaue
+#
+#         distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+#         distantDict = dict(distantList)
+#         distantList = list(distantDict.keys())
+#         target_where = distantList.index(truth_tag_list[i]) + 1
+#         predict_rank += target_where
+#
+#         mindis = max(subpredictions)
+#         mindis_where = subpredictions.index(mindis)
+#
+#         if mindis > 0.5:
+#             predict += 1
+#
+#             if mindis_where == truth_tag_list[i]:
+#                 predict_right += 1
+#
+#         if subpredictions[truth_tag_list[i]] > 0.5:
+#             predict_right05 += 1
+#
+#     P = predict_right / max(predict, 0.000001)
+#     R = predict_right / totel_right
+#     F = 2 * P * R / max((P + R), 0.000001)
+#     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+#     print('test predict_rank = ', predict_rank / totel_right)
+#     print('test distance > 0.5  = ', predict_right05 / totel_right)
+#
+#     return P, R, F
+
+
+
+
 def test_model(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -29,18 +109,19 @@ def test_model(nn_model, tag2sentDict_test):
     totel_right = 0
     truth_tag_list = []
     for tag in tag2sentDict_test.keys():
-        for sent in tag2sentDict_test[tag]:
+        sents = tag2sentDict_test[tag]
+        if len(sents) < 2:
+            continue
+        for s in range(1, len(sents)):
             totel_right += 1
 
-            for numi, ins in enumerate(target_vob.values()):
-                assert numi == ins
+            for si, ty in enumerate(tag2sentDict_test.keys()):
+                data_s_all.append([sents[s]])
+                data_tag_all.append([tag2sentDict_test[ty][0]])
 
-                data_s_all.append(sent)
-                data_tag_all.append([ins])
-
-                if tag == ins:
+                if tag == ty:
                     labels_all.append(1)
-                    truth_tag_list.append(tag)
+                    truth_tag_list.append(si)
                 else:
                     labels_all.append(0)
 
@@ -53,13 +134,14 @@ def test_model(nn_model, tag2sentDict_test):
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    assert len(predictions) // len(target_vob) == totel_right
+    width = len(tag2sentDict_test.keys())
+    assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
 
-    for i in range(len(predictions) // len(target_vob)):
-        left = i * len(target_vob)
-        right = (i + 1) * len(target_vob)
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
@@ -95,8 +177,11 @@ def test_model(nn_model, tag2sentDict_test):
     return P, R, F
 
 
+
 def Dynamic_get_trainSet():
-    pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict_train)
+    pairs_train, labels_train = ProcessData_Mapping.CreatePairs_sentpair(tag2sentDict_train)
+
+    # pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict_train)
 
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
@@ -212,8 +297,8 @@ if __name__ == "__main__":
     print(modelname)
 
     t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    s2v_trainfile = './data/Model_BiLSTM_SentPair_1__data_Siamese.WordChar.Sentpair__1.h5.train.txt'
-    s2v_testfile = './data/Model_BiLSTM_SentPair_1__data_Siamese.WordChar.Sentpair__1.h5.test.txt'
+    s2v_trainfile = './data/Model_BiLSTM_SentPair_2__data_Siamese.WordChar.Sentpair__1.h5.train.txt'
+    s2v_testfile = './data/Model_BiLSTM_SentPair_2__data_Siamese.WordChar.Sentpair__1.h5.test.txt'
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
@@ -236,7 +321,7 @@ if __name__ == "__main__":
         print("Precess data....")
 
         ProcessData_Mapping.get_data(sentpair_datafile,
-                                     s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100)
+                                     s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=100, t2v_k=100)
 
     tag2sentDict_train, tag2sentDict_test,\
     sent_W, sent_k, \

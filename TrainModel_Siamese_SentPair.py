@@ -159,9 +159,9 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
             predict += 1
             predict_right += 1
 
-    P = predict_right / max(predict, 0.000001)
+    P = predict_right / predict
     R = predict_right / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
+    F = 2 * P * R / (P + R)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
 
     return P, R, F
@@ -242,13 +242,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the train sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-    print('the test sent representation-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
-    print('P = ', P, 'R = ', R, 'F = ', F)
+    # print('the train sent representation-----------------------')
+    # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
+    # print('P = ', P, 'R = ', R, 'F = ', F)
+    #
+    # print('the test sent representation-----------------------')
+    # P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
+    # print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
     # P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
@@ -315,12 +315,16 @@ if __name__ == "__main__":
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
-    testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
+
+    # trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
+    # testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
+    trainfile = './data/FewRel/FewRel_data.train.txt'
+    testfile = './data/FewRel/FewRel_data.test.txt'
+
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Siamese.WordChar.Sentpair'
+    datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -342,7 +346,7 @@ if __name__ == "__main__":
     tagDict_train, tagDict_dev, tagDict_test,\
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
-    target_vob, target_id2word, type_W, type_k,\
+    target_vob, target_id2word,\
     posi_W, posi_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
@@ -351,9 +355,9 @@ if __name__ == "__main__":
                            tagvocabsize=len(target_vob),
                            posivocabsize=max_posi+1,
                            charvocabsize=len(char_vob),
-                           word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
+                           word_W=word_W, posi_W=posi_W, tag_W=None, char_W=char_W,
                            input_sent_lenth=max_s,
-                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
+                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=100, c2v_k=c2v_k,
                            batch_size=batch_size)
 
     for inum in range(1, 2):

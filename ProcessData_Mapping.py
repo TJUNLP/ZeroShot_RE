@@ -123,6 +123,35 @@ def load_vec_onehot(k=124):
     return k, W
 
 
+def CreatePairs_sentpair(tagDict_train):
+
+    labels = []
+    data_s_all = []
+    data_t_all = []
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+
+        for s in range(1,len(sents)):
+            labels.append(1)
+            data_s_all.append([sents[s]])
+            data_t_all.append([sents[0]])
+
+            labels.append(0)
+            data_s_all.append([sents[s]])
+            keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            data_t_all.append([tagDict_train[keylist[ran1]][0]])
+
+
+    pairs = [data_s_all, data_t_all]
+
+    return pairs, labels
+
+
 def CreatePairs(tagDict_train):
 
     labels = []

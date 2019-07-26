@@ -24,18 +24,26 @@ def Model_sent_MLP__KGembed(sentvocabsize, tagvocabsize,
                                     weights=[sent_W])(input_sent)
 
     input_tag = Input(shape=(1,), dtype='int32')
-    tag_embedding = Embedding(input_dim=tagvocabsize,
-                                    output_dim=tag2v_k,
+    tag_embedding = Embedding(input_dim=sentvocabsize,
+                                    output_dim=s2v_k,
                                     input_length=1,
                                     mask_zero=False,
                                     trainable=False,
-                                    weights=[tag_W])(input_tag)
+                                    weights=[sent_W])(input_tag)
+
+    # input_tag = Input(shape=(1,), dtype='int32')
+    # tag_embedding = Embedding(input_dim=tagvocabsize,
+    #                                 output_dim=tag2v_k,
+    #                                 input_length=1,
+    #                                 mask_zero=False,
+    #                                 trainable=False,
+    #                                 weights=[tag_W])(input_tag)
 
     x1_0 = Flatten()(sent_embedding)
     x2_0 = Flatten()(tag_embedding)
     # mlp_x1_1 = Dense(200, activation='tanh')(x1_0)
     # mlp_x1_1 = Dropout(0.5)(x1_0)
-    mlp_x1_2 = Dense(100, activation=None)(x1_0)
+    mlp_x1_2 = Dense(100, activation='tanh')(x1_0)
     # mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([mlp_x1_2, x2_0])

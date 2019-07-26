@@ -464,8 +464,8 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print("num words in source word2vec: " + str(len(word_w2v)))
 
     # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+    # type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
+    # print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
 
     max_posi = 20
@@ -494,7 +494,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     pickle.dump([tagDict_train, tagDict_dev, tagDict_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
-                 target_vob, target_id2word, type_W, type_k,
+                 target_vob, target_id2word,
                  posi_W, posi_k,
                 max_s, max_posi, max_c], out, 0)
     out.close()
@@ -512,39 +512,3 @@ if __name__=="__main__":
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-    print("target vocab size: " + str(len(target_vob)))
-    print("target_id2word size: " + str(len(target_id2word)))
-    # if max_s > maxlen:
-    #     max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
-
-    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
-    print("source char size: ", char_vob.__len__())
-    print("max_c: ", max_c)
-    print("source char: " + str(char_id2char))
-
-    c2v_k, char_W, = load_vec_random(char_vob, k=50)
-    print('character_W shape:', char_W.shape)
-
-    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=100)
-    print("word2vec loaded!")
-    print("all vocab size: " + str(len(word_vob)))
-    print("source_W  size: " + str(len(word_W)))
-    print("num words in source word2vec: " + str(len(word_w2v)))
-
-    max_posi = 20
-    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
-    print('posi_k, posi_W', posi_k, len(posi_W))
-
-    # weigtnum = int(len(fragment_train) * percent)
-    # fragment_train = fragment_train[:weigtnum]
-
-    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    assert tagDict_dev == {}
-    print('tagDict_test len', len(tagDict_test))
-    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=True)
-
-    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
