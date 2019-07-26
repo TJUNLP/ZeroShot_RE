@@ -242,13 +242,13 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    # print('the train sent representation-----------------------')
-    # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
-    # print('P = ', P, 'R = ', R, 'F = ', F)
-    #
-    # print('the test sent representation-----------------------')
-    # P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
-    # print('P = ', P, 'R = ', R, 'F = ', F)
+    print('the train sent representation-----------------------')
+    P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
+    print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test sent representation-----------------------')
+    P, R, F = test_model(nn_model, tagDict_test, needembed=True, w2file=w2file+'.test.txt')
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
     # P, R, F = test_model_4trainset(nnmodel, pairs_train, labels_train, classifer_labels_train, target_vob)
