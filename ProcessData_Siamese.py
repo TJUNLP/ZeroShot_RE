@@ -298,6 +298,7 @@ def get_word_index(files):
 
     source_vob = {}
     target_vob = {}
+    target_vob_train = {}
     sourc_idex_word = {}
     target_idex_word = {}
     count = 1
@@ -333,11 +334,15 @@ def get_word_index(files):
                 target_idex_word[tarcount] = rel
                 tarcount += 1
 
+            if testf == files[0]:
+                if not target_vob_train.__contains__(rel):
+                    target_vob_train[rel] = target_vob[rel]
+
             max_s = max(max_s, len(words))
 
         f.close()
 
-    return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s
+    return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s, target_vob_train
 
 
 def get_Character_index(files):
@@ -383,7 +388,7 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=False):
+def CreatePairs(tagDict_train, istest=False):
 
     labels = []
     data_s_all = []
@@ -393,9 +398,50 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
     classifer_label = []
     char_s_all = []
 
-    f = codecs.open(trainfile, 'r', encoding='utf-8')
+    for tag in tagDict_train.keys():
 
-    for line in f.readlines():
+        sents = tagDict_train[tag]
+        for sent in sents:
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sent
+
+
+            data_s_all.append(data_s)
+            data_tag_all.append([tag])
+            data_e1_posi_all.append(data_e1_posi)
+            data_e2_posi_all.append(data_e2_posi)
+            labels.append(1)
+            classifer_label.append(tag)
+            char_s_all.append(char_s)
+
+            inc = random.randrange(1, len(tagDict_train.keys()))
+            dn = (tag + inc) % len(tagDict_train.keys())
+            data_s_all.append(data_s)
+            data_tag_all.append([dn])
+            data_e1_posi_all.append(data_e1_posi)
+            data_e2_posi_all.append(data_e2_posi)
+            labels.append(0)
+            classifer_label.append(tag)
+            char_s_all.append(char_s)
+
+
+    pairs = [data_s_all, data_tag_all,
+             data_e1_posi_all, data_e2_posi_all, char_s_all]
+
+    classifer_labels = keras.utils.to_categorical(classifer_label, len(tagDict_train.keys()))
+
+    return pairs, labels, classifer_labels
+
+
+def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False, target_vob_4dev=None):
+
+    tagDict = {}
+    tagDict_dev = {}
+
+    f = codecs.open(trainfile, 'r', encoding='utf-8')
+    lines = f.readlines()
+
+    for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         sent = jline['sent'].split(' ')
         rel = jline['rel']
@@ -432,34 +478,35 @@ def CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_v
             char_s.append(data_c)
         char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
 
+        pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
 
-        data_s_all.append(data_s)
-        data_tag_all.append([data_tag])
-        data_e1_posi_all.append(data_e1_posi)
-        data_e2_posi_all.append(data_e2_posi)
-        labels.append(1)
-        classifer_label.append(data_tag)
-        char_s_all.append(char_s)
+        if needDEV == True and rel in target_vob_4dev.keys():
 
-        if istest == False:
+            if data_tag not in tagDict_dev.keys():
+                tagDict_dev[data_tag] = []
+            tagDict_dev[data_tag].append(pairs)
+        else:
+            if data_tag not in tagDict.keys():
+                tagDict[data_tag] = []
+            tagDict[data_tag].append(pairs)
 
-            inc = random.randrange(1, len(target_vob.keys()))
-            dn = (data_tag + inc) % len(target_vob.keys())
-            data_s_all.append(data_s)
-            data_tag_all.append([dn])
-            data_e1_posi_all.append(data_e1_posi)
-            data_e2_posi_all.append(data_e2_posi)
-            labels.append(0)
-            classifer_label.append(data_tag)
-            char_s_all.append(char_s)
+    f.close()
+
+    return tagDict, tagDict_dev
 
 
-    pairs = [data_s_all, data_tag_all,
-             data_e1_posi_all, data_e2_posi_all, char_s_all]
+def get_split_train_dev(target_vob_train):
 
-    classifer_labels = keras.utils.to_categorical(classifer_label, len(target_vob))
+    rel4dev = {}
+    relList = list(target_vob_train.keys())
+    i = 0
+    while i * 10 + 9 < len(relList):
+        nd = random.randint(0, 9)
+        k = relList[i * 10 + nd]
+        rel4dev[k] = target_vob_train[k]
+        i += 1
 
-    return pairs, labels, classifer_labels
+    return rel4dev
 
 
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
@@ -470,7 +517,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     Converts the input files  into the model input formats
     """
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
     print("source vocab size: ", str(len(word_vob)))
     print("word_id2word size: ", str(len(word_id2word)))
     print("target vocab size: " + str(len(target_vob)))
@@ -507,19 +554,26 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    pairs_train, labels_train, classifer_labels_train = \
-        CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=False)
-    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
+    target_vob_4dev = get_split_train_dev(target_vob_train)
+    print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
 
-    pairs_test, labels_test, classifer_labels_test = \
-        CreatePairs(testfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=True)
-    print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
+    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    assert tagDict_dev == {}
+    print('tagDict_test len', len(tagDict_test))
+    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
+                                               needDEV=True, target_vob_4dev=target_vob_4dev)
+    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
+
+    # pairs_train, labels_train, classifer_labels_train = CreatePairs(tagDict_train, istest=False)
+    # print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
+    #
+    # pairs_test, labels_test, classifer_labels_test = CreatePairs(tagDict_dev, istest=True)
+    # print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
 
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
-    pickle.dump([pairs_train, labels_train, classifer_labels_train,
-                 pairs_test, labels_test, classifer_labels_test,
+    pickle.dump([tagDict_train, tagDict_dev, tagDict_test,
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word, type_W, type_k,
@@ -540,31 +594,5 @@ if __name__=="__main__":
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-
-    # if max_s > maxlen:
-    #     max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
-
-
-
-    # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
-
-
-    max_posi = 20
-    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
-    print('posi_k, posi_W', posi_k, len(posi_W))
-
-
-    # weigtnum = int(len(fragment_train) * percent)
-    # fragment_train = fragment_train[:weigtnum]
-
-    pairs_train, labels_train, classifer_labels_train = \
-        CreatePairs(trainfile, max_s, max_posi, target_vob, type_W, word_id2word, char_vob=None, max_c=-1, istest=False)
-    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 

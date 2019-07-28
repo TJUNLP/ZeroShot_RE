@@ -61,7 +61,24 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     return P, R, F
 
 
-def test_model(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
+def test_model(nn_model, tagDict_test, target_vob):
+
+    pairs_test0, labels_test, classifer_labels_train = \
+        ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
+    print('CreatePairs train len = ', len(pairs_test0[0]), len(pairs_test0))
+
+    test_x1_sent = np.asarray(pairs_test0[0], dtype="int32")
+    test_x2_tag = np.asarray(pairs_test0[1], dtype="int32")
+    test_x1_e1_posi = np.asarray(pairs_test0[2], dtype="int32")
+    test_x1_e2_posi = np.asarray(pairs_test0[3], dtype="int32")
+    test_x1_sent_cahr = np.asarray(pairs_test0[4], dtype="int32")
+    test_y = np.asarray(labels_test, dtype="int32")
+
+    inputs_test_x = [test_x1_sent, test_x1_e1_posi, test_x1_e2_posi, test_x2_tag, test_x1_sent_cahr]
+    inputs_test_y = [test_y]
+
+    loss, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, batch_size=batch_size, verbose=0)
+    print('test in test_model--- loss, acc', loss, acc)
 
     data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
 
@@ -204,19 +221,21 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet()
+        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(tagDict_train)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(tagDict_dev)
 
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
-                               validation_split=0.1,
+                               validation_data=[inputs_dev_x, inputs_dev_y],
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
                                callbacks=[reduce_lr, checkpointer])
 
         print('the test result-----------------------')
-        P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
+
+        P, R, F = test_model(nn_model, tagDict_test, target_vob)
 
         if F > maxF:
             earlystop = 0
@@ -237,7 +256,7 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
     print('the test result-----------------------')
-    P, R, F = test_model(nnmodel, pairs_test, labels_test, classifer_labels_test, target_vob)
+    P, R, F = test_model(nnmodel, tagDict_test, target_vob)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
@@ -276,10 +295,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
     return nn_model
 
-def Dynamic_get_trainSet():
+def Dynamic_get_trainSet(tagDict):
 
     pairs_train, labels_train, classifer_labels_train = \
-        ProcessData_Siamese.CreatePairs(trainfile, max_s, max_posi, word_vob, target_vob, type_W, char_vob, max_c, istest=False)
+        ProcessData_Siamese.CreatePairs(tagDict, istest=False)
 
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
@@ -313,7 +332,7 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Siamese.WordChar.PTransE'
+    datafname = 'data_Siamese.split.WordChar.PTransE'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -332,24 +351,14 @@ if __name__ == "__main__":
         ProcessData_Siamese.get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
-    pairs_train, labels_train, classifer_labels_train, \
-    pairs_test, labels_test, classifer_labels_test,\
+
+    tagDict_train, tagDict_dev, tagDict_test,\
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
     target_vob, target_id2word, type_W, type_k,\
     posi_W, posi_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-    # train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
-    # train_x2_tag = np.asarray(pairs_train[1], dtype="int32")
-    # train_x1_e1_posi = np.asarray(pairs_train[2], dtype="int32")
-    # train_x1_e2_posi = np.asarray(pairs_train[3], dtype="int32")
-    # train_x1_sent_cahr = np.asarray(pairs_train[4], dtype="int32")
-    # train_y = np.asarray(labels_train, dtype="int32")
-    # # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
-    #
-    # inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x2_tag, train_x1_sent_cahr]
-    # inputs_train_y = [train_y]
 
     nn_model = SelectModel(modelname,
                            wordvocabsize=len(word_vob),

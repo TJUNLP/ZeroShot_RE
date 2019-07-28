@@ -333,7 +333,6 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
     return tagDict, tagDict_dev
 
 
-
 def CreatePairs(tagDict_train, istest=False):
 
     labels = []
