@@ -415,7 +415,7 @@ def CreatePairs(tagDict_train, istest=False):
             char_s_all.append(char_s)
 
             if istest == False:
-                
+
                 inc = random.randrange(1, len(tagDict_train.keys()))
                 dn = (tag + inc) % len(tagDict_train.keys())
                 data_s_all.append(data_s)

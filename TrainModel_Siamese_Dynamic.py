@@ -63,7 +63,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
 
 def test_model(nn_model, tagDict_test, target_vob):
 
-    pairs_test0, labels_test = ProcessData_Siamese.CreatePairs(tagDict_test, istest=True)
+    pairs_test0, labels_test = ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
     print('CreatePairs test len = ', len(pairs_test0[0]), len(pairs_test0))
 
     test_x1_sent = np.asarray(pairs_test0[0], dtype="int32")
@@ -89,7 +89,7 @@ def test_model(nn_model, tagDict_test, target_vob):
     predict_right_c = 0
     predict_c = 0
     predict_right05 = 0
-    totel_right = len(data_s_list)
+    totel_right = len(data_s_list) / 2
     # totel_right = len(data_s_list[:1000]) /2
 
     labels_all = []
