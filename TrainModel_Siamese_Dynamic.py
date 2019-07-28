@@ -63,8 +63,7 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
 
 def test_model(nn_model, tagDict_test, target_vob):
 
-    pairs_test0, labels_test, classifer_labels_train = \
-        ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
+    pairs_test0, labels_test = ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
     print('CreatePairs train len = ', len(pairs_test0[0]), len(pairs_test0))
 
     test_x1_sent = np.asarray(pairs_test0[0], dtype="int32")
@@ -297,8 +296,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(tagDict):
 
-    pairs_train, labels_train, classifer_labels_train = \
-        ProcessData_Siamese.CreatePairs(tagDict, istest=False)
+    pairs_train, labels_train = ProcessData_Siamese.CreatePairs(tagDict, istest=False)
 
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 

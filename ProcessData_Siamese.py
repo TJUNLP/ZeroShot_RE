@@ -428,9 +428,9 @@ def CreatePairs(tagDict_train, istest=False):
     pairs = [data_s_all, data_tag_all,
              data_e1_posi_all, data_e2_posi_all, char_s_all]
 
-    classifer_labels = keras.utils.to_categorical(classifer_label, len(tagDict_train.keys()))
+    # classifer_labels = keras.utils.to_categorical(classifer_label, len(tagDict_train.keys()))
 
-    return pairs, labels, classifer_labels
+    return pairs, labels
 
 
 def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False, target_vob_4dev=None):
