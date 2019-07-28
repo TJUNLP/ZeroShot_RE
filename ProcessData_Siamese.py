@@ -414,15 +414,17 @@ def CreatePairs(tagDict_train, istest=False):
             classifer_label.append(tag)
             char_s_all.append(char_s)
 
-            inc = random.randrange(1, len(tagDict_train.keys()))
-            dn = (tag + inc) % len(tagDict_train.keys())
-            data_s_all.append(data_s)
-            data_tag_all.append([dn])
-            data_e1_posi_all.append(data_e1_posi)
-            data_e2_posi_all.append(data_e2_posi)
-            labels.append(0)
-            classifer_label.append(tag)
-            char_s_all.append(char_s)
+            if istest == False:
+                
+                inc = random.randrange(1, len(tagDict_train.keys()))
+                dn = (tag + inc) % len(tagDict_train.keys())
+                data_s_all.append(data_s)
+                data_tag_all.append([dn])
+                data_e1_posi_all.append(data_e1_posi)
+                data_e2_posi_all.append(data_e2_posi)
+                labels.append(0)
+                classifer_label.append(tag)
+                char_s_all.append(char_s)
 
 
     pairs = [data_s_all, data_tag_all,
