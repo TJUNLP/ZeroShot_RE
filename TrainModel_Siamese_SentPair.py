@@ -432,13 +432,17 @@ if __name__ == "__main__":
 
     # trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     # testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
-    trainfile = './data/FewRel/FewRel_data.train.txt'
-    testfile = './data/FewRel/FewRel_data.test.txt'
+
+    # trainfile = './data/FewRel/FewRel_data.train.txt'
+    # testfile = './data/FewRel/FewRel_data.test.txt'
+
+    trainfile = './data/WikiReadin/WikiReading_data.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
     resultdir = "./data/result/"
 
-    # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
+    # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
