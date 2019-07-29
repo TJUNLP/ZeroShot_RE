@@ -38,7 +38,7 @@ def load_vec_txt(fname, vocab, k=300):
         lower_word = word.lower()
         if not w2v.__contains__(lower_word):
             w2v[word] = w2v["**UNK**"]
-            unknowtoken +=1
+            unknowtoken += 1
             W[vocab[word]] = w2v[word]
         else:
             W[vocab[word]] = w2v[lower_word]
@@ -453,7 +453,6 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print("source char size: ", char_vob.__len__())
     max_c = min(max_c, 18)
     print("max_c: ", max_c)
-    print("source char: " + str(char_id2char))
 
     c2v_k, char_W, = load_vec_random(char_vob, k=c2v_k)
     print('character_W shape:', char_W.shape)
@@ -462,7 +461,6 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print("word2vec loaded!")
     print("all vocab size: " + str(len(word_vob)))
     print("source_W  size: " + str(len(word_W)))
-    print("num words in source word2vec: " + str(len(word_w2v)))
 
     # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
     # type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)

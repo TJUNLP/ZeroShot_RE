@@ -1,31 +1,73 @@
 
 import tensorflow as k
-import codecs, json,random
+import codecs, json, random, re, nltk
 import numpy as np
 
 
 def Process_Corpus():
 
     f = './data/WikiReading/WikiReading.txt'
-    fw1w = codecs.open(f + '.json.txt', 'w', encoding='utf-8')
+    # fw1w = codecs.open(f + '.json.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
     for line in frr.readlines():
         ls = line.rstrip('\n').split('\t')
-        jsondict['sent'] = ls[3]
-        assert ls[2] in ls[3]
-        assert ls[4] in ls[3]
+        sent = ' '.join(nltk.word_tokenize(ls[3]))
+        jsondict['sent'] = sent
+
+        en1_name0 = ' '.join(nltk.word_tokenize(ls[2]))
+        en2_name0 = ' '.join(nltk.word_tokenize(ls[4]))
+
+        print('----------\n', line)
+        print(en1_name0, en2_name0, sent)
+
+        assert en1_name0 in sent
+        assert en2_name0 in sent
+
         jsondict['en1_name'] = ls[2]
         jsondict['en2_name'] = ls[4]
         jsondict['rel'] = ls[0]
 
-        fj = json.dumps(jsondict, ensure_ascii=False)
-        fw1w.write(fj + '\n')
-        # fw1w.write(line.rstrip('\n')+'\n')
+
+        en1_name = re.sub(r'\(', '\\\(', en1_name0)
+        en1_name = re.sub(r'\)', '\\\)', en1_name)
+        en2_name = re.sub(r'\(', '\\\(', en2_name0)
+        en2_name = re.sub(r'\)', '\\\)', en2_name)
+        en1_name = re.sub(r'\?', '\\\?', en1_name)
+        en2_name = re.sub(r'\?', '\\\?', en2_name)
+        en1_name = re.sub(r'\+', '\\\+', en1_name)
+        en2_name = re.sub(r'\+', '\\\+', en2_name)
+        en1_name = re.sub(r'\$', '\\\$', en1_name)
+        en2_name = re.sub(r'\$', '\\\$', en2_name)
+        en1_name = re.sub(r'\*', '\\\*', en1_name)
+        en2_name = re.sub(r'\*', '\\\*', en2_name)
+
+        e1_0, e1_1 = re.search(en1_name, sent, flags=re.I).span()
+        e1_l = len(re.compile(r' ').findall(sent[:e1_0]))
+        e1_r = len(re.compile(r' ').findall(sent[:e1_1])) + 1
+        e2_0, e2_1 = re.search(en2_name, sent, flags=re.I).span()
+        e2_l = len(re.compile(r' ').findall(sent[:e2_0]))
+        e2_r = len(re.compile(r' ').findall(sent[:e2_1])) + 1
+        # print(e1_l, e1_r, e2_l, e2_r)
+
+        if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+            print('>>>>>>>>>>>>>\n', sent)
+            print(line)
+            print(e1_l, e1_r, e2_l, e2_r)
+        else:
+            if e1_r >= e2_l or e2_r >= e1_l:
+                jsondict['e1_posi'] = (e1_l, e1_r)
+                jsondict['e2_posi'] = (e2_l, e2_r)
+            else:
+                print('..............\n', sent)
+                print(line)
+
+        # fj = json.dumps(jsondict, ensure_ascii=False)
+        # fw1w.write(fj + '\n')
 
 
     frr.close()
-    fw1w.close()
+    # fw1w.close()
 
     # frr2 = codecs.open(f + '.2.txt', 'r', encoding='utf-8')
     # for line in frr2.readlines():
@@ -39,24 +81,24 @@ def Process_Corpus():
 
 def Split_zeroshotData_2_train_test():
 
-    # fw_train = './data/WikiReading/WikiReading_data.random.train.txt'
-    # fw_test = './data/WikiReading/WikiReading_data.random.test.txt'
-    # fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
-    # fwte = codecs.open(fw_test, 'w', encoding='utf-8')
+    fw_train = './data/WikiReading/WikiReading_data.random.train.txt'
+    fw_test = './data/WikiReading/WikiReading_data.random.test.txt'
+    fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
+    fwte = codecs.open(fw_test, 'w', encoding='utf-8')
 
     fr = './data/WikiReading/WikiReading.txt.json.txt'
     frr = codecs.open(fr, 'r', encoding='utf-8')
     relDict = {}
-    lenDict = {}
+    # lenDict = {}
     max_s = 0
     for line in frr.readlines():
         # print(line)
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
         words = jline['sent'].split(' ')
 
-        if len(words) not in lenDict.keys():
-            lenDict[len(words)] = 0
-        lenDict[len(words)] += 1
+        # if len(words) not in lenDict.keys():
+        #     lenDict[len(words)] = 0
+        # lenDict[len(words)] += 1
 
         max_s = max(max_s, len(words))
         print(max_s)
@@ -68,39 +110,39 @@ def Split_zeroshotData_2_train_test():
     print(len(relDict))
     frr.close()
 
-    lenlist = sorted(lenDict.items(), key=lambda m: m[0], reverse=False)
-    cc = 0
-    for ll in lenlist:
-        cc += ll[1]
-        print(ll, cc, cc/386531)
+    # lenlist = sorted(lenDict.items(), key=lambda m: m[0], reverse=False)
+    # cc = 0
+    # for ll in lenlist:
+    #     cc += ll[1]
+    #     print(ll, cc, cc/386531)
 
-    # rel4Test = []
-    # relList = list(relDict.keys())
-    # i = 0
-    # while i * 5 + 4 < len(relList):
-    #     nd = random.randint(0, 4)
-    #     rel4Test.append(relList[i * 5 + nd])
-    #     i += 1
-    #
-    # print(len(rel4Test))
-    # print(rel4Test)
-    #
-    # frr = codecs.open(fr, 'r', encoding='utf-8')
-    #
-    # for line in frr.readlines():
-    #     # print(line)
-    #     jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-    #
-    #     rel = jline['rel']
-    #
-    #     fj = json.dumps(jline, ensure_ascii=False)
-    #     if rel in rel4Test:
-    #         fwte.write(fj + '\n')
-    #     else:
-    #         fwtr.write(fj + '\n')
-    #
-    # fwte.close()
-    # fwtr.close()
+    rel4Test = []
+    relList = list(relDict.keys())
+    i = 0
+    while i * 5 + 4 < len(relList):
+        nd = random.randint(0, 4)
+        rel4Test.append(relList[i * 5 + nd])
+        i += 1
+
+    print(len(rel4Test))
+    print(rel4Test)
+
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+
+        rel = jline['rel']
+
+        fj = json.dumps(jline, ensure_ascii=False)
+        if rel in rel4Test:
+            fwte.write(fj + '\n')
+        else:
+            fwtr.write(fj + '\n')
+
+    fwte.close()
+    fwtr.close()
     frr.close()
 
     # relList = sorted(relDict.items(), key=lambda s: s[1], reverse=True)
@@ -198,15 +240,14 @@ def find_rel_from_corpus():
 
 if __name__ == '__main__':
 
-    # Process_Corpus()
 
-    get_rel2v_ave_glove100()
+    # get_rel2v_ave_glove100()
 
     # find_rel_from_corpus()
 
     # Process_Corpus()
 
-    # Split_zeroshotData_2_train_test()
+    Split_zeroshotData_2_train_test()
 
 '''
 0 place of birth 5264
