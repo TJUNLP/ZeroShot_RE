@@ -79,7 +79,8 @@ def analysis_entity_type():
         # if en not in enLists:
         #     line = frty.readline()
         #     continue
-        ty = sp[2].split('.')[0][4:]
+        # ty = sp[2].split('.')[0][4:]
+        ty = sp[2][4:]
         # print(ty)
         if en not in entDict.keys():
             entDict[en] = []
@@ -162,57 +163,46 @@ def analysis_entity_type():
 
     f = './data/rel_entpair_Dict.txt'
     frr = codecs.open(f, 'r', encoding='utf-8')
+    fw = codecs.open('./data/rel_entpair_type_Dict.txt', 'w', encoding='utf=8')
 
-    rel_ep_1_Dict = {}
-    rel_ep_2_Dict = {}
     i = 0
     for line in frr.readlines():
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-        en1_id = jline['e1_id']
-        en2_id = jline['e2_id']
+        en1_ids = list(jline['e1_types'])
+        en2_ids = list(jline['e2_types'])
         rel = jline['rel']
         i += 1
         print(i)
-        if en1_id not in entDict or en2_id not in entDict:
-            print(en1_id, en2_id, rel)
-            continue
-        # en1_type = entDict[en1_id]
-        # en2_type = entDict[en2_id]
-        en1_type = [en1_id]
-        en2_type = [en2_id]
 
-        assert rel_ep_1_Dict.keys() == rel_ep_2_Dict.keys()
-        if rel not in rel_ep_1_Dict.keys():
-            rel_ep_1_Dict[rel] = en1_type
-        else:
-            rel_ep_1_Dict[rel] += en1_type
-        if rel not in rel_ep_2_Dict.keys():
-            rel_ep_2_Dict[rel] = en2_type
-        else:
-            rel_ep_2_Dict[rel] += en2_type
-
-    frr.close()
-
-    print(len(rel_ep_1_Dict), len(rel_ep_2_Dict))
-
-    fw = codecs.open('./data/rel_entpair_Dict.txt', 'w', encoding='utf=8')
-
-    assert rel_ep_1_Dict.keys() == rel_ep_2_Dict.keys()
-    for reli in rel_ep_1_Dict.keys():
-        if reli not in rel_ep_2_Dict.keys():
-            continue
         dicts = {}
-        dicts['rel'] = reli
 
-        print(rel_ep_1_Dict[reli])
+        dicts['rel'] = rel
 
-        dicts['e1_types'] = rel_ep_1_Dict[reli]
-        dicts['e2_types'] = rel_ep_2_Dict[reli]
+        en1_types = []
+        for e1id in en1_ids:
+            print(e1id)
+            if e1id not in entDict:
+                continue
+            for ty in entDict[e1id]:
+                if ty not in en1_types:
+                    en1_types.append(ty)
+
+        dicts['e1_types'] = en1_types
+
+        en2_types = []
+        for e2id in en2_ids:
+            if e2id not in entDict:
+                continue
+            for ty in entDict[e2id]:
+                if ty not in en2_types:
+                    en2_types.append(ty)
+
+        dicts['e2_types'] = en2_types
 
         fj = json.dumps(dicts, ensure_ascii=False)
-
         fw.write(fj + '\n')
 
+    frr.close()
     fw.close()
 
 
@@ -359,8 +349,6 @@ def Split_zeroshotData_2_train_test():
     # for rr in relList:
     #     print(rr)
     # print(len(relList))
-
-
 
 
 def Ques2Sent():

@@ -1,6 +1,8 @@
 
 import tensorflow as k
 import codecs, json
+import numpy as np
+
 
 def Process_Corpus():
     f = '/Users/shengbinjia/Downloads/FewRel-master/data/val.json'
@@ -51,6 +53,92 @@ def Process_Corpus():
     fw1w.close()
 
 
+def load_vec_txt(fname, vocab, k=300):
+    w2v_file = "./data/w2v/glove.6B.100d.txt"
+
+    f = codecs.open(fname, 'r', encoding='utf-8')
+    w2v={}
+    W = np.zeros(shape=(vocab.__len__() + 1, k))
+    unknowtoken = 0
+    for line in f.readlines():
+        values = line.rstrip('\n').split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        w2v[word] = coefs
+    f.close()
+    w2v["**UNK**"] = np.random.uniform(-0.25, 0.25, k)
+    for word in vocab:
+        lower_word = word.lower()
+        if not w2v.__contains__(lower_word):
+            w2v[word] = w2v["**UNK**"]
+            unknowtoken +=1
+            W[vocab[word]] = w2v[word]
+        else:
+            W[vocab[word]] = w2v[lower_word]
+
+    print('UnKnown tokens in w2v', unknowtoken)
+    return w2v,k,W
+
+
+def get_rel2v_ave_glove100():
+
+    id2name = {}
+    f = './data/FewRel/FewRel_rel_id_name.txt'
+    fr = codecs.open(f, 'r', encoding='utf-8')
+    lines = fr.readlines()
+    for line in lines:
+        lsp = line.rstrip('\n').split('\t')
+        id = lsp[0]
+        name = lsp[1]
+        id2name[id] = name
+    fr.close()
+    print(len(id2name))
+
+    w2v_file = "./data/w2v/glove.6B.100d.txt"
+    fr = codecs.open(w2v_file, 'r', encoding='utf-8')
+    w2v = {}
+    unknowtoken = 0
+    for line in fr.readlines():
+        values = line.rstrip('\n').split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        w2v[word] = coefs
+    fr.close()
+    print(len(w2v))
+
+    # i = j = 0
+    #
+    # for ki in id2name.keys():
+    #     for w in id2name[ki].split():
+    #         print(w)
+    #         i += 1
+    #         if w not in w2v.keys():
+    #             j += 1
+    #             print(w)
+    # print(i, j)
+
+    rel2v_file = "./data/FewRel/FewRel.rel2v.by_glove.100d.txt"
+    fw = open(rel2v_file, 'w', encoding='utf-8')
+
+    for ki in id2name.keys():
+        print(ki)
+        words = id2name[ki].split()
+        W = np.zeros(shape=(words.__len__(), 100))
+        for wi, w in enumerate(words):
+            lower_word = w.lower()
+            print(w2v[lower_word])
+            W[wi] = w2v[lower_word]
+        ave = np.mean(W, axis=0)
+        string = ki
+        for item in ave:
+            string += ' ' + str(item)
+        fw.write(string + '\n')
+    fw.close()
+
+
+
 if __name__ == '__main__':
 
-    Process_Corpus()
+    # Process_Corpus()
+
+    get_rel2v_ave_glove100()

@@ -231,7 +231,7 @@ def get_Character_index(files):
 
     source_vob = {}
     sourc_idex_word = {}
-    max_c = 18
+    max_c = 0
     count = 1
 
     if not source_vob.__contains__("**PAD**"):
@@ -253,6 +253,7 @@ def get_Character_index(files):
             words = sent.split(' ')
 
             for word in words:
+                max_c = max(max_c, len(word))
                 for character in word:
                     if not source_vob.__contains__(character):
                         source_vob[character] = count
@@ -450,6 +451,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
 
     char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
     print("source char size: ", char_vob.__len__())
+    max_c = min(max_c, 18)
     print("max_c: ", max_c)
     print("source char: " + str(char_id2char))
 
