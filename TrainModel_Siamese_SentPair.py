@@ -436,7 +436,7 @@ if __name__ == "__main__":
     # trainfile = './data/FewRel/FewRel_data.train.txt'
     # testfile = './data/FewRel/FewRel_data.test.txt'
 
-    trainfile = './data/WikiReadin/WikiReading_data.random.train.txt'
+    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
     resultdir = "./data/result/"
