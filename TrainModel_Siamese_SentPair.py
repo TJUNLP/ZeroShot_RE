@@ -352,6 +352,9 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('the test result-----------------------')
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
+    print('the test 2 result-----------------------')
+    P, R, F = test_model2(nn_model, tagDict_test)
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')

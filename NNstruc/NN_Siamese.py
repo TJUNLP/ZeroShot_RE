@@ -12,7 +12,7 @@ from keras.layers import merge, Lambda,Flatten
 from keras.layers.merge import dot
 
 
-def Model_BiLSTM_sent_linear__KGembed(wordvocabsize, tagvocabsize, posivocabsize, charvocabsize,
+def  Model_BiLSTM_sent_linear__KGembed(wordvocabsize, tagvocabsize, posivocabsize, charvocabsize,
                      word_W, posi_W, tag_W, char_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, tag2v_k, c2v_k,
