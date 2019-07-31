@@ -196,7 +196,7 @@ def test_model2(nn_model, tag2sentDict_test):
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
     print('test predict_rank = ', predict_rank / totel_right)
     print('test distance > 0.5  = ', predict_right05 / totel_right)
-
+    print('P =, R =, F = ', P, R, F)
     return P, R, F
 
 
@@ -420,7 +420,7 @@ def Dynamic_get_trainSet(istest):
 
 if __name__ == "__main__":
 
-    maxlen = 50
+    maxlen = 100
 
     modelname = 'Model_BiLSTM_SentPair_2'
 

@@ -278,7 +278,7 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
     f = codecs.open(trainfile, 'r', encoding='utf-8')
     lines = f.readlines()
     if needDEV == True:
-        thd = len(lines) // 5
+        thd = len(lines) * 0.15
 
     for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
@@ -288,6 +288,10 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         e1_r = jline['e1_posi'][1]
         e2_l = jline['e2_posi'][0]
         e2_r = jline['e2_posi'][1]
+
+        max_long = max(e1_r, e2_r)
+        if len(sent) > max_s and max_long > max_s:
+            continue
 
         data_tag = target_vob[rel]
 
@@ -306,7 +310,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         data_e2_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
 
         char_s = []
-        for word in sent:
+        for wi in range(0, min(len(sent), max_s)):
+            word = sent[wi]
             data_c = []
             for chr in range(0, min(word.__len__(), max_c)):
                 if not char_vob.__contains__(word[chr]):
@@ -444,8 +449,8 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print("word_id2word size: ", str(len(word_id2word)))
     print("target vocab size: " + str(len(target_vob)))
     print("target_id2word size: " + str(len(target_id2word)))
-    # if max_s > maxlen:
-    #     max_s = maxlen
+    if max_s > maxlen:
+        max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
 
 
