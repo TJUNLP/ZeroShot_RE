@@ -434,7 +434,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_2'
+    # modelname = 'Model_BiLSTM_SentPair_2'
+    modelname = 'Model_BiLSTM_SentPair_3'
 
     print(modelname)
 
