@@ -52,9 +52,10 @@ def load_vec_KGrepresentation(fname, vocab, k):
     f = codecs.open(fname, 'r', encoding='utf-8')
     w2v = {}
     for line in f.readlines():
+
         values = line.rstrip('\n').split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
+        word = ' '.join(values[:len(values)-100])
+        coefs = np.asarray(values[len(values)-100:], dtype='float32')
         w2v[word] = coefs
     f.close()
 
@@ -64,7 +65,7 @@ def load_vec_KGrepresentation(fname, vocab, k):
         try:
             W[vocab[item]] = w2v[item]
         except BaseException:
-            print('the rel is not finded ...')
+            print('the rel is not finded ...', item)
 
     return k, W
 
@@ -350,6 +351,7 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 def CreatePairs(tagDict_train, istest=False):
 
     labels = []
+    data_tag_all = []
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -367,12 +369,14 @@ def CreatePairs(tagDict_train, istest=False):
             continue
         inc = random.randrange(1, len(sents))
         i = 0
-        while i < ((inc + 1) // 2):
+        while i < len(sents):
             p0 = i
-            p1 = inc - i
-            i += 1
-            labels.append(1)
+            p1 = (inc + i) % len(sents)
 
+            i += 1
+
+            labels.append(1)
+            data_tag_all.append([tag])
             data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
             data_s_all_0.append(data_s)
             data_e1_posi_all_0.append(data_e1_posi)
@@ -386,42 +390,8 @@ def CreatePairs(tagDict_train, istest=False):
             char_s_all_1.append(char_s)
 
             labels.append(0)
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-        i = 0
-        while i < ((len(sents) - inc) // 2):
-            p0 = inc + 1 + i
-            p1 = len(sents) - 1 - i
-            i += 1
-            labels.append(1)
-
+            data_tag_all.append([tag])
             data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-            labels.append(0)
             data_s_all_0.append(data_s)
             data_e1_posi_all_0.append(data_e1_posi)
             data_e2_posi_all_0.append(data_e2_posi)
@@ -439,7 +409,8 @@ def CreatePairs(tagDict_train, istest=False):
             char_s_all_1.append(char_s)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_tag_all]
 
     return pairs, labels
 
@@ -475,9 +446,9 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print("all vocab size: " + str(len(word_vob)))
     print("source_W  size: " + str(len(word_W)))
 
-    # type_k, type_W = load_vec_random(TYPE_vob, k=w2v_k)
-    # type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
-    # print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
 
     max_posi = 20
@@ -507,7 +478,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
                 word_vob, word_id2word, word_W, w2v_k,
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word,
-                 posi_W, posi_k,
+                 posi_W, posi_k, type_W, type_k,
                 max_s, max_posi, max_c], out, 0)
     out.close()
 
@@ -518,9 +489,21 @@ if __name__=="__main__":
     alpha = 10
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
-    c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    t2v_file = './data/KG2v/FB15K_OpenKETransE_Relation2Vec_100.txt'
-    trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
-    testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
-    resultdir = "./data/result/"
 
+    t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
+    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+
+
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
+    if max_s > maxlen:
+        max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
+
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))

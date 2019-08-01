@@ -15,6 +15,7 @@ import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_1
 from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_3
+from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1
 import keras
 
 
@@ -111,14 +112,15 @@ def test_model2(nn_model, tag2sentDict_test):
     data_e2_posi_all_1 = []
     char_s_all_1 = []
 
+    data_tag_all = []
+
     labels_all = []
     totel_right = 0
 
     truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
-        if len(sents) < 2:
-            continue
+
         for s in range(1, len(sents)):
             totel_right += 1
 
@@ -129,6 +131,7 @@ def test_model2(nn_model, tag2sentDict_test):
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
+                data_tag_all.append([ty])
 
                 data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_1.append(data_s)
@@ -143,7 +146,7 @@ def test_model2(nn_model, tag2sentDict_test):
                     labels_all.append(0)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
 
     train_x1_sent = np.asarray(pairs[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
@@ -153,9 +156,10 @@ def test_model2(nn_model, tag2sentDict_test):
     train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
+    train_tag = np.asarray(pairs[8], dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
@@ -214,6 +218,8 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
     data_e2_posi_all_1 = []
     char_s_all_1 = []
 
+    data_tag_all = []
+
     tagIndex = []
 
     for tag in tagDict_test.keys():
@@ -233,6 +239,8 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
+            data_tag_all.append([tag])
+
             data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][i]
             data_s_all_1.append(data_s)
             data_e1_posi_all_1.append(data_e1_posi)
@@ -241,7 +249,7 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
             tagIndex.append(tag)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1]
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
 
     train_x1_sent = np.asarray(pairs[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
@@ -251,9 +259,9 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
     train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-
+    train_tag = np.asarray(pairs[8], dtype="int32")
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
 
     predict = 0
     predict_right = 0
@@ -324,7 +332,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
                                validation_data=[inputs_dev_x, inputs_dev_y],
-                               shuffle=False,
+                               shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
                                callbacks=[reduce_lr, checkpointer])
@@ -398,6 +406,18 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k,
                                                   batch_size=batch_size)
 
+    if modelname is 'Model_BiLSTM_SentPair_RelPunish_1':
+        nn_model = Model_BiLSTM_SentPair_RelPunish_1(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size)
+
+
     return nn_model
 
 def Dynamic_get_trainSet(istest):
@@ -419,12 +439,13 @@ def Dynamic_get_trainSet(istest):
     train_x2_e1_posi = np.asarray(pairs_train[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs_train[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs_train[7], dtype="int32")
+    train_tag = np.asarray(pairs_train[8], dtype="int32")
 
     train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
     inputs_train_y = [train_y]
 
     return inputs_train_x, inputs_train_y
@@ -435,13 +456,14 @@ if __name__ == "__main__":
     maxlen = 100
 
     # modelname = 'Model_BiLSTM_SentPair_2'
-    modelname = 'Model_BiLSTM_SentPair_3'
+    # modelname = 'Model_BiLSTM_SentPair_3'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
 
     print(modelname)
 
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
+    t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
 
     # trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     # testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
@@ -455,7 +477,7 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -478,7 +500,7 @@ if __name__ == "__main__":
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
     target_vob, target_id2word,\
-    posi_W, posi_k,\
+    posi_W, posi_k, type_W, type_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
     nn_model = SelectModel(modelname,
@@ -486,9 +508,9 @@ if __name__ == "__main__":
                            tagvocabsize=len(target_vob),
                            posivocabsize=max_posi+1,
                            charvocabsize=len(char_vob),
-                           word_W=word_W, posi_W=posi_W, tag_W=None, char_W=char_W,
+                           word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
                            input_sent_lenth=max_s,
-                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=100, c2v_k=c2v_k,
+                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
     for inum in range(2, 3):
