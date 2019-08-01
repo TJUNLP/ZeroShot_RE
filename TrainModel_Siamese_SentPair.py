@@ -322,7 +322,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
                                validation_data=[inputs_dev_x, inputs_dev_y],
-                               shuffle=True,
+                               shuffle=False,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
                                callbacks=[reduce_lr, checkpointer])
@@ -338,7 +338,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
-        if earlystop >= 50:
+        if earlystop >= 15:
             break
 
     return nn_model
@@ -478,7 +478,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=100, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(1, 2):
+    for inum in range(2, 3):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
