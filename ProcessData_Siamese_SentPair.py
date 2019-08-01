@@ -270,7 +270,7 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False):
+def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, istest=False, needDEV=False):
 
     tagDict = {}
     tagDict_dev = {}
@@ -329,7 +329,15 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
             if data_tag not in tagDict_dev.keys():
                 tagDict_dev[data_tag] = []
             tagDict_dev[data_tag].append(pairs)
+
+        elif istest == True:
+
+            if data_tag not in tagDict.keys():
+                tagDict[data_tag] = []
+            if len(tagDict[data_tag]) < 400:
+                tagDict[data_tag].append(pairs)
         else:
+
             if data_tag not in tagDict.keys():
                 tagDict[data_tag] = []
             tagDict[data_tag].append(pairs)
@@ -480,7 +488,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, istest=True)
     assert tagDict_dev == {}
     print('tagDict_test len', len(tagDict_test))
     tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=True)

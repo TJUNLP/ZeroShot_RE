@@ -152,22 +152,22 @@ def Split_zeroshotData_2_train_test():
     print(len(relDict))
     frr.close()
 
-    lenlist = sorted(lenDict.items(), key=lambda m: m[0], reverse=False)
-    cc = 0
-    for ll in lenlist:
-        cc += ll[1]
-        print(ll, cc, cc/225060)
+    # lenlist = sorted(lenDict.items(), key=lambda m: m[0], reverse=False)
+    # cc = 0
+    # for ll in lenlist:
+    #     cc += ll[1]
+    #     print(ll, cc, cc/225060)
 
-    # rel4Test = []
-    # relList = list(relDict.keys())
-    # i = 0
-    # while i * 5 + 4 < len(relList):
-    #     nd = random.randint(0, 4)
-    #     rel4Test.append(relList[i * 5 + nd])
-    #     i += 1
-    #
-    # print(len(rel4Test))
-    # print(rel4Test)
+    rel4Test = []
+    relList = list(relDict.keys())
+    i = 0
+    while i * 5 + 4 < len(relList):
+        nd = random.randint(0, 4)
+        rel4Test.append(relList[i * 5 + nd])
+        i += 1
+
+    print(len(rel4Test))
+    print(rel4Test)
     #
     # frr = codecs.open(fr, 'r', encoding='utf-8')
     #
