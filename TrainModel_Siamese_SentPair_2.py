@@ -13,9 +13,8 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_1
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_3
 from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1
+from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1_crude
 import keras
 
 
@@ -92,7 +91,6 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
         # print(i, len(sent_vob[key]))
         # inx += 1
     print(inx, len(sent_vob))
-
 
 
 def test_model2(nn_model, tag2sentDict_test):
@@ -386,28 +384,20 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_2':
-        nn_model = Model_BiLSTM_SentPair_1(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k,
-                                                  batch_size=batch_size)
-
-    if modelname is 'Model_BiLSTM_SentPair_3':
-        nn_model = Model_BiLSTM_SentPair_3(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k,
-                                                  batch_size=batch_size)
 
     if modelname is 'Model_BiLSTM_SentPair_RelPunish_1':
         nn_model = Model_BiLSTM_SentPair_RelPunish_1(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size)
+
+    elif modelname is 'Model_BiLSTM_SentPair_RelPunish_1_crude':
+        nn_model = Model_BiLSTM_SentPair_RelPunish_1_crude(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -455,9 +445,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    # modelname = 'Model_BiLSTM_SentPair_2'
-    # modelname = 'Model_BiLSTM_SentPair_3'
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_1_crude'
+    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
 
     print(modelname)
 

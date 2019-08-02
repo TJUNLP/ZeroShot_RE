@@ -15,7 +15,7 @@ import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_1
 from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_3
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_2
+from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_3
 import keras
 
 
@@ -163,7 +163,7 @@ def test_model2(nn_model, tag2sentDict_test):
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    if len(predictions) == 2:
+    if len(predictions) == 3:
         predictions = predictions[0]
 
     width = len(tag2sentDict_test.keys())
@@ -272,7 +272,7 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    if len(predictions) == 2:
+    if len(predictions) == 3:
         predictions = predictions[0]
 
     if needembed == True:
@@ -392,8 +392,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_RelPunish_2':
-        nn_model = Model_BiLSTM_SentPair_RelPunish_2(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_RelPunish_3':
+        nn_model = Model_BiLSTM_SentPair_RelPunish_3(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -444,7 +444,7 @@ if __name__ == "__main__":
 
     # modelname = 'Model_BiLSTM_SentPair_2'
     # modelname = 'Model_BiLSTM_SentPair_3'
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_2'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_3'
 
     print(modelname)
 
