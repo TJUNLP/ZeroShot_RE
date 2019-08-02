@@ -711,7 +711,7 @@ def cos_distance_loss(y_true, y_pred):
 
     # return K.sum(K.square(1 - y_pred), axis=1, keepdims=True)
     margin = 0.8
-    return K.sqrt(K.sum(K.square(K.maximum(margin - y_pred, K.epsilon())), axis=1, keepdims=True))
+    return K.sum(K.square(K.maximum(margin - y_pred, K.epsilon())), axis=1, keepdims=True)
 
 
 def Model_3Level_tag2v(wordvocabsize, targetvocabsize, charvobsize, posivocabsize,
