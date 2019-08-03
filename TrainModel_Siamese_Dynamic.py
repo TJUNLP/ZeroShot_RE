@@ -108,14 +108,13 @@ def test_rank(nn_model, tagDict_test):
         if labels_test[i] == 0:
             continue
         # print(i)
-
+        truth_tag_list.append(data_tag_list[i][0])
         for ins in target_vob_train.values():
 
             data_s_all.append(data_s_list[i])
             data_tag_all.append([ins])
             data_e1_posi_all.append(data_e1_posi_list[i])
             data_e2_posi_all.append(data_e2_posi_list[i])
-            truth_tag_list.append(data_tag_list[i][0])
             char_s_all.append(char_s_list[i])
 
     pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
@@ -375,9 +374,9 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
-    print('the test result-----------------------')
-    P, R, F = test_model(nnmodel, tagDict_test, target_vob)
-    print('P = ', P, 'R = ', R, 'F = ', F)
+    # print('the test result-----------------------')
+    # P, R, F = test_model(nnmodel, tagDict_test, target_vob)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the test rank result-----------------------')
     P, R, F = test_rank(nnmodel, tagDict_test)
@@ -418,6 +417,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   batch_size=batch_size)
 
     return nn_model
+
 
 def Dynamic_get_trainSet(tagDict):
 
