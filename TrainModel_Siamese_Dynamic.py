@@ -93,7 +93,7 @@ def test_rank(nn_model, tagDict_test):
     predict_right = 0
 
     totel_right = len(data_s_list) / 2
-    # totel_right = len(data_s_list[:1000]) /2
+    totel_right = len(data_s_list[:1000]) /2
 
     labels_all = []
     data_s_all = []
@@ -104,7 +104,7 @@ def test_rank(nn_model, tagDict_test):
 
     truth_tag_list = []
 
-    for i in range(len(data_s_list)):
+    for i in range(len(data_s_list[:1000])):
         if labels_test[i] == 0:
             continue
         # print(i)
