@@ -515,7 +515,7 @@ def get_split_train_dev(target_vob_train):
 def get_relembed_sim_rank(target_vob_train, type_W):
 
     RankDict = {}
-    for i in range(0, len(type_W[0])):
+    for i in range(0, len(type_W)):
 
         i_j = {}
         for j in target_vob_train.values():
@@ -626,7 +626,7 @@ if __name__=="__main__":
     word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
 
     type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+    print('TYPE_k, TYPE_W', type_k, len(type_W))
 
     get_relembed_sim_rank(target_vob_train, type_W)
 
