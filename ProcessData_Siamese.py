@@ -512,6 +512,31 @@ def get_split_train_dev(target_vob_train):
     return rel4dev
 
 
+def get_relembed_sim_rank(target_vob_train, type_W):
+
+    RankDict = {}
+    for i in range(0, len(type_W[0])):
+
+        i_j = {}
+        for j in target_vob_train.values():
+
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            i_j[j] = cos
+
+        ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+        # print(ijlist[:100])
+        ijlist = dict(ijlist)
+        ijlist = list(ijlist.keys())
+        RankDict[i] = ijlist
+        # print(RankDict[i])
+
+    return RankDict
+
+
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
@@ -593,8 +618,15 @@ if __name__=="__main__":
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    t2v_file = './data/KG2v/FB15K_OpenKETransE_Relation2Vec_100.txt'
+    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
     trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
     resultdir = "./data/result/"
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+
+    get_relembed_sim_rank(target_vob_train, type_W)
 

@@ -61,6 +61,126 @@ def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_te
     return P, R, F
 
 
+def test_rank(nn_model, tagDict_test):
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s, \
+    target_vob_train = ProcessData_Siamese.get_word_index([trainfile])
+
+    KGem_RankDict = ProcessData_Siamese.get_relembed_sim_rank(target_vob_train, type_W)
+
+    pairs_test0, labels_test = ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
+    print('CreatePairs test len = ', len(pairs_test0[0]), len(pairs_test0))
+
+    test_x1_sent = np.asarray(pairs_test0[0], dtype="int32")
+    test_x2_tag = np.asarray(pairs_test0[1], dtype="int32")
+    test_x1_e1_posi = np.asarray(pairs_test0[2], dtype="int32")
+    test_x1_e2_posi = np.asarray(pairs_test0[3], dtype="int32")
+    test_x1_sent_cahr = np.asarray(pairs_test0[4], dtype="int32")
+    test_y = np.asarray(labels_test, dtype="int32")
+
+    inputs_test_x = [test_x1_sent, test_x1_e1_posi, test_x1_e2_posi, test_x2_tag, test_x1_sent_cahr]
+    inputs_test_y = [test_y]
+
+    loss, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, batch_size=batch_size, verbose=0)
+    print('test in test_model--- loss, acc', loss, acc)
+
+    data_s_list, data_tag_list, data_e1_posi_list, data_e2_posi_list, char_s_list = pairs_test0
+
+    P = 0
+    R = 0
+    F = 0
+    predict = 0
+    predict_right = 0
+
+    totel_right = len(data_s_list) / 2
+    # totel_right = len(data_s_list[:1000]) /2
+
+    labels_all = []
+    data_s_all = []
+    data_e1_posi_all = []
+    data_e2_posi_all = []
+    data_tag_all = []
+    char_s_all = []
+
+    truth_tag_list = []
+
+    for i in range(len(data_s_list)):
+        if labels_test[i] == 0:
+            continue
+        # print(i)
+
+        for ins in target_vob_train.values():
+
+            data_s_all.append(data_s_list[i])
+            data_tag_all.append([ins])
+            data_e1_posi_all.append(data_e1_posi_list[i])
+            data_e2_posi_all.append(data_e2_posi_list[i])
+            truth_tag_list.append(data_tag_list[i][0])
+            char_s_all.append(char_s_list[i])
+
+    pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
+
+    test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
+    test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
+    test_x1_e1_posi = np.asarray(pairs_test[2], dtype="int32")
+    test_x1_e2_posi = np.asarray(pairs_test[3], dtype="int32")
+    test_x1_sent_cahr = np.asarray(pairs_test[4], dtype="int32")
+
+    predictions = nn_model.predict([test_x1_sent, test_x1_e1_posi, test_x1_e2_posi,
+                                    test_x2_tag, test_x1_sent_cahr], batch_size=batch_size, verbose=0)
+
+    if len(predictions) > 2 and len(predictions[0]) == 1:
+        print('-.- -.- -.- -.- -.- -.- -.- -.- -.- len(predictions) > 2 and len(predictions[0]) == 1', len(predictions))
+        target_vob_train_len = len(target_vob_train)
+        assert len(predictions) // target_vob_train_len == totel_right
+        assert len(truth_tag_list) == totel_right
+
+        for i in range(len(predictions) // target_vob_train_len):
+            left = i * target_vob_train_len
+            right = (i + 1) * target_vob_train_len
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
+
+            distantDict = {}
+            for j, disvlaue in enumerate(subpredictions):
+                distantDict[data_tag_all[i+j][0]] = disvlaue
+
+            distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+            distantDict = dict(distantList)
+            distantList = list(distantDict.keys())
+
+            match_max = -1
+            match_max_where = -1
+
+            for rk in KGem_RankDict.keys():
+                rlist = KGem_RankDict[rk]
+
+                match = 0
+
+                for rli in range(len(rlist)):
+                    if rlist[rli] == distantList[rli]:
+                        match += 1
+                    else:
+                        break
+
+                if match > match_max:
+                    match_max_where = rk
+                    match_max = match
+
+            if match_max > 1:
+                predict += 1
+
+                if match_max_where == truth_tag_list[i]:
+                    predict_right += 1
+
+        P = predict_right / max(predict, 0.000001)
+        R = predict_right / totel_right
+        F = 2 * P * R / max((P + R), 0.000001)
+        print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+
+    return P, R, F
+
+
 def test_model(nn_model, tagDict_test, target_vob):
 
     pairs_test0, labels_test = ProcessData_Siamese.CreatePairs(tagDict_test, istest=False)
@@ -257,6 +377,10 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
 
     print('the test result-----------------------')
     P, R, F = test_model(nnmodel, tagDict_test, target_vob)
+    print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test rank result-----------------------')
+    P, R, F = test_rank(nnmodel, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the test_model_4trainset result-----------------------')
