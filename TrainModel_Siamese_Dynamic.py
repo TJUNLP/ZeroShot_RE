@@ -103,19 +103,23 @@ def test_rank(nn_model, tagDict_test):
     char_s_all = []
 
     truth_tag_list = []
+    realins = []
 
     for i in range(len(data_s_list[:1000])):
         if labels_test[i] == 0:
             continue
         # print(i)
         truth_tag_list.append(data_tag_list[i][0])
-        for ins in target_vob_train.values():
+
+        for si, ins in enumerate(target_vob_train.values()):
 
             data_s_all.append(data_s_list[i])
             data_tag_all.append([ins])
             data_e1_posi_all.append(data_e1_posi_list[i])
             data_e2_posi_all.append(data_e2_posi_list[i])
             char_s_all.append(char_s_list[i])
+            if ins == data_tag_list[i][0]:
+                realins.append(si)
 
     pairs_test = [data_s_all, data_tag_all, data_e1_posi_all, data_e2_posi_all, char_s_all]
 
@@ -135,11 +139,16 @@ def test_rank(nn_model, tagDict_test):
         assert len(truth_tag_list) == totel_right
         assert len(data_tag_all) // target_vob_train_len == totel_right
 
+        predict_ins = 0
         for i in range(len(predictions) // target_vob_train_len):
             left = i * target_vob_train_len
             right = (i + 1) * target_vob_train_len
             subpredictions = predictions[left:right]
             subpredictions = subpredictions.flatten().tolist()
+
+
+            if subpredictions[realins[i]] > 0.5:
+                predict_ins += 1
 
             distantDict = {}
             for j, disvlaue in enumerate(subpredictions):
@@ -172,10 +181,12 @@ def test_rank(nn_model, tagDict_test):
                 if match_max_where == truth_tag_list[i]:
                     predict_right += 1
 
+
         P = predict_right / max(predict, 0.000001)
         R = predict_right / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
         print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+        print('predict_ins ==', predict_ins/totel_right)
 
     return P, R, F
 
