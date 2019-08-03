@@ -115,7 +115,8 @@ def Model_BiLSTM_SentPair_RelPunish_3(wordvocabsize, posivocabsize, charvocabsiz
     sent_x1_mlp2 = Dense(100, activation='tanh')(sent_x1_mlp1)
     # relPunish = Dot(axes=-1, normalize=True, name='relPunish')([sent_x1_mlp2, tag_embedding])
     # relPunish = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='relPunish')([sent_x1_mlp2, tag_embedding])
-    relPunish = Lambda(lambda x: K.maximum(K.sum(K.square(x[0] - x[1]), axis=1, keepdims=True), K.epsilon()))([sent_x1_mlp2, tag_embedding])
+    relPunish = Lambda(lambda x: K.maximum(K.sum(K.square(x[0] - x[1]), axis=1, keepdims=True), K.epsilon()),
+                       name='relPunish')([sent_x1_mlp2, tag_embedding])
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2, input_tag],
                     [output1, relPunish])
