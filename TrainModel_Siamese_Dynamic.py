@@ -133,6 +133,7 @@ def test_rank(nn_model, tagDict_test):
         target_vob_train_len = len(target_vob_train)
         assert len(predictions) // target_vob_train_len == totel_right
         assert len(truth_tag_list) == totel_right
+        assert len(data_tag_all) // target_vob_train_len == totel_right
 
         for i in range(len(predictions) // target_vob_train_len):
             left = i * target_vob_train_len
@@ -155,12 +156,10 @@ def test_rank(nn_model, tagDict_test):
                 rlist = KGem_RankDict[rk]
 
                 match = 0
-
+                assert len(rlist) == len(distantList)
                 for rli in range(len(rlist)):
                     if rlist[rli] == distantList[rli]:
                         match += 1
-                    else:
-                        break
 
                 if match > match_max:
                     match_max_where = rk
