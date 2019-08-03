@@ -166,11 +166,10 @@ def test_rank(nn_model, tagDict_test):
 
                 match = 0
                 assert len(rlist) == len(distantList)
-                # for rli in range(len(rlist)):
-                    # if rlist[rli] == distantList[rli]:
-                    #     match += (len(rlist) - rli)
-                if rlist[0] == distantList[0]:
-                    match = 100
+                for rli in range(len(rlist)):
+                    if rlist[rli] == distantList[rli]:
+                        match += (len(rlist) - rli)
+
                 if match > match_max:
                     match_max_where = rk
                     match_max = match
@@ -465,18 +464,18 @@ if __name__ == "__main__":
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
 
-    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
-    testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
+    # t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
+    # trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
+    # testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
 
-    # t2v_file = './data/FewRel/FewRel.rel2v.by_glove.100d.txt'
-    # trainfile = './data/FewRel/FewRel_data.train.txt'
-    # testfile = './data/FewRel/FewRel_data.test.txt'
+    t2v_file = './data/FewRel/FewRel.rel2v.by_glove.100d.txt'
+    trainfile = './data/FewRel/FewRel_data.train.txt'
+    testfile = './data/FewRel/FewRel_data.test.txt'
 
     resultdir = "./data/result/"
 
-    datafname = 'data_Siamese.split.WordChar.PTransE'
-    # datafname = 'FewRel_data_Siamese.split.WordChar.rel2v_by_glove'
+    # datafname = 'data_Siamese.split.WordChar.PTransE'
+    datafname = 'FewRel_data_Siamese.split.WordChar.rel2v_by_glove'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
