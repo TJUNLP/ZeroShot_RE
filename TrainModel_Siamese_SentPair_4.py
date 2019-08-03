@@ -163,7 +163,7 @@ def test_model2(nn_model, tag2sentDict_test):
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    if len(predictions) == 3:
+    if len(predictions) < 10:
         predictions = predictions[0]
 
     width = len(tag2sentDict_test.keys())
@@ -272,7 +272,7 @@ def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
 
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
 
-    if len(predictions) == 3:
+    if len(predictions) < 10:
         predictions = predictions[0]
 
     if needembed == True:
