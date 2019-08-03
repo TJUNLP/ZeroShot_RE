@@ -157,10 +157,11 @@ def test_rank(nn_model, tagDict_test):
 
                 match = 0
                 assert len(rlist) == len(distantList)
-                for rli in range(len(rlist)):
-                    if rlist[rli] == distantList[rli]:
-                        match += (len(rlist) - rli)
-
+                # for rli in range(len(rlist)):
+                    # if rlist[rli] == distantList[rli]:
+                    #     match += (len(rlist) - rli)
+                if rlist[0] == distantList[0]:
+                    match = 100
                 if match > match_max:
                     match_max_where = rk
                     match_max = match
