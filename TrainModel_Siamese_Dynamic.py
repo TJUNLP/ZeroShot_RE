@@ -159,7 +159,7 @@ def test_rank(nn_model, tagDict_test):
                 assert len(rlist) == len(distantList)
                 for rli in range(len(rlist)):
                     if rlist[rli] == distantList[rli]:
-                        match += 1
+                        match += (len(rlist) - rli)
 
                 if match > match_max:
                     match_max_where = rk
@@ -376,6 +376,10 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # print('the test result-----------------------')
     # P, R, F = test_model(nnmodel, tagDict_test, target_vob)
     # print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test rank result-----------------------')
+    P, R, F = test_rank(nnmodel, tagDict_train)
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
     print('the test rank result-----------------------')
     P, R, F = test_rank(nnmodel, tagDict_test)
