@@ -113,14 +113,14 @@ def Model_BiLSTM_SentPair_RelPunish_3(wordvocabsize, posivocabsize, charvocabsiz
     sent_x1_mlp1 = Dense(200, activation='tanh')(BiLSTM_x1)
     sent_x1_mlp1 = Dropout(0.25)(sent_x1_mlp1)
     sent_x1_mlp2 = Dense(100, activation='tanh')(sent_x1_mlp1)
-    relPunish = Dot(axes=-1, normalize=True, name='relPunish')([sent_x1_mlp2, tag_embedding])
-
+    # relPunish = Dot(axes=-1, normalize=True, name='relPunish')([sent_x1_mlp2, tag_embedding])
+    relPunish = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='l2_loss')([sent_x1_mlp2, tag_embedding])
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2, input_tag],
                     [output1, relPunish])
 
-    mymodel.compile(loss={'Output1': anti_contrastive_loss, 'relPunish': cos_distance_loss},
+    mymodel.compile(loss={'Output1': anti_contrastive_loss, 'relPunish': lambda y_true, y_pred: y_pred},
                     loss_weights={'Output1': 1., 'relPunish': 0.2},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics=[acc_siamese])
