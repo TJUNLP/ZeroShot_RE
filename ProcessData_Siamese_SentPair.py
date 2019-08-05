@@ -277,7 +277,7 @@ def get_Character_index(files):
 
 
 def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
-                  istest=False, needDEV=False, target_vob_4dev=target_vob_4dev):
+                  istest=False, needDEV=False, target_vob_4dev=None):
 
     tagDict = {}
     tagDict_dev = {}
