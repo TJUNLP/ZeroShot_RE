@@ -166,21 +166,21 @@ def test_model2(nn_model, tag2sentDict_test):
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
 
-    for i in range(len(predictions) // width) :
+    for i in range(len(predictions) // width):
         left = i * width
         right = (i + 1) * width
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
-        distantDict = {}
-        for num, disvlaue in enumerate(subpredictions):
-            distantDict[num] = disvlaue
-
-        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-        distantDict = dict(distantList)
-        distantList = list(distantDict.keys())
-        target_where = distantList.index(truth_tag_list[i]) + 1
-        predict_rank += target_where
+        # distantDict = {}
+        # for num, disvlaue in enumerate(subpredictions):
+        #     distantDict[num] = disvlaue
+        #
+        # distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+        # distantDict = dict(distantList)
+        # distantList = list(distantDict.keys())
+        # target_where = distantList.index(truth_tag_list[i]) + 1
+        # predict_rank += target_where
 
         mindis = max(subpredictions)
         mindis_where = subpredictions.index(mindis)
@@ -191,15 +191,15 @@ def test_model2(nn_model, tag2sentDict_test):
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
 
-        if subpredictions[truth_tag_list[i]] > 0.5:
-            predict_right05 += 1
+        # if subpredictions[truth_tag_list[i]] > 0.5:
+        #     predict_right05 += 1
 
     P = predict_right / max(predict, 0.000001)
     R = predict_right / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    print('test predict_rank = ', predict_rank / totel_right)
-    print('test distance > 0.5  = ', predict_right05 / totel_right)
+    # print('test predict_rank = ', predict_rank / totel_right)
+    # print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
     return P, R, F
 
