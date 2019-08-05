@@ -191,15 +191,15 @@ def test_model2(nn_model, tag2sentDict_test):
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
 
-        # if subpredictions[truth_tag_list[i]] > 0.5:
-        #     predict_right05 += 1
+        if subpredictions[truth_tag_list[i]] > 0.5:
+            predict_right05 += 1
 
     P = predict_right / max(predict, 0.000001)
     R = predict_right / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
     # print('test predict_rank = ', predict_rank / totel_right)
-    # print('test distance > 0.5  = ', predict_right05 / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
     return P, R, F
 
@@ -466,7 +466,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 

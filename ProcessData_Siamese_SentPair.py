@@ -187,6 +187,7 @@ def get_word_index(files):
     target_vob = {}
     sourc_idex_word = {}
     target_idex_word = {}
+    target_vob_train = {}
     count = 1
     tarcount = 0
 
@@ -220,11 +221,15 @@ def get_word_index(files):
                 target_idex_word[tarcount] = rel
                 tarcount += 1
 
+            if testf == files[0]:
+                if not target_vob_train.__contains__(rel):
+                    target_vob_train[rel] = target_vob[rel]
+
             max_s = max(max_s, len(words))
 
         f.close()
 
-    return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s
+    return source_vob, sourc_idex_word, target_vob, target_idex_word, max_s, target_vob_train
 
 
 def get_Character_index(files):
@@ -271,15 +276,16 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, istest=False, needDEV=False):
+def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
+                  istest=False, needDEV=False, target_vob_4dev=target_vob_4dev):
 
     tagDict = {}
     tagDict_dev = {}
-    thd = -1
+    # thd = -1
     f = codecs.open(trainfile, 'r', encoding='utf-8')
     lines = f.readlines()
-    if needDEV == True:
-        thd = len(lines) * 0.15
+    # if needDEV == True:
+    #     thd = len(lines) * 0.15
 
     for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
@@ -325,7 +331,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
         pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
 
-        if needDEV == True and si < thd:
+        # if needDEV == True and si < thd:
+        if needDEV == True and rel in target_vob_4dev.keys():
 
             if data_tag not in tagDict_dev.keys():
                 tagDict_dev[data_tag] = []
@@ -415,6 +422,20 @@ def CreatePairs(tagDict_train, istest=False):
     return pairs, labels
 
 
+def get_split_train_dev(target_vob_train):
+
+    rel4dev = {}
+    relList = list(target_vob_train.keys())
+    i = 0
+    while i * 10 + 9 < len(relList):
+        nd = random.randint(0, 9)
+        k = relList[i * 10 + nd]
+        rel4dev[k] = target_vob_train[k]
+        i += 1
+
+    return rel4dev
+
+
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
@@ -423,7 +444,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     Converts the input files  into the model input formats
     """
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
     print("source vocab size: ", str(len(word_vob)))
     print("word_id2word size: ", str(len(word_id2word)))
     print("target vocab size: " + str(len(target_vob)))
@@ -462,7 +483,12 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, istest=False)
     assert tagDict_dev == {}
     print('tagDict_test len', len(tagDict_test))
-    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=True)
+
+    target_vob_4dev = get_split_train_dev(target_vob_train)
+    print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
+
+    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
+                                               needDEV=True, target_vob_4dev=target_vob_4dev)
     print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
 
     # pairs_train, labels_train = CreatePairs(tagDict_train, istest=False)
@@ -494,16 +520,3 @@ if __name__=="__main__":
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
-
-
-    word_vob, word_id2word, target_vob, target_id2word, max_s = get_word_index({trainfile, testfile})
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-    print("target vocab size: " + str(len(target_vob)))
-    print("target_id2word size: " + str(len(target_id2word)))
-    if max_s > maxlen:
-        max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
-
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))

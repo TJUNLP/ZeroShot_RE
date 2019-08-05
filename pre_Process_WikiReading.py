@@ -281,6 +281,27 @@ def find_rel_from_corpus():
         print(ri, rel, len(relDict[rel]))
 
 
+def find_rel_in_test():
+
+    fr = './data/WikiReading/WikiReading的副本.txt'
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+    rellist = {}
+    for line in frr.readlines():
+        # print(line)
+        jline = line.rstrip('\r\n').rstrip('\n').split('\t')
+        rel = jline[0]
+        ques = jline[1]
+
+        if rel not in rellist:
+            rellist[rel] = []
+        if ques not in rellist[rel]:
+            rellist[rel].append(ques)
+
+    frr.close()
+    for rr in rellist:
+        for qq in rellist[rr]:
+            print(rr + '\t'+ qq)
+
 
 if __name__ == '__main__':
 
@@ -292,6 +313,11 @@ if __name__ == '__main__':
     # Process_Corpus()
 
     Split_zeroshotData_2_train_test()
+
+    # find_rel_in_test()
+
+
+
 
 '''
 0 place of birth 5147
