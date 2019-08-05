@@ -159,7 +159,7 @@ def test_model2(nn_model, tag2sentDict_test):
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
 
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     width = len(tag2sentDict_test.keys())
     assert len(predictions) // width == totel_right
@@ -474,7 +474,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 256
+    batch_size = 512 # 256
 
     retrain = False
     Test = True
@@ -502,7 +502,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(0, 5):
+    for inum in range(5, 7):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
