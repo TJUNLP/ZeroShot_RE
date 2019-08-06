@@ -161,7 +161,7 @@ def test_model2(nn_model, tag2sentDict_test):
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
 
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     if len(predictions) < 10:
         predictions = predictions[0]
@@ -444,7 +444,7 @@ if __name__ == "__main__":
 
     # modelname = 'Model_BiLSTM_SentPair_2'
     # modelname = 'Model_BiLSTM_SentPair_3'
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_3'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_3_0.5'
 
     print(modelname)
 
