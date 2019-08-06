@@ -52,10 +52,13 @@ def load_vec_KGrepresentation(fname, vocab, k):
     f = codecs.open(fname, 'r', encoding='utf-8')
     w2v = {}
     for line in f.readlines():
+
         values = line.rstrip('\n').split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
+
+        word = ' '.join(values[:len(values)-100])
+        coefs = np.asarray(values[len(values)-100:], dtype='float32')
         w2v[word] = coefs
+
     f.close()
 
     W = np.zeros(shape=(vocab.__len__(), k))
@@ -512,7 +515,7 @@ def get_split_train_dev(target_vob_train):
     return rel4dev
 
 
-def get_relembed_sim_rank(target_vob_train, type_W):
+def get_relembed_sim_rank(target_vob_train, type_W, target_id2word=None):
 
     RankDict = {}
     for i in range(0, len(type_W)):
@@ -528,7 +531,13 @@ def get_relembed_sim_rank(target_vob_train, type_W):
             i_j[j] = cos
 
         ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
-        # print(ijlist[:100])
+
+        # print('------------', target_id2word[i])
+        # for si, s in enumerate(ijlist):
+        #     if si > 10:
+        #         break
+        #     print(target_id2word[s[0]], s[1])
+
         ijlist = dict(ijlist)
         ijlist = list(ijlist.keys())
         RankDict[i] = ijlist
@@ -618,14 +627,15 @@ if __name__=="__main__":
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
-    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
-    testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
-    resultdir = "./data/result/"
 
-    # word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
-    #
-    # type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    # print('TYPE_k, TYPE_W', type_k, len(type_W))
-    #
-    # get_relembed_sim_rank(target_vob_train, type_W)
+    t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
+
+    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W))
+
+    get_relembed_sim_rank(target_vob_train, type_W, target_id2word=target_id2word)

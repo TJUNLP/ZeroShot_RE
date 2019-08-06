@@ -464,7 +464,7 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -472,7 +472,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 256
+    batch_size = 512 #256
 
     retrain = False
     Test = True

@@ -195,17 +195,17 @@ def Split_zeroshotData_2_train_test():
 
 def get_rel2v_ave_glove100():
 
-    # fr = './data/WikiReading/WikiReading.txt.json.txt'
-    # frr = codecs.open(fr, 'r', encoding='utf-8')
-    # rellist = []
-    # for line in frr.readlines():
-    #     # print(line)
-    #     jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-    #     rel = jline['rel']
-    #     if rel not in rellist:
-    #         rellist.append(rel)
-    #
-    # frr.close()
+    fr = './data/WikiReading/WikiReading.txt.json.txt'
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+    rellist = []
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        rel = jline['rel']
+        if rel not in rellist:
+            rellist.append(rel)
+
+    frr.close()
 
 
     w2v_file = "./data/w2v/glove.6B.100d.txt"
@@ -231,22 +231,31 @@ def get_rel2v_ave_glove100():
     #             print(ki, w)
     # print(i, j)
 
-    # rel2v_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.txt"
-    # fw = open(rel2v_file, 'w', encoding='utf-8')
-    #
-    # for ri, rel in enumerate(rellist):
-    #     print(rel)
-    #     words = rel.split()
-    #     W = np.zeros(shape=(words.__len__(), 100))
-    #     for wi, w in enumerate(words):
-    #         lower_word = w.lower()
-    #         W[wi] = w2v[lower_word]
-    #     ave = np.mean(W, axis=0)
-    #     string = rel
-    #     for item in ave:
-    #         string += ' ' + str(item)
-    #     fw.write(string + '\n')
-    # fw.close()
+    rel2v_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.txt"
+    fw = open(rel2v_file, 'w', encoding='utf-8')
+
+    for ri, rel in enumerate(rellist):
+        print(rel)
+        words = rel.split()
+        # print(words)
+        wpos = nltk.pos_tag(words)
+        newwords = []
+        for wi, wp in enumerate(wpos):
+            if wp[1] == 'IN' or wp[1] == 'TO':
+                continue
+            newwords.append(wp[0])
+        words = newwords
+        # print(words)
+        W = np.zeros(shape=(words.__len__(), 100))
+        for wi, w in enumerate(words):
+            lower_word = w.lower()
+            W[wi] = w2v[lower_word]
+        ave = np.mean(W, axis=0)
+        string = rel
+        for item in ave:
+            string += ' ' + str(item)
+        fw.write(string + '\n')
+    fw.close()
 
 
 def find_rel_from_corpus():
@@ -306,13 +315,13 @@ def find_rel_in_test():
 if __name__ == '__main__':
 
 
-    # get_rel2v_ave_glove100()
+    get_rel2v_ave_glove100()
 
     # find_rel_from_corpus()
 
     # Process_Corpus()
 
-    Split_zeroshotData_2_train_test()
+    # Split_zeroshotData_2_train_test()
 
     # find_rel_in_test()
 
