@@ -402,8 +402,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
-        
-    elif modelname is 'Model_BiLSTM_SentPair_RelPunish_3_0.5':
+
+    if modelname is 'Model_BiLSTM_SentPair_RelPunish_3_05':
+
+        print('!!!!!!!!!!!!!!')
         nn_model = Model_BiLSTM_SentPair_RelPunish_3(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -416,6 +418,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 
     return nn_model
+
 
 def Dynamic_get_trainSet(istest):
 
@@ -455,7 +458,7 @@ if __name__ == "__main__":
 
     # modelname = 'Model_BiLSTM_SentPair_2'
     # modelname = 'Model_BiLSTM_SentPair_3'
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_3_0.5'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_3_05'
 
     print(modelname)
 
