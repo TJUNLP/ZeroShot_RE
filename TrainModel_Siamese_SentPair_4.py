@@ -403,7 +403,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    if modelname is 'Model_BiLSTM_SentPair_RelPunish_3_05':
+    if modelname is 'Model_BiLSTM_SentPair_RelPunish_3_03':
 
         print('!!!!!!!!!!!!!!')
         nn_model = Model_BiLSTM_SentPair_RelPunish_3(wordvocabsize=wordvocabsize,
@@ -460,6 +460,7 @@ if __name__ == "__main__":
     # modelname = 'Model_BiLSTM_SentPair_3'
     modelname = 'Model_BiLSTM_SentPair_RelPunish_3_05'
     modelname = 'Model_BiLSTM_SentPair_RelPunish_3'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_3_03'
 
     print(modelname)
 
