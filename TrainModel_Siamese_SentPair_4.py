@@ -459,6 +459,7 @@ if __name__ == "__main__":
     # modelname = 'Model_BiLSTM_SentPair_2'
     # modelname = 'Model_BiLSTM_SentPair_3'
     modelname = 'Model_BiLSTM_SentPair_RelPunish_3_05'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_3'
 
     print(modelname)
 
