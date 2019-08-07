@@ -573,7 +573,6 @@ def Model_BiLSTM_SentPair_3(wordvocabsize, posivocabsize, charvocabsize,
     return mymodel
 
 
-
 def Model_BiLSTM_SentPair_1(wordvocabsize, posivocabsize, charvocabsize,
                      word_W, posi_W, char_W,
                      input_sent_lenth, input_maxword_length,
@@ -666,7 +665,6 @@ def Model_BiLSTM_SentPair_1(wordvocabsize, posivocabsize, charvocabsize,
     mymodel.compile(loss=anti_contrastive_loss, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_siamese])
 
     return mymodel
-
 
 
 def Model_BiLSTM_SentPair_RelPunish_4(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
@@ -779,10 +777,10 @@ def Model_BiLSTM_SentPair_RelPunish_4(wordvocabsize, posivocabsize, charvocabsiz
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2, input_tag],
                     [output1, relPunish])
 
-    mymodel.compile(loss=Mix_loss,
+    mymodel.compile(loss={'Output1': crude_anti_contrastive_loss, 'relPunish': lambda y_true, y_pred: y_pred},
+                    loss_weights={'Output1': 1., 'relPunish': 0.2}, #0.2
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics=[acc_siamese])
-
     return mymodel
 
 
