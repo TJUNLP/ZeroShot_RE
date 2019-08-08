@@ -447,20 +447,13 @@ def Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize, posivocabsize, charvo
     attention_tanh = Dense(1, activation='tanh')
     attention_probs = Activation('softmax')
 
-    atten_x2_concat = concatenate([BiLSTM_x2_lh, BiLSTM_x2_rh], axis=-1)
-    atten_x2_Repeat = RepeatVector(input_sent_lenth)(atten_x2_concat)
-    atten_x1_concat = concatenate([BiLSTM_x1_seq, atten_x2_Repeat],axis=-1)
-    attention_x1 = attention_tanh(atten_x1_concat)
+    attention_x1 = attention_tanh(BiLSTM_x1_seq)
     attention_probs_x1 = attention_probs(attention_x1)
     representation_x1 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x1_seq, attention_probs_x1])
     representation_x1 = Flatten()(representation_x1)
     representation_x1 = Dropout(0.25)(representation_x1)
 
-
-    atten_x1_concat = concatenate([BiLSTM_x1_lh, BiLSTM_x1_rh],axis=-1)
-    atten_x1_Repeat = RepeatVector(input_sent_lenth)(atten_x1_concat)
-    atten_x2_concat = concatenate([BiLSTM_x2_seq, atten_x1_Repeat],axis=-1)
-    attention_x2 = attention_tanh(atten_x2_concat)
+    attention_x2 = attention_tanh(BiLSTM_x2_seq)
     attention_probs_x2 = attention_probs(attention_x2)
     representation_x2 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x2_seq, attention_probs_x2])
     representation_x2 = Flatten()(representation_x2)
