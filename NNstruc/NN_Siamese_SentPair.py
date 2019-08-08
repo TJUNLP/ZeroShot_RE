@@ -453,7 +453,9 @@ def Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize, posivocabsize, charvo
     attention_x1 = attention_tanh(atten_x1_concat)
     attention_probs_x1 = attention_probs(attention_x1)
     representation_x1 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x1_seq, attention_probs_x1])
+    representation_x1 = Flatten()(representation_x1)
     representation_x1 = Dropout(0.25)(representation_x1)
+
 
     atten_x1_concat = concatenate([BiLSTM_x1_lh, BiLSTM_x1_rh],axis=-1)
     atten_x1_Repeat = RepeatVector(input_sent_lenth)(atten_x1_concat)
@@ -461,6 +463,7 @@ def Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize, posivocabsize, charvo
     attention_x2 = attention_tanh(atten_x2_concat)
     attention_probs_x2 = attention_probs(attention_x2)
     representation_x2 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x2_seq, attention_probs_x2])
+    representation_x2 = Flatten()(representation_x2)
     representation_x2 = Dropout(0.25)(representation_x2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
