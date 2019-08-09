@@ -385,10 +385,10 @@ def CreatePairs(tagDict_train, istest=False):
     data_e2_posi_all_1 = []
     char_s_all_1 = []
 
-    print(tagDict_train.keys())
+
     for tag in tagDict_train.keys():
         sents = tagDict_train[tag]
-        print(tag, len(sents))
+
         if len(sents) < 2:
             continue
         inc = random.randrange(1, len(sents))
