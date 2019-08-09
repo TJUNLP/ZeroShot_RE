@@ -6,7 +6,8 @@ import numpy as np
 
 def Process_Corpus():
 
-    f = './data/WikiReading/WikiReading.txt'
+    # f = './data/WikiReading/WikiReading.txt'
+    f = './data/WikiReading/rel_class_prototypes.txt'
     fw1w = codecs.open(f + '.json.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
@@ -14,14 +15,24 @@ def Process_Corpus():
     for line in frr.readlines():
         ls = line.rstrip('\n').split('\t')
 
-        sent0 = ls[3]
-
-        en1_name0 = ls[2]
+        # sent0 = ls[3]
+        sent0 = ls[0]
+        en1_name0 = ls[1]
+        en2_name0 = ls[2]
+        # en1_name0 = ls[2]
         en1_name1 = '_en1_name1_'
         sent1 = sent0.replace(en1_name0, en1_name1)
-        en2_name0 = ls[4]
+        # en2_name0 = ls[4]
         en2_name1 = '_en2_name1_'
         sent2 = sent1.replace(en2_name0, en2_name1)
+
+
+        # jsondict['en1_name'] = ls[2]
+        # jsondict['en2_name'] = ls[4]
+        # jsondict['rel'] = ls[0]
+        jsondict['en1_name'] = ls[1]
+        jsondict['en2_name'] = ls[2]
+        jsondict['rel'] = ls[3]
 
         if '_en1_name1_' not in sent2 or '_en2_name1_' not in sent2:
             # print('----------\n')
@@ -54,9 +65,7 @@ def Process_Corpus():
             continue
 
         jsondict['sent'] = sent5
-        jsondict['en1_name'] = ls[2]
-        jsondict['en2_name'] = ls[4]
-        jsondict['rel'] = ls[0]
+
 
 
         en1_name = re.sub(r'\(', '\\\(', en1_name0)
@@ -315,11 +324,11 @@ def find_rel_in_test():
 if __name__ == '__main__':
 
 
-    get_rel2v_ave_glove100()
+    # get_rel2v_ave_glove100()
 
     # find_rel_from_corpus()
 
-    # Process_Corpus()
+    Process_Corpus()
 
     # Split_zeroshotData_2_train_test()
 

@@ -438,6 +438,14 @@ def get_split_train_dev(target_vob_train):
     return rel4dev
 
 
+def get_rel_prototypes(file, max_s, max_posi, word_vob, target_vob, char_vob, max_c):
+
+    tagDict_prototypes, _ = get_sentDicts(file, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False)
+    print('tagDict_prototypes len', len(tagDict_prototypes))
+
+    return tagDict_prototypes
+
+
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 

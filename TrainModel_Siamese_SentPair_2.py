@@ -116,16 +116,21 @@ def test_model2(nn_model, tag2sentDict_test):
     labels_all = []
     totel_right = 0
 
+    tagDict_prototypes = ProcessData_Siamese_SentPair.\
+        get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+
+    assert len(tagDict_prototypes.keys()) == len(tag2sentDict_test.keys())
+
     truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(0, len(sents)):
             totel_right += 1
 
-            for si, ty in enumerate(tag2sentDict_test.keys()):
+            for si, ty in enumerate(tagDict_prototypes.keys()):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tag2sentDict_test[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
@@ -456,12 +461,13 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1_crude'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_1_crude'
     # modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_1_atten'
+    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1_atten'
 
     print(modelname)
 
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
