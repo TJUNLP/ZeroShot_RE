@@ -525,8 +525,41 @@ if __name__=="__main__":
     alpha = 10
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
-
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
+    if max_s > maxlen:
+        max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
+
+
+    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
+    print("source char size: ", char_vob.__len__())
+    max_c = min(max_c, 18)
+    print("max_c: ", max_c)
+
+    c2v_k, char_W, = load_vec_random(char_vob, k=50)
+    print('character_W shape:', char_W.shape)
+
+    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=100)
+    print("word2vec loaded!")
+    print("all vocab size: " + str(len(word_vob)))
+    print("source_W  size: " + str(len(word_W)))
+
+
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+
+
+    max_posi = 20
+    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
+    print('posi_k, posi_W', posi_k, len(posi_W))
+
+    tagDict_prototypes =  get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
