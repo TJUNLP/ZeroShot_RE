@@ -337,11 +337,14 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         # if needDEV == True and rel in target_vob_4dev.keys():
 
             if data_tag not in tagDict_dev.keys():
+
+                tagDict_dev[data_tag] = []
+
                 if prototypes != None:
-                    tagDict_dev[data_tag] = prototypes[data_tag]
-                else:
-                    tagDict_dev[data_tag] = []
+                    tagDict_dev[data_tag].append(prototypes[data_tag][0])
+
             tagDict_dev[data_tag].append(pairs)
+
 
         # elif istest == True:
         #
@@ -352,13 +355,14 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         #             tagDict[data_tag] = []
         #     if len(tagDict[data_tag]) < 400:
         #         tagDict[data_tag].append(pairs)
+
         else:
 
             if data_tag not in tagDict.keys():
+                tagDict[data_tag] = []
                 if prototypes != None:
                     tagDict[data_tag] = prototypes[data_tag]
-                else:
-                    tagDict[data_tag] = []
+
             tagDict[data_tag].append(pairs)
 
     f.close()
@@ -381,8 +385,10 @@ def CreatePairs(tagDict_train, istest=False):
     data_e2_posi_all_1 = []
     char_s_all_1 = []
 
+    print(tagDict_train.keys())
     for tag in tagDict_train.keys():
         sents = tagDict_train[tag]
+        print(tag, len(sents))
         if len(sents) < 2:
             continue
         inc = random.randrange(1, len(sents))
@@ -575,4 +581,16 @@ if __name__=="__main__":
     posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
     print('posi_k, posi_W', posi_k, len(posi_W))
 
-    tagDict_prototypes =  get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    tagDict_prototypes, _ = get_sentDicts(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    print('tagDict_prototypes len', len(tagDict_prototypes))
+    # for i in tagDict_prototypes.keys():
+    #     print(i, len(tagDict_prototypes[i]), len(tagDict_prototypes[i][0]))
+
+    target_vob_4dev = get_split_train_dev(target_vob_train)
+    print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
+
+    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
+                                               needDEV=True, target_vob_4dev=target_vob_4dev, prototypes=tagDict_prototypes)
+    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
+
+    print(0, len(tagDict_dev[0]), len(tagDict_dev[0][0]))
