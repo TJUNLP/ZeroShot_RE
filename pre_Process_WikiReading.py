@@ -7,7 +7,7 @@ import numpy as np
 def Process_Corpus():
 
     # f = './data/WikiReading/WikiReading.txt'
-    f = './data/WikiReading/rel_class_prototypes.txt'
+    f = './data/WikiReading/WikiReading_rel_class_mono-description.txt'
     fw1w = codecs.open(f + '.json.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
@@ -301,9 +301,11 @@ def find_rel_from_corpus():
 
 def find_rel_in_test():
 
-    fr = './data/WikiReading/WikiReading的副本.txt'
+    fr = './data/WikiReading/WikiReading.txt'
+    fw = './data/WikiReading/WikiReading_rel_class_mono-description.txt'
+    fww = codecs.open(fw, 'w', encoding='utf-8')
     frr = codecs.open(fr, 'r', encoding='utf-8')
-    rellist = {}
+    rellist = []
     for line in frr.readlines():
         # print(line)
         jline = line.rstrip('\r\n').rstrip('\n').split('\t')
@@ -311,14 +313,13 @@ def find_rel_in_test():
         ques = jline[1]
 
         if rel not in rellist:
-            rellist[rel] = []
-        if ques not in rellist[rel]:
-            rellist[rel].append(ques)
+            rellist.append(rel)
+            stw = 'There is a relationship type about \" ' + rel + ' \" between subject entity and object entity .'
+            fww.write(stw + '\t' + 'subject entity' + '\t' + 'object entity' + '\t' + rel + '\n')
 
     frr.close()
-    for rr in rellist:
-        for qq in rellist[rr]:
-            print(rr + '\t'+ qq)
+    fww.close()
+
 
 
 if __name__ == '__main__':
@@ -327,7 +328,7 @@ if __name__ == '__main__':
     # get_rel2v_ave_glove100()
 
     # find_rel_from_corpus()
-
+    #
     Process_Corpus()
 
     # Split_zeroshotData_2_train_test()

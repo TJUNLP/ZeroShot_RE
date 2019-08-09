@@ -277,7 +277,7 @@ def get_Character_index(files):
 
 
 def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
-                  istest=False, needDEV=False, target_vob_4dev=None):
+                  istest=False, needDEV=False, target_vob_4dev=None, prototypes=None):
 
     tagDict = {}
     tagDict_dev = {}
@@ -337,19 +337,28 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         # if needDEV == True and rel in target_vob_4dev.keys():
 
             if data_tag not in tagDict_dev.keys():
-                tagDict_dev[data_tag] = []
+                if prototypes != None:
+                    tagDict_dev[data_tag] = prototypes[data_tag]
+                else:
+                    tagDict_dev[data_tag] = []
             tagDict_dev[data_tag].append(pairs)
 
-        elif istest == True:
-
-            if data_tag not in tagDict.keys():
-                tagDict[data_tag] = []
-            if len(tagDict[data_tag]) < 400:
-                tagDict[data_tag].append(pairs)
+        # elif istest == True:
+        #
+        #     if data_tag not in tagDict.keys():
+        #         if prototypes != None:
+        #             tagDict[data_tag] = prototypes[data_tag]
+        #         else:
+        #             tagDict[data_tag] = []
+        #     if len(tagDict[data_tag]) < 400:
+        #         tagDict[data_tag].append(pairs)
         else:
 
             if data_tag not in tagDict.keys():
-                tagDict[data_tag] = []
+                if prototypes != None:
+                    tagDict[data_tag] = prototypes[data_tag]
+                else:
+                    tagDict[data_tag] = []
             tagDict[data_tag].append(pairs)
 
     f.close()
@@ -446,7 +455,7 @@ def get_rel_prototypes(file, max_s, max_posi, word_vob, target_vob, char_vob, ma
     return tagDict_prototypes
 
 
-def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
+def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50,
              hasNeg=False, percent=1):
 
     """
@@ -490,7 +499,11 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     # weigtnum = int(len(fragment_train) * percent)
     # fragment_train = fragment_train[:weigtnum]
 
-    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c, istest=False)
+    tagDict_prototypes, _ = get_sentDicts(prototypesfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    print('tagDict_prototypes len', len(tagDict_prototypes))
+
+    tagDict_test, tagDict_dev = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
+                                              istest=False, prototypes=tagDict_prototypes)
     assert tagDict_dev == {}
     print('tagDict_test len', len(tagDict_test))
 
@@ -498,7 +511,7 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
     print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
 
     tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
-                                               needDEV=True, target_vob_4dev=target_vob_4dev)
+                                               needDEV=True, target_vob_4dev=target_vob_4dev, prototypes=tagDict_prototypes)
     print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
 
     # pairs_train, labels_train = CreatePairs(tagDict_train, istest=False)
@@ -525,7 +538,7 @@ if __name__=="__main__":
     alpha = 10
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
-    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
+    rel_prototypes_file = './data/WikiReading/WikiReading_rel_class_mono-description.txt.json.txt'
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
