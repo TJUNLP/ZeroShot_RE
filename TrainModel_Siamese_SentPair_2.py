@@ -461,6 +461,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model(nn_model, tagDict_test, needembed=False)
+        P, R, F = test_model2(nn_model, tagDict_test)
         P, R, F = test_model3(nn_model, tagDict_test)
         if F > maxF:
             earlystop = 0
