@@ -4,11 +4,11 @@ import codecs, json, random, re, nltk
 import numpy as np
 
 
-def Process_Corpus():
+def Process_Corpus_0():
 
     # f = './data/WikiReading/WikiReading.txt'
-    f = './data/WikiReading/WikiReading_rel_class_mono-description.txt'
-    fw1w = codecs.open(f + '.json.txt', 'w', encoding='utf-8')
+    f = './data/WikiReading/rel_class_prototypes.txt'
+    fw1w = codecs.open(f + '.json.___.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
     cc = 0
@@ -35,12 +35,12 @@ def Process_Corpus():
         jsondict['rel'] = ls[3]
 
         if '_en1_name1_' not in sent2 or '_en2_name1_' not in sent2:
-            # print('----------\n')
-            # print(line)
+            print('----------\n')
+            print(line)
             # print(en1_name1, en1_name0)
             # print(en2_name1, en2_name0)
-            # print(sent0)
-            # print(sent2)
+            print(sent0)
+            print(sent2)
             # cc += 1
             # print(cc)
             continue
@@ -80,6 +80,95 @@ def Process_Corpus():
         en2_name = re.sub(r'\$', '\\\$', en2_name)
         en1_name = re.sub(r'\*', '\\\*', en1_name)
         en2_name = re.sub(r'\*', '\\\*', en2_name)
+
+        e1_0, e1_1 = re.search(en1_name, sent5, flags=re.I).span()
+        e1_l = len(re.compile(r' ').findall(sent5[:e1_0]))
+        e1_r = len(re.compile(r' ').findall(sent5[:e1_1])) + 1
+
+        tmplist = list(sent5)
+        tmplist2 = tmplist[:e1_0] + ['_' for x in range(e1_0, e1_1)] + tmplist[e1_1:]
+        sent6 = ''.join(tmplist2)
+        # print(line)
+        e2_0, e2_1 = re.search(en2_name, sent6, flags=re.I).span()
+        e2_l = len(re.compile(r' ').findall(sent5[:e2_0]))
+        e2_r = len(re.compile(r' ').findall(sent5[:e2_1])) + 1
+        # print(e1_l, e1_r, e2_l, e2_r)
+
+        if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+            print('>>>>>>>>>>>>>\n', sent5)
+            print(line)
+            print(e1_l, e1_r, e2_l, e2_r)
+        else:
+            if e1_r <= e2_l or e2_r <= e1_l:
+                jsondict['e1_posi'] = (e1_l, e1_r)
+                jsondict['e2_posi'] = (e2_l, e2_r)
+            else:
+                print('..............\n', sent5)
+                print(line)
+                print(e1_l, e1_r, e2_l, e2_r)
+
+        fj = json.dumps(jsondict, ensure_ascii=False)
+        fw1w.write(fj + '\n')
+
+
+    frr.close()
+    fw1w.close()
+
+    # frr2 = codecs.open(f + '.2.txt', 'r', encoding='utf-8')
+    # for line in frr2.readlines():
+    #
+    #     sent = json.loads(line.strip('\r\n').strip('\n'))
+    #     print(sent['sent'])
+    #     poslist = sent['pos']
+    #     for pos in poslist:
+    #         print(pos[1])
+
+
+def Process_Corpus():
+
+    # f = './data/WikiReading/WikiReading.txt'
+    f = './data/WikiReading/rel_class_prototypes.txt'
+    fw1w = codecs.open(f + '.json.___.txt', 'w', encoding='utf-8')
+    frr = codecs.open(f, 'r', encoding='utf-8')
+    jsondict = {}
+    cc = 0
+    for line in frr.readlines():
+        ls = line.rstrip('\n').split('\t')
+
+        sent0 = ls[0]
+        en1_name0 = ls[1]
+        en2_name0 = ls[2]
+
+        # jsondict['en1_name'] = ls[2]
+        # jsondict['en2_name'] = ls[4]
+        # jsondict['rel'] = ls[0]
+        jsondict['en1_name'] = ls[1]
+        jsondict['en2_name'] = ls[2]
+        jsondict['rel'] = ls[3]
+
+
+        sent5 = ' '.join(nltk.word_tokenize(sent0))
+
+        try:
+            assert en1_name0 in sent5
+            assert en2_name0 in sent5
+        except:
+            print('----------\n')
+            # print(line)
+            # print(en1_name1, en1_name0)
+            # print(en2_name1, en2_name0)
+            # print(sent0)
+            # print(sent3)
+            # print(sent5)
+            continue
+
+        jsondict['sent'] = sent5
+
+
+
+        en1_name = en1_name0
+        en2_name = en2_name0
+
 
         e1_0, e1_1 = re.search(en1_name, sent5, flags=re.I).span()
         e1_l = len(re.compile(r' ').findall(sent5[:e1_0]))
@@ -469,13 +558,13 @@ if __name__ == '__main__':
 
     # find_rel_from_corpus()
     #
-    # Process_Corpus()
+    Process_Corpus()
 
     # Process_Corpus_2()
 
     # Split_zeroshotData_2_train_test()
 
-    Split_zeroshotData_2_train_test_2()
+    # Split_zeroshotData_2_train_test_2()
 
     # find_rel_in_test()
 

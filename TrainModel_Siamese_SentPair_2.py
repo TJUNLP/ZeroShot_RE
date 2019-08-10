@@ -94,6 +94,125 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
+def test_model3(nn_model, tag2sentDict_test):
+
+    predict = 0
+    predict_right = 0
+    predict_right05 = 0
+
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+    data_tag_all = []
+
+    labels_all = []
+    totel_right = 0
+
+    tagDict_prototypes = ProcessData_Siamese_SentPair.\
+        get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
+
+
+    truth_tag_list = []
+    for tag in tag2sentDict_test.keys():
+        sents = tag2sentDict_test[tag]
+
+        for s in range(1, len(sents)):
+            totel_right += 1
+
+            for si, ty in enumerate(tagDict_prototypes.keys()):
+
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+                data_tag_all.append([ty])
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s_all_1.append(data_s)
+                data_e1_posi_all_1.append(data_e1_posi)
+                data_e2_posi_all_1.append(data_e2_posi)
+                char_s_all_1.append(char_s)
+
+                if tag == ty:
+                    labels_all.append(1)
+                    truth_tag_list.append(si)
+                else:
+                    labels_all.append(0)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
+
+    train_x1_sent = np.asarray(pairs[0], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+    train_x2_sent = np.asarray(pairs[4], dtype="int32")
+    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
+    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
+    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
+    train_tag = np.asarray(pairs[8], dtype="int32")
+
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
+
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
+
+    if len(predictions) < 10:
+        predictions = predictions[0]
+
+    width = len(tag2sentDict_test.keys())
+    assert len(predictions) // width == totel_right
+    assert len(truth_tag_list) == totel_right
+    predict_rank = 0
+
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
+        subpredictions = predictions[left:right]
+        subpredictions = subpredictions.flatten().tolist()
+
+        distantDict = {}
+        for num, disvlaue in enumerate(subpredictions):
+            distantDict[num] = disvlaue
+
+        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+        distantDict = dict(distantList)
+        distantList = list(distantDict.keys())
+        target_where = distantList.index(truth_tag_list[i]) + 1
+        predict_rank += target_where
+
+        mindis = max(subpredictions)
+        mindis_where = subpredictions.index(mindis)
+
+        if mindis > 0.5:
+            predict += 1
+
+            if mindis_where == truth_tag_list[i]:
+                predict_right += 1
+
+        if subpredictions[truth_tag_list[i]] > 0.5:
+            predict_right05 += 1
+
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('test predict_rank = ', predict_rank / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+    print('P =, R =, F = ', P, R, F)
+    return P, R, F
+
+
 def test_model2(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -367,7 +486,9 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('the test 2 result-----------------------')
     P, R, F = test_model2(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
-
+    print('the test 3 result-----------------------')
+    P, R, F = test_model3(nn_model, tagDict_test)
+    print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
     # print('P = ', P, 'R = ', R, 'F = ', F)
@@ -485,9 +606,9 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    datafname = 'WikiReading_data_Siamese.Sentpair.mono-descrip.tmp'
+    # datafname = 'WikiReading_data_Siamese.Sentpair.mono-descrip.tmp'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
