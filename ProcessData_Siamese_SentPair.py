@@ -340,8 +340,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
                 tagDict_dev[data_tag] = []
 
-                if prototypes != None and data_tag in prototypes.keys():
-                    tagDict_dev[data_tag].append(prototypes[data_tag][0])
+                # if prototypes != None and data_tag in prototypes.keys():
+                #     tagDict_dev[data_tag].append(prototypes[data_tag][0])
 
             tagDict_dev[data_tag].append(pairs)
 
@@ -360,8 +360,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
             if data_tag not in tagDict.keys():
                 tagDict[data_tag] = []
-                if prototypes != None and data_tag in prototypes.keys():
-                    tagDict[data_tag].append(prototypes[data_tag][0])
+                # if prototypes != None and data_tag in prototypes.keys():
+                #     tagDict[data_tag].append(prototypes[data_tag][0])
 
             tagDict[data_tag].append(pairs)
 
