@@ -124,12 +124,104 @@ def Process_Corpus():
     #         print(pos[1])
 
 
+
+def Process_Corpus_2():
+
+    f = './data/WikiReading/WikiReading.txt'
+    fw1w = codecs.open(f + '.json.2.txt', 'w', encoding='utf-8')
+    frr = codecs.open(f, 'r', encoding='utf-8')
+    jsondict = {}
+    cc = 0
+    for line in frr.readlines():
+        ls = line.rstrip('\n').split('\t')
+
+        sent0 = ls[3]
+        en1_name0 = ls[2]
+        en1_name1 = 'subject entity'
+        sent1 = sent0.replace(en1_name0, en1_name1)
+        en2_name0 = ls[4]
+        en2_name1 = 'object entity'
+        sent2 = sent1.replace(en2_name0, en2_name1)
+
+
+        jsondict['en1_name'] = ls[2]
+        jsondict['en2_name'] = ls[4]
+        jsondict['rel'] = ls[0]
+
+
+        if 'subject entity' not in sent2 or 'object entity' not in sent2:
+            # print('----------\n')
+            # print(line)
+            # print(en1_name1, en1_name0)
+            # print(en2_name1, en2_name0)
+            # print(sent0)
+            # print(sent2)
+            # cc += 1
+            # print(cc)
+            continue
+
+
+        sent3 = ' '.join(nltk.word_tokenize(sent2))
+
+        # sent4 = sent3.replace(en1_name1, en1_name0)
+        # sent5 = sent4.replace(en2_name1, en2_name0)
+
+
+        jsondict['sent'] = sent3
+
+        en1_name = 'subject entity'
+        en2_name = 'object entity'
+        sent5 = sent3
+
+        e1_0, e1_1 = re.search(en1_name, sent5, flags=re.I).span()
+        e1_l = len(re.compile(r' ').findall(sent5[:e1_0]))
+        e1_r = len(re.compile(r' ').findall(sent5[:e1_1])) + 1
+
+        tmplist = list(sent5)
+        tmplist2 = tmplist[:e1_0] + ['_' for x in range(e1_0, e1_1)] + tmplist[e1_1:]
+        sent6 = ''.join(tmplist2)
+        # print(line)
+        e2_0, e2_1 = re.search(en2_name, sent6, flags=re.I).span()
+        e2_l = len(re.compile(r' ').findall(sent5[:e2_0]))
+        e2_r = len(re.compile(r' ').findall(sent5[:e2_1])) + 1
+        # print(e1_l, e1_r, e2_l, e2_r)
+
+        if e1_l == -1 or e1_r == -1 or e2_l == -1 or e2_r == -1:
+            print('>>>>>>>>>>>>>\n', sent5)
+            print(line)
+            print(e1_l, e1_r, e2_l, e2_r)
+        else:
+            if e1_r <= e2_l or e2_r <= e1_l:
+                jsondict['e1_posi'] = (e1_l, e1_r)
+                jsondict['e2_posi'] = (e2_l, e2_r)
+            else:
+                print('..............\n', sent5)
+                print(line)
+                print(e1_l, e1_r, e2_l, e2_r)
+
+        fj = json.dumps(jsondict, ensure_ascii=False)
+        fw1w.write(fj + '\n')
+
+
+    frr.close()
+    fw1w.close()
+
+    # frr2 = codecs.open(f + '.2.txt', 'r', encoding='utf-8')
+    # for line in frr2.readlines():
+    #
+    #     sent = json.loads(line.strip('\r\n').strip('\n'))
+    #     print(sent['sent'])
+    #     poslist = sent['pos']
+    #     for pos in poslist:
+    #         print(pos[1])
+
+
 def Split_zeroshotData_2_train_test():
 
-    # fw_train = './data/WikiReading/WikiReading_data.random.train.txt'
-    # fw_test = './data/WikiReading/WikiReading_data.random.test.txt'
-    # fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
-    # fwte = codecs.open(fw_test, 'w', encoding='utf-8')
+    fw_train = './data/WikiReading/WikiReading_data.random.train.txt'
+    fw_test = './data/WikiReading/WikiReading_data.random.test.txt'
+    fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
+    fwte = codecs.open(fw_test, 'w', encoding='utf-8')
 
     fr = './data/WikiReading/WikiReading.txt.json.txt'
     frr = codecs.open(fr, 'r', encoding='utf-8')
@@ -177,29 +269,77 @@ def Split_zeroshotData_2_train_test():
 
     print(len(rel4Test))
     print(rel4Test)
-    #
-    # frr = codecs.open(fr, 'r', encoding='utf-8')
-    #
-    # for line in frr.readlines():
-    #     # print(line)
-    #     jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-    #
-    #     rel = jline['rel']
-    #
-    #     fj = json.dumps(jline, ensure_ascii=False)
-    #     if rel in rel4Test:
-    #         fwte.write(fj + '\n')
-    #     else:
-    #         fwtr.write(fj + '\n')
-    #
-    # fwte.close()
-    # fwtr.close()
+
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+
+        rel = jline['rel']
+
+        fj = json.dumps(jline, ensure_ascii=False)
+        if rel in rel4Test:
+            fwte.write(fj + '\n')
+        else:
+            fwtr.write(fj + '\n')
+
+    fwte.close()
+    fwtr.close()
     frr.close()
 
     # relList = sorted(relDict.items(), key=lambda s: s[1], reverse=True)
     # for rr in relList:
     #     print(rr)
     # print(len(relList))
+
+
+def Split_zeroshotData_2_train_test_2():
+
+    fw_train = './data/WikiReading/WikiReading_data.2.random.train.txt'
+    fw_test = './data/WikiReading/WikiReading_data.2.random.test.txt'
+    fwtr = codecs.open(fw_train, 'w', encoding='utf-8')
+    fwte = codecs.open(fw_test, 'w', encoding='utf-8')
+
+    fr = './data/WikiReading/rel_class_prototypes.txt'
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+    relDict = {}
+
+    for line in frr.readlines():
+        # print(line)
+        jline = line.rstrip('\r\n').rstrip('\n').split('\t')
+        rel = jline[3]
+
+        if rel in relDict.keys():
+            relDict[rel] += 1
+        else:
+            relDict[rel] = 1
+    print(len(relDict))
+    frr.close()
+
+    rel4Test = list(relDict.keys())
+
+    print(len(rel4Test))
+    print(rel4Test)
+
+    fr = './data/WikiReading/WikiReading.txt.json.2.txt'
+    frr = codecs.open(fr, 'r', encoding='utf-8')
+
+    for line in frr.readlines():
+        # print(line)
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+
+        rel = jline['rel']
+
+        fj = json.dumps(jline, ensure_ascii=False)
+        if rel in rel4Test:
+            fwte.write(fj + '\n')
+        else:
+            fwtr.write(fj + '\n')
+
+    fwte.close()
+    fwtr.close()
+    frr.close()
 
 
 def get_rel2v_ave_glove100():
@@ -329,9 +469,13 @@ if __name__ == '__main__':
 
     # find_rel_from_corpus()
     #
-    Process_Corpus()
+    # Process_Corpus()
+
+    # Process_Corpus_2()
 
     # Split_zeroshotData_2_train_test()
+
+    Split_zeroshotData_2_train_test_2()
 
     # find_rel_in_test()
 

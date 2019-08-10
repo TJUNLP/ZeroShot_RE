@@ -465,7 +465,7 @@ if __name__ == "__main__":
 
     print(modelname)
 
-    rel_prototypes_file = './data/WikiReading/WikiReading_rel_class_mono-description.txt.json.txt'
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
@@ -476,8 +476,11 @@ if __name__ == "__main__":
     # trainfile = './data/FewRel/FewRel_data.train.txt'
     # testfile = './data/FewRel/FewRel_data.test.txt'
 
-    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
-    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+    # trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
+    # testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+
+    trainfile = './data/WikiReading/WikiReading_data.2.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.2.random.test.txt'
 
     resultdir = "./data/result/"
 
