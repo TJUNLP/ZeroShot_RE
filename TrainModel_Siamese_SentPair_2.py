@@ -461,8 +461,8 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model(nn_model, tagDict_test, needembed=False)
+        # P, R, F = test_model3(nn_model, tagDict_test)
         P, R, F = test_model2(nn_model, tagDict_test)
-        P, R, F = test_model3(nn_model, tagDict_test)
         if F > maxF:
             earlystop = 0
             maxF = F
@@ -646,7 +646,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(0, 1):
+    for inum in range(1, 2):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
