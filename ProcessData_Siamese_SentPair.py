@@ -304,7 +304,7 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
         data_tag = target_vob[rel]
 
-        # word_vob['____'] = len(word_vob)+1
+        word_vob['____'] = len(word_vob)+1
 
         data_s = [word_vob[ww] for ww in sent[0:min(len(sent), max_s)]]+ [0] * max(0, max_s - len(sent))
 
