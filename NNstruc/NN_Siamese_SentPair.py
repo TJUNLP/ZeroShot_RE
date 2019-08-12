@@ -447,15 +447,19 @@ def Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize, posivocabsize, charvo
     attention_tanh = Dense(1, activation='tanh')
     attention_probs = Activation('softmax')
 
+
     attention_x1 = attention_tanh(BiLSTM_x1_seq)
     attention_probs_x1 = attention_probs(attention_x1)
     representation_x1 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x1_seq, attention_probs_x1])
+    representation_x1 = GlobalMaxPooling1D()(representation_x1)
     representation_x1 = Dropout(0.5)(representation_x1)
 
     attention_x2 = attention_tanh(BiLSTM_x2_seq)
     attention_probs_x2 = attention_probs(attention_x2)
     representation_x2 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x2_seq, attention_probs_x2])
+    representation_x2 = GlobalMaxPooling1D()(representation_x2)
     representation_x2 = Dropout(0.5)(representation_x2)
+
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
