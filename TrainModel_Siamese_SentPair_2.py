@@ -607,9 +607,9 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
+    # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
