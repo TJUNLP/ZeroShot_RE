@@ -431,33 +431,30 @@ def Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize, posivocabsize, charvo
     tag_embedding = Flatten()(tag_embedding)
 
 
-    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh', return_sequences=True, return_state=True), merge_mode='concat')
+    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh', return_sequences=True), merge_mode='concat')
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
-    BiLSTM_x1_seq, BiLSTM_x1_lh, x1_lc, BiLSTM_x1_rh, x1_rc = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1_seq = BiLSTM_layer(embedding_x1)
     BiLSTM_x1_seq = Dropout(0.25)(BiLSTM_x1_seq)
 
     embedding_x2 = concatenate([word_embedding_sent_x2, char_embedding_sent_x2,
                                 embedding_e1_posi_x2, embedding_e2_posi_x2], axis=-1)
-    BiLSTM_x2_seq, BiLSTM_x2_lh, x2_lc, BiLSTM_x2_rh, x2_rc  = BiLSTM_layer(embedding_x2)
+    BiLSTM_x2_seq = BiLSTM_layer(embedding_x2)
     BiLSTM_x2_seq = Dropout(0.25)(BiLSTM_x2_seq)
 
 
     attention_tanh = Dense(1, activation='tanh')
     attention_probs = Activation('softmax')
-    attention_BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh', return_sequences=False), merge_mode='concat')
 
     attention_x1 = attention_tanh(BiLSTM_x1_seq)
     attention_probs_x1 = attention_probs(attention_x1)
     representation_x1 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x1_seq, attention_probs_x1])
-    representation_x1 = attention_BiLSTM_layer(representation_x1)
     representation_x1 = Dropout(0.5)(representation_x1)
 
     attention_x2 = attention_tanh(BiLSTM_x2_seq)
     attention_probs_x2 = attention_probs(attention_x2)
     representation_x2 = Lambda(lambda x: x[0] * x[1])([BiLSTM_x2_seq, attention_probs_x2])
-    representation_x2 = attention_BiLSTM_layer(representation_x2)
     representation_x2 = Dropout(0.5)(representation_x2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])

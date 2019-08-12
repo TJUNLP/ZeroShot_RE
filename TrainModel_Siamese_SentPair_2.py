@@ -581,9 +581,9 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_RelPunish_1_crude'
+    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1_crude'
     # modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
-    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1_atten'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_1_atten'
 
     print(modelname)
 
@@ -598,18 +598,18 @@ if __name__ == "__main__":
     # trainfile = './data/FewRel/FewRel_data.train.txt'
     # testfile = './data/FewRel/FewRel_data.test.txt'
 
-    # trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
-    # testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
-    trainfile = './data/WikiReading/WikiReading_data.2.random.train.txt'
-    testfile = './data/WikiReading/WikiReading_data.2.random.test.txt'
+    # trainfile = './data/WikiReading/WikiReading_data.2.random.train.txt'
+    # testfile = './data/WikiReading/WikiReading_data.3.random.test.txt'
 
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    datafname = 'WikiReading_data_Siamese.Sentpair.mono-descrip'
+    datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -646,7 +646,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(1, 2):
+    for inum in range(0, 1):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
