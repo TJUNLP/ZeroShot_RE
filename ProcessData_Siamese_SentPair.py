@@ -304,9 +304,14 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
         data_tag = target_vob[rel]
 
-        word_vob['____'] = len(word_vob)+1
+        # word_vob['____'] = len(word_vob)+1
 
-        data_s = [word_vob[ww] for ww in sent[0:min(len(sent), max_s)]]+ [0] * max(0, max_s - len(sent))
+        data_s = []
+        for ww in sent[0:min(len(sent), max_s)]:
+            if ww not in word_vob:
+                word_vob[ww] = word_vob['**UNK**']
+            data_s.append(word_vob[ww])
+        data_s = data_s + [0] * max(0, max_s - len(sent))
 
         list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
         list_left.reverse()
@@ -546,7 +551,7 @@ if __name__=="__main__":
     alpha = 10
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
-    rel_prototypes_file = './data/WikiReading/WikiReading_rel_class_mono-description.txt.json.txt'
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
@@ -587,12 +592,3 @@ if __name__=="__main__":
     print('tagDict_prototypes len', len(tagDict_prototypes))
     # for i in tagDict_prototypes.keys():
     #     print(i, len(tagDict_prototypes[i]), len(tagDict_prototypes[i][0]))
-
-    target_vob_4dev = get_split_train_dev(target_vob_train)
-    print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
-
-    tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
-                                               needDEV=True, target_vob_4dev=target_vob_4dev, prototypes=tagDict_prototypes)
-    print('tagDict_train len', len(tagDict_train), 'tagDict_dev len', len(tagDict_dev))
-
-    print(0, len(tagDict_dev[0]), len(tagDict_dev[0][0]))
