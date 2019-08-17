@@ -246,6 +246,8 @@ def test_model3(nn_model, tag2sentDict_test):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
+                if ty != 'country of origin':
+                    continue
 
                 data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_0.append(data_s)
