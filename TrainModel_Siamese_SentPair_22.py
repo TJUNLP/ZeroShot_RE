@@ -246,8 +246,6 @@ def test_model3(nn_model, tag2sentDict_test):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
-                if ty != 'country of origin':
-                    continue
 
                 data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_0.append(data_s)
@@ -706,7 +704,7 @@ if __name__ == "__main__":
 
     print(modelname)
 
-    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.22.txt'
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.22txt'
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
