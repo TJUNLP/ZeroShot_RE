@@ -127,24 +127,22 @@ def Process_Corpus_0():
 def Process_Corpus():
 
     # f = './data/WikiReading/WikiReading.txt'
-    f = './data/WikiReading/rel_class_prototypes.txt'
-    fw1w = codecs.open(f + '.json.___.txt', 'w', encoding='utf-8')
+    # f = './data/WikiReading/rel_class_prototypes.____.txt'
+    f = './data/WikiReading/WikiReading_data.random.4.test.txt'
+    # fw1w = codecs.open(f + '.json.___.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
     cc = 0
-    for line in frr.readlines():
+    for li, line in enumerate(frr.readlines()):
+        if li != 4:
+            continue
         ls = line.rstrip('\n').split('\t')
 
         sent0 = ls[0]
         en1_name0 = ls[1]
         en2_name0 = ls[2]
 
-        # jsondict['en1_name'] = ls[2]
-        # jsondict['en2_name'] = ls[4]
-        # jsondict['rel'] = ls[0]
-        jsondict['en1_name'] = ls[1]
-        jsondict['en2_name'] = ls[2]
-        jsondict['rel'] = ls[3]
+
 
 
         sent5 = ' '.join(nltk.word_tokenize(sent0))
@@ -164,7 +162,12 @@ def Process_Corpus():
 
         jsondict['sent'] = sent5
 
-
+        # jsondict['en1_name'] = ls[2]
+        # jsondict['en2_name'] = ls[4]
+        # jsondict['rel'] = ls[0]
+        jsondict['en1_name'] = ls[1]
+        jsondict['en2_name'] = ls[2]
+        jsondict['rel'] = ls[3]
 
         en1_name = en1_name0
         en2_name = en2_name0
@@ -197,11 +200,12 @@ def Process_Corpus():
                 print(e1_l, e1_r, e2_l, e2_r)
 
         fj = json.dumps(jsondict, ensure_ascii=False)
-        fw1w.write(fj + '\n')
+        print(fj)
+        # fw1w.write(fj + '\n')
 
 
     frr.close()
-    fw1w.close()
+    # fw1w.close()
 
     # frr2 = codecs.open(f + '.2.txt', 'r', encoding='utf-8')
     # for line in frr2.readlines():
