@@ -724,8 +724,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
@@ -763,7 +763,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(0, 1):
+    for inum in range(5, 6):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
