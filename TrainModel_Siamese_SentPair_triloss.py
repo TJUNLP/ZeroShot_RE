@@ -332,87 +332,6 @@ def test_model2(nn_model, tag2sentDict_test):
     return P, R, F
 
 
-def test_model(nn_model, tagDict_test, needembed=False, w2file=''):
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_tag_all = []
-
-    tagIndex = []
-
-    for tag in tagDict_test.keys():
-
-        if needembed == True:
-            star = 0
-        else:
-            star = 1
-            if len(tagDict_test[tag]) < 2:
-                continue
-
-        for i in range(star, len(tagDict_test[tag])):
-
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_tag_all.append([tag])
-
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_test[tag][i]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-            tagIndex.append(tag)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
-
-    train_x1_sent = np.asarray(pairs[0], dtype="int32")
-    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
-    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
-    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
-    train_x2_sent = np.asarray(pairs[4], dtype="int32")
-    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
-    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
-    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-    train_tag = np.asarray(pairs[8], dtype="int32")
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
-
-    predict = 0
-    predict_right = 0
-    totel_right = len(pairs[0])
-
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
-
-    if needembed == True:
-        get_sent_index(nn_model, inputs_train_x, tagIndex, w2file)
-
-    for pre in predictions:
-
-        if pre > 0.5:
-            predict += 1
-            predict_right += 1
-
-    P = predict_right / predict
-    R = predict_right / totel_right
-    F = 2 * P * R / (P + R)
-    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    print('P =, R =, F = ', P, R, F)
-
-    return P, R, F
-
-
 def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                     resultdir,
                     npoches=100, batch_size=50, retrain=False, inum=0):
@@ -465,9 +384,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
-        P, R, F = test_model(nn_model, tagDict_test, needembed=False)
-        # P, R, F = test_model3(nn_model, tagDict_test)
-        P, R, F = test_model2(nn_model, tagDict_test)
+        P, R, F = test_model3(nn_model, tagDict_test)
         if F > maxF:
             earlystop = 0
             maxF = F
@@ -486,9 +403,6 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
-    print('the test result-----------------------')
-    P, R, F = test_model(nn_model, tagDict_test, needembed=False)
-    print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the test 2 result-----------------------')
     # P, R, F = test_model2(nn_model, tagDict_test)
     # print('P = ', P, 'R = ', R, 'F = ', F)
