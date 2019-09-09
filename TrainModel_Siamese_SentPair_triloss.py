@@ -13,9 +13,7 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1_crude
-from NNstruc.NN_Siamese_SentPair import Model_BiLSTM_SentPair_RelPunish_1_atten
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
 import keras
 
 
@@ -160,12 +158,19 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-    train_tag = np.asarray(pairs[8], dtype="int32")
+    train_x3_sent = train_x2_sent
+    train_x3_e1_posi = train_x2_e1_posi
+    train_x3_e2_posi = train_x2_e2_posi
+    train_x3_sent_cahr = train_x2_sent_cahr
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
 
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('right_cos').get_output_at(1))
+    predictions = intermediate_layer_model.predict(inputs_train_x)
+
 
     if len(predictions) < 10:
         predictions = predictions[0]
@@ -456,7 +461,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
-                               callbacks=[reduce_lr, checkpointer])
+                               callbacks=[reduce_lr])
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
@@ -510,31 +515,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-
-    if modelname is 'Model_BiLSTM_SentPair_RelPunish_1':
-        nn_model = Model_BiLSTM_SentPair_RelPunish_1(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                    tagvocabsize=tagvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size)
-
-    elif modelname is 'Model_BiLSTM_SentPair_RelPunish_1_crude':
-        nn_model = Model_BiLSTM_SentPair_RelPunish_1_crude(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                    tagvocabsize=tagvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size)
-
-    elif modelname is 'Model_BiLSTM_SentPair_RelPunish_1_atten':
-        nn_model = Model_BiLSTM_SentPair_RelPunish_1_atten(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_1':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -546,6 +528,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
     return nn_model
 
+
 def Dynamic_get_trainSet(istest):
 
     if istest == True:
@@ -553,7 +536,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreatePairs(tagDict, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -565,13 +548,18 @@ def Dynamic_get_trainSet(istest):
     train_x2_e1_posi = np.asarray(pairs_train[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs_train[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs_train[7], dtype="int32")
-    train_tag = np.asarray(pairs_train[8], dtype="int32")
+    train_x3_sent = np.asarray(pairs_train[8], dtype="int32")
+    train_x3_e1_posi = np.asarray(pairs_train[9], dtype="int32")
+    train_x3_e2_posi = np.asarray(pairs_train[10], dtype="int32")
+    train_x3_sent_cahr = np.asarray(pairs_train[11], dtype="int32")
+    train_tag = np.asarray(pairs_train[12], dtype="int32")
 
     train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
     inputs_train_y = [train_y]
 
     return inputs_train_x, inputs_train_y
@@ -582,8 +570,6 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
-    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1'
-    # modelname = 'Model_BiLSTM_SentPair_RelPunish_1_atten'
 
     print(modelname)
 
