@@ -459,11 +459,12 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
-                               callbacks=[reduce_lr, checkpointer])
+                               callbacks=[reduce_lr])
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model(nn_model, tagDict_test, needembed=False)
+        P, R, F = test_model2(nn_model, tagDict_test)
         P, R, F = test_model3(nn_model, tagDict_test)
         if F > maxF:
             earlystop = 0
@@ -472,7 +473,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
-        if earlystop >= 15:
+        if earlystop >= 20:
             break
 
     return nn_model
@@ -486,9 +487,9 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('the test result-----------------------')
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
-    # print('the test 2 result-----------------------')
-    # P, R, F = test_model2(nn_model, tagDict_test)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
+    print('the test 2 result-----------------------')
+    P, R, F = test_model2(nn_model, tagDict_test)
+    print('P = ', P, 'R = ', R, 'F = ', F)
     print('the test 3 result-----------------------')
     P, R, F = test_model3(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
@@ -624,7 +625,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(0, 5):
+    for inum in range(2, 3):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
