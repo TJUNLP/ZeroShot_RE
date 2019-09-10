@@ -445,6 +445,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     increment = 1
     earlystop = 0
     maxF = 0.
+    maxF_best = 0.
     while nowepoch <= npoches:
         nowepoch += increment
         earlystop += 1
@@ -465,13 +466,20 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model(nn_model, tagDict_test, needembed=False)
         P, R, F = test_model2(nn_model, tagDict_test)
-        P, R, F = test_model3(nn_model, tagDict_test)
+
         if F > maxF:
             earlystop = 0
             maxF = F
             nn_model.save_weights(modelfile, overwrite=True)
 
         print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+
+        P, R, F = test_model3(nn_model, tagDict_test)
+        if F > maxF_best:
+            maxF_best = F
+            nn_model.save_weights(modelfile+".best_model.h5", overwrite=True)
+
+        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF_best)
 
         if earlystop >= 20:
             break
@@ -523,7 +531,16 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
-
+    elif modelname is 'Model_BiLSTM_SentPair_RelPunish_4_002':
+        nn_model = Model_BiLSTM_SentPair_RelPunish_4(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size)
 
 
 
@@ -569,6 +586,7 @@ if __name__ == "__main__":
     # modelname = 'Model_BiLSTM_SentPair_2'
     # modelname = 'Model_BiLSTM_SentPair_3'
     modelname = 'Model_BiLSTM_SentPair_RelPunish_4_02'
+    modelname = 'Model_BiLSTM_SentPair_RelPunish_4_002'
 
     print(modelname)
 
@@ -647,6 +665,8 @@ if __name__ == "__main__":
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir,w2file=modelfile)
+            if os.path.exists(modelfile + '.best_model.h5'):
+                infer_e2e_model(nn_model, modelname, modelfile + '.best_model.h5', resultdir, w2file=modelfile)
 
 
 # import tensorflow as tf
