@@ -439,6 +439,16 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
+    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_05':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size)
 
     return nn_model
 
@@ -484,6 +494,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
 
     print(modelname)
 
