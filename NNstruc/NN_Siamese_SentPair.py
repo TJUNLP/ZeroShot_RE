@@ -898,7 +898,7 @@ def Model_BiLSTM_SentPair_RelPunish_4(wordvocabsize, posivocabsize, charvocabsiz
                     [output1, relPunish])
 
     mymodel.compile(loss={'Output1': crude_anti_contrastive_loss, 'relPunish': lambda y_true, y_pred: y_pred},
-                    loss_weights={'Output1': 1., 'relPunish': 0.02}, #0.2
+                    loss_weights={'Output1': 1., 'relPunish': 0.002}, #0.2
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics=[acc_siamese])
     return mymodel
