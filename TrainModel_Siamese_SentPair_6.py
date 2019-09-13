@@ -149,6 +149,23 @@ def test_model3(nn_model, tag2sentDict_test):
                 else:
                     labels_all.append(0)
 
+            for si, ty in enumerate(tagDict_train.keys()):
+
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[ty][0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+                data_tag_all.append([ty])
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s_all_1.append(data_s)
+                data_e1_posi_all_1.append(data_e1_posi)
+                data_e2_posi_all_1.append(data_e2_posi)
+                char_s_all_1.append(char_s)
+
+                labels_all.append(0)
+
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
 
@@ -170,7 +187,7 @@ def test_model3(nn_model, tag2sentDict_test):
     if len(predictions) < 10:
         predictions = predictions[0]
 
-    width = len(tag2sentDict_test.keys())
+    width = len(tag2sentDict_test.keys()) + len(tagDict_train.keys())
     assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
@@ -600,11 +617,11 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('the test result-----------------------')
     P, R, F = test_model(nn_model, tagDict_test, needembed=False)
     print('P = ', P, 'R = ', R, 'F = ', F)
-    print('the test 2 result-----------------------')
-    P, R, F = test_model3_label(nn_model, tagDict_test)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-    # print('the test 3 result-----------------------')
-    # P, R, F = test_model3(nn_model, tagDict_test)
+    # print('the test 2 result-----------------------')
+    # P, R, F = test_model3_label(nn_model, tagDict_test)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
+    print('the test 3 result-----------------------')
+    P, R, F = test_model3(nn_model, tagDict_test)
     # print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
