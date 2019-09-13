@@ -217,7 +217,6 @@ def test_model3_label(nn_model, tag2sentDict_test):
 
     predict = 0
     predict_right = 0
-    predict_right05 = 0
 
 
     data_s_all_0 = []
@@ -287,7 +286,9 @@ def test_model3_label(nn_model, tag2sentDict_test):
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     if len(predictions) < 10:
+        print(len(predictions))
         predictions = predictions[1]
+    print('22222', len(predictions))
 
     width = len(tag2sentDict_test.keys())
     assert len(predictions) // width == totel_right
@@ -300,16 +301,6 @@ def test_model3_label(nn_model, tag2sentDict_test):
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
-        distantDict = {}
-        for num, disvlaue in enumerate(subpredictions):
-            distantDict[num] = disvlaue
-
-        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=False)
-        distantDict = dict(distantList)
-        distantList = list(distantDict.keys())
-        target_where = distantList.index(truth_tag_list[i]) + 1
-        predict_rank += target_where
-
         mindis = min(subpredictions)
         mindis_where = subpredictions.index(mindis)
 
@@ -319,8 +310,6 @@ def test_model3_label(nn_model, tag2sentDict_test):
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
 
-        if subpredictions[truth_tag_list[i]] > 0.5:
-            predict_right05 += 1
 
     P = predict_right / max(predict, 0.000001)
     R = predict_right / totel_right
@@ -616,9 +605,9 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     print('the test 2 result-----------------------')
     P, R, F = test_model3_label(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
-    print('the test 3 result-----------------------')
-    P, R, F = test_model3(nn_model, tagDict_test)
-    print('P = ', P, 'R = ', R, 'F = ', F)
+    # print('the test 3 result-----------------------')
+    # P, R, F = test_model3(nn_model, tagDict_test)
+    # print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
     # print('P = ', P, 'R = ', R, 'F = ', F)
@@ -751,7 +740,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(0, 3):
+    for inum in range(0, 1):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
