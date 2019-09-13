@@ -248,14 +248,14 @@ def test_model3_label(nn_model, tag2sentDict_test):
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
                 data_tag_all.append([ty])
 
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_1.append(data_s)
                 data_e1_posi_all_1.append(data_e1_posi)
                 data_e2_posi_all_1.append(data_e2_posi)
@@ -286,9 +286,7 @@ def test_model3_label(nn_model, tag2sentDict_test):
     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     if len(predictions) < 10:
-        print(len(predictions))
         predictions = predictions[1]
-    print('22222', len(predictions))
 
     width = len(tag2sentDict_test.keys())
     assert len(predictions) // width == totel_right
