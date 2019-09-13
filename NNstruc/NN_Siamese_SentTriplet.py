@@ -227,8 +227,8 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     sent_x1_mlp1 = Dense(200, activation='tanh', use_bias=False)(BiLSTM_x1)
     sent_x1_mlp1 = Dropout(0.25)(sent_x1_mlp1)
     sent_x1_mlp2 = Dense(100, activation='tanh', use_bias=False)(sent_x1_mlp1)
-    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape, name='EDistance')([tag_embedding, sent_x1_mlp2])
-    distance = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='EDistance')([tag_embedding, sent_x1_mlp2])
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape, name='EDistance')([sent_x1_mlp2, tag_embedding])
+    distance = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='EDistance')([sent_x1_mlp2, tag_embedding])
 
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
