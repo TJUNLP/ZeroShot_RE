@@ -14,6 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed
 import keras
 
 
@@ -450,6 +451,18 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
+    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_ed':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize=wordvocabsize,
+                                                   posivocabsize=posivocabsize,
+                                                   charvocabsize=charvocabsize,
+                                                   tagvocabsize=tagvocabsize,
+                                                   word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                   input_sent_lenth=input_sent_lenth,
+                                                   input_maxword_length=max_c,
+                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                   batch_size=batch_size)
+
+
     return nn_model
 
 
@@ -495,6 +508,7 @@ if __name__ == "__main__":
 
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed'
 
     print(modelname)
 
@@ -578,7 +592,7 @@ if __name__ == "__main__":
             print("test EE model....")
             print(datafile)
             print(modelfile)
-            infer_e2e_model(nn_model, modelname, modelfile, resultdir,w2file=modelfile)
+            infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
 
 
 # import tensorflow as tf

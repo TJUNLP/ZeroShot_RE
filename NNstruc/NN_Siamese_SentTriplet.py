@@ -227,7 +227,8 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     sent_x1_mlp1 = Dense(200, activation='tanh', use_bias=False)(BiLSTM_x1)
     sent_x1_mlp1 = Dropout(0.25)(sent_x1_mlp1)
     sent_x1_mlp2 = Dense(100, activation='tanh', use_bias=False)(sent_x1_mlp1)
-    distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape, name='EDistance')([BiLSTM_x1, sent_x1_mlp2])
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape, name='EDistance')([tag_embedding, sent_x1_mlp2])
+    distance = Lambda(lambda x: K.sum(K.square(x[0] - x[1][:, 0]), 1, keepdims=True), name='EDistance')([tag_embedding, sent_x1_mlp2])
 
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
@@ -245,7 +246,7 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'EDistance': lambda y_true, y_pred: y_pred},
-                    loss_weights={'TripletLoss': 1., 'EDistance': 0.002}, #0.2
+                    loss_weights={'TripletLoss': 1., 'EDistance': 0.01}, #0.2
                     optimizer=optimizers.Adam(lr=0.001))
     return mymodel
 
