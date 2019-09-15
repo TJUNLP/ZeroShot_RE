@@ -219,7 +219,7 @@ def Model_BiLSTM_SentPair_tripletloss_at_1(wordvocabsize, posivocabsize, charvoc
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
     wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, BiLSTM_x3])
-    at_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x2, BiLSTM_x3])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([BiLSTM_x2, BiLSTM_x3])
 
     # margin = 1.
     margin = 0.5
