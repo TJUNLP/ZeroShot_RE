@@ -225,7 +225,7 @@ def Model_BiLSTM_SentPair_tripletloss_at_noclass_1(wordvocabsize, posivocabsize,
     margin = 0.5
     loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]), name='Triplet')([wrong_cos, right_cos])
 
-    Flip = GradientReversal(hp_lambda=1.0)
+    Flip = GradientReversal(hp_lambda=0.3)
     dann_in = Flip(BiLSTM_x1)
     softmax_class = Dense(120, activation='softmax', name='Softmax')(dann_in)
 
