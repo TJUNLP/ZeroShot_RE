@@ -6,6 +6,7 @@ import pickle, codecs
 import json
 import re, random, math
 import keras
+from keras.utils.np_utils import to_categorical
 
 
 def load_vec_pkl(fname,vocab,k=300):
@@ -446,8 +447,11 @@ def CreatePairs(tagDict_train, istest=False):
     return pairs, labels
 
 
-def CreateTriplet(tagDict_train, istest=False):
+def CreateTriplet(tagDict_train, target_vob=None, istest=False):
 
+    categorical_labels = None
+    if target_vob != None:
+        categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
     labels = []
     data_tag_all = []
 
@@ -479,8 +483,10 @@ def CreateTriplet(tagDict_train, istest=False):
             p1 = (inc + i) % len(sents)
 
             i += 1
-
-            labels.append(1)
+            if target_vob != None:
+                labels.append(categorical_labels[tag])
+            else:
+                labels.append(1)
             data_tag_all.append([tag])
             data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
             data_s_all_0.append(data_s)
@@ -633,29 +639,7 @@ if __name__=="__main__":
     print('max soure sent lenth is ' + str(max_s))
 
 
-    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
-    print("source char size: ", char_vob.__len__())
-    max_c = min(max_c, 18)
-    print("max_c: ", max_c)
-
-    c2v_k, char_W, = load_vec_random(char_vob, k=50)
-    print('character_W shape:', char_W.shape)
-
-    word_w2v, w2v_k, word_W = load_vec_txt(w2v_file, word_vob, k=100)
-    print("word2vec loaded!")
-    print("all vocab size: " + str(len(word_vob)))
-    print("source_W  size: " + str(len(word_W)))
-
-
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
-
-
-    max_posi = 20
-    posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
-    print('posi_k, posi_W', posi_k, len(posi_W))
-
-    tagDict_prototypes, _ = get_sentDicts(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    print('tagDict_prototypes len', len(tagDict_prototypes))
-    # for i in tagDict_prototypes.keys():
-    #     print(i, len(tagDict_prototypes[i]), len(tagDict_prototypes[i][0]))
+    categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
+    print(len(categorical_labels))
+    print(categorical_labels[1])
+    print(categorical_labels[5])
