@@ -226,8 +226,9 @@ def Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize, posivocabsize, charvo
     margin = 0.5
     at_margin = 1.
     gamma = 2
-
-    loss = Lambda(lambda X: K.exp((margin + X[0] - X[1]) / (margin + 1.)) * K.relu(margin + X[0] - X[1]) + at_margin * K.round(K.maximum(0.5 - K.epsilon(), 0.5 + X[1] - X[0] - margin)) * (K.square(K.relu(X[0]-0.2)) + K.square(K.relu(0.8 - X[1]))))([wrong_cos, right_cos])
+    # + at_margin * K.round(K.maximum(0.5 - K.epsilon(), 0.5 + X[1] - X[0] - margin)) * (
+            # K.square(K.relu(X[0] - 0.2)) + K.square(K.relu(0.8 - X[1])))
+    loss = Lambda(lambda X: K.exp((margin + X[0] - X[1]) / (margin + 1.)) * K.relu(margin + X[0] - X[1]))([wrong_cos, right_cos])
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
