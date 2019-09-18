@@ -430,8 +430,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_1':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_round':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -509,6 +509,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_round'
 
     print(modelname)
 
