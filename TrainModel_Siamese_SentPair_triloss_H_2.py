@@ -14,7 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_round
 import keras
 
 
@@ -430,8 +430,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_round':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_round(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -441,16 +441,6 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize=wordvocabsize,
-                                                   posivocabsize=posivocabsize,
-                                                   charvocabsize=charvocabsize,
-                                                   tagvocabsize=tagvocabsize,
-                                                   word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                   input_sent_lenth=input_sent_lenth,
-                                                   input_maxword_length=max_c,
-                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                   batch_size=batch_size)
 
 
     return nn_model
@@ -499,7 +489,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp'
-    # modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_round'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_round'
 
     print(modelname)
 
