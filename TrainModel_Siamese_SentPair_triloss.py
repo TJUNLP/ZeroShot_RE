@@ -172,7 +172,7 @@ def test_model3(nn_model, tag2sentDict_test):
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
                                                   outputs=nn_model.get_layer('wrong_cos').output)
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
-
+    print('wrong_cos')
 
     if len(predictions) < 10:
         predictions = predictions[0]
@@ -181,6 +181,7 @@ def test_model3(nn_model, tag2sentDict_test):
     assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
+    mindis_dict = {}
 
     for i in range(len(predictions) // width) :
         left = i * width
@@ -206,6 +207,9 @@ def test_model3(nn_model, tag2sentDict_test):
 
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
+                if round(mindis, 2) not in mindis_dict[round(mindis, 2)]:
+                    mindis_dict[round(mindis, 2)] = 0
+                mindis_dict[round(mindis, 2)] += 1
 
         if subpredictions[truth_tag_list[i]] > 0.5:
             predict_right05 += 1
@@ -217,6 +221,8 @@ def test_model3(nn_model, tag2sentDict_test):
     print('test predict_rank = ', predict_rank / totel_right)
     print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
+    mindis_list = sorted(mindis_dict.items(), key=lambda z:z[0], reverse=True)
+    print(mindis_list)
     return P, R, F
 
 
