@@ -181,7 +181,7 @@ def test_model3(nn_model, tag2sentDict_test):
     assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
-    mindis_dict = {}
+    # mindis_dict = {}
 
     for i in range(len(predictions) // width) :
         left = i * width
@@ -207,9 +207,9 @@ def test_model3(nn_model, tag2sentDict_test):
 
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
-                if round(mindis, 2) not in mindis_dict.keys():
-                    mindis_dict[round(mindis, 2)] = 0
-                mindis_dict[round(mindis, 2)] += 1
+                # if round(mindis, 2) not in mindis_dict.keys():
+                #     mindis_dict[round(mindis, 2)] = 0
+                # mindis_dict[round(mindis, 2)] += 1
 
         if subpredictions[truth_tag_list[i]] > 0.5:
             predict_right05 += 1
@@ -221,8 +221,8 @@ def test_model3(nn_model, tag2sentDict_test):
     print('test predict_rank = ', predict_rank / totel_right)
     print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
-    mindis_list = sorted(mindis_dict.items(), key=lambda z:z[0], reverse=True)
-    print(mindis_list)
+    # mindis_list = sorted(mindis_dict.items(), key=lambda z:z[0], reverse=True)
+    # print(mindis_list)
     return P, R, F
 
 
@@ -577,7 +577,7 @@ if __name__ == "__main__":
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
 
-    for inum in range(1, 3):
+    for inum in range(0, 3):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
