@@ -16,7 +16,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed
 import keras
-
+import gc
 
 def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
@@ -438,6 +438,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     nn_model = None
 
     if modelname is 'Model_BiLSTM_SentPair_tripletloss_1':
+
         nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -539,8 +540,8 @@ if __name__ == "__main__":
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -559,7 +560,7 @@ if __name__ == "__main__":
         ProcessData_Siamese_SentPair.get_data(trainfile, testfile, rel_prototypes_file,
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
-
+    print(datafile)
     tagDict_train, tagDict_dev, tagDict_test,\
     word_vob, word_id2word, word_W, w2v_k,\
     char_vob, char_id2char, char_W, c2v_k,\
@@ -567,7 +568,9 @@ if __name__ == "__main__":
     posi_W, posi_k, type_W, type_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-    nn_model = SelectModel(modelname,
+    for inum in range(0, 3):
+
+        nn_model = SelectModel(modelname,
                            wordvocabsize=len(word_vob),
                            tagvocabsize=len(target_vob),
                            posivocabsize=max_posi+1,
@@ -576,8 +579,6 @@ if __name__ == "__main__":
                            input_sent_lenth=max_s,
                            w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
                            batch_size=batch_size)
-
-    for inum in range(0, 3):
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
@@ -599,6 +600,9 @@ if __name__ == "__main__":
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
+
+        del nn_model
+        gc.collect()
 
 
 # import tensorflow as tf

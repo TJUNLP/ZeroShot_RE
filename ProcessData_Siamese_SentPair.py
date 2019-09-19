@@ -288,7 +288,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
     thd = -1
     if needDEV == True:
-        thd = len(lines) * 0.15
+        # thd = len(lines) * 0.15
+        thd = len(lines) * 0.08
 
     for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
@@ -341,8 +342,9 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
         pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
 
-        if needDEV == True and si < thd:
+        # if needDEV == True and si < thd:
         # if needDEV == True and rel in target_vob_4dev.keys():
+        if needDEV == True and (si < thd or rel in target_vob_4dev.keys()):
 
             if data_tag not in tagDict_dev.keys():
 
@@ -524,9 +526,14 @@ def get_split_train_dev(target_vob_train):
     rel4dev = {}
     relList = list(target_vob_train.keys())
     i = 0
-    while i * 10 + 9 < len(relList):
-        nd = random.randint(0, 9)
-        k = relList[i * 10 + nd]
+    # while i * 10 + 9 < len(relList):
+    #     nd = random.randint(0, 9)
+    #     k = relList[i * 10 + nd]
+    #     rel4dev[k] = target_vob_train[k]
+    #     i += 1
+    while i * 16 + 15 < len(relList):
+        nd = random.randint(0, 15)
+        k = relList[i * 16 + nd]
         rel4dev[k] = target_vob_train[k]
         i += 1
 
@@ -549,7 +556,7 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
     Converts the input files  into the model input formats
     """
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile, prototypesfile])
     print("source vocab size: ", str(len(word_vob)))
     print("word_id2word size: ", str(len(word_id2word)))
     print("target vocab size: " + str(len(target_vob)))
@@ -559,7 +566,7 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
     print('max soure sent lenth is ' + str(max_s))
 
 
-    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile})
+    char_vob, char_id2char, max_c = get_Character_index({trainfile, testfile, prototypesfile})
     print("source char size: ", char_vob.__len__())
     max_c = min(max_c, 18)
     print("max_c: ", max_c)
@@ -605,7 +612,6 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
     #
     # pairs_test, labels_test = CreatePairs(tagDict_test, istest=True)
     # print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))
-
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')#
