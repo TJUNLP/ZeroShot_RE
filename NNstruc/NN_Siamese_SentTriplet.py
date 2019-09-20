@@ -119,7 +119,7 @@ def Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize, posivocabsize, charvocabs
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
                      word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3], loss)
 
-    mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+    mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_triplet])
 
     return mymodel
 
@@ -732,6 +732,11 @@ def eucl_dist_output_shape(shapes):
 # 创建训练时计算acc的方法
 def acc_siamese(y_true, y_pred):
     return K.mean(K.equal(y_true, K.cast(y_pred > 0.5, y_true.dtype)))
+
+
+def acc_triplet(y_true, y_pred):
+    return K.mean(K.equal(0., K.maximum(0., y_pred)))
+
 
 
 def Hierarchical_loss(X, margin=0.5, at_margin=0.1):
