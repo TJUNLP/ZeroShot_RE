@@ -393,24 +393,20 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
-        # if os.path.exists(modelfile + ".best_model.h5"):
-        #     print('test best_model ......>>>>>>>>>>>>>>> ' + modelfile + ".best_model.h5")
-        #     nn_model.load_weights(modelfile + ".best_model.h5")
-        #     resultfile = resultdir + "best_model.result-" + 'infer_test'
-        #     loss, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=0, batch_size=batch_size)
-        #     print('\n test_test best_model score:', loss, acc)
-        #
-        #     P, R, F, PR_count, P_count, TR_count = test_model(nn_model, inputs_test_x, inputs_test_y, idex_2target,
-        #                                                       resultfile,
-        #                                                       batch_size)
-        #     print('best_model ... P= ', P, '  R= ', R, '  F= ', F)
-        P, R, F = test_model3(nn_model, tagDict_test)
-        if F > maxF:
-            earlystop = 0
-            maxF = F
-            nn_model.save_weights(modelfile, overwrite=True)
+        for ix in range(increment):
+            ff = os.path.join('./model', 'model-0' + str(ix) + '.h5')
+            if os.path.exists(ff):
+                print('test best_model ......>>>>>>>>>>>>>>> ' + modelfile + ".best_model.h5")
+                nn_model.load_weights(ff)
+                P, R, F = test_model3(nn_model, tagDict_test)
+                print('best_model ... P= ', P, '  R= ', R, '  F= ', F)
 
-        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+                if F > maxF:
+                    earlystop = 0
+                    maxF = F
+                    nn_model.save_weights(modelfile, overwrite=True)
+
+                print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
         if earlystop >= 10:
             break
