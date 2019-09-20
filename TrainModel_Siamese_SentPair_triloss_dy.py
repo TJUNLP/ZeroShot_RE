@@ -352,7 +352,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     nn_model.summary()
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=8)
-    checkpointer = ModelCheckpoint(filepath=os.path.join(modelfile, '.model-{epoch:02d}.h5'), monitor='val_loss', verbose=0,
+    checkpointer = ModelCheckpoint(filepath=os.path.join('./model', 'model-{epoch:02d}.h5'), monitor='val_loss', verbose=0,
                                    save_best_only=True, save_weights_only=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
 
