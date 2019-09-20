@@ -580,7 +580,7 @@ if __name__ == "__main__":
     posi_W, posi_k, type_W, type_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-    for inum in range(0, 3):
+    for inum in range(3, 6):
 
         batch_size = 512  # 256
 
