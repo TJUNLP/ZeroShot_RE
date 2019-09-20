@@ -394,9 +394,9 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         for ix in range(increment):
-            ff = os.path.join('./model', 'model-0' + str(ix) + '.h5')
+            ff = os.path.join('./model', 'model-0' + str(ix+1) + '.h5')
             if os.path.exists(ff):
-                print('test best_model ......>>>>>>>>>>>>>>> ' + modelfile + ".best_model.h5")
+                print('test best_model ......>>>>>>>>>>>>>>> ' + str(ff))
                 nn_model.load_weights(ff)
                 P, R, F = test_model3(nn_model, tagDict_test)
                 print('best_model ... P= ', P, '  R= ', R, '  F= ', F)
