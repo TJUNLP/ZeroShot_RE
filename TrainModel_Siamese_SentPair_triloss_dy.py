@@ -169,11 +169,9 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
 
-    # right_cos
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('wrong_cos').output)
+                                                  outputs=nn_model.get_layer('right_cos').output)
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
-    print('wrong_cos')
 
     if len(predictions) < 10:
         predictions = predictions[0]

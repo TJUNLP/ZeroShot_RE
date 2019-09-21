@@ -14,7 +14,8 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_exp
 import keras
 
 
@@ -431,7 +432,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     nn_model = None
 
     if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize=wordvocabsize,
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_exp(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -441,8 +442,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss(wordvocabsize=wordvocabsize,
+    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1(wordvocabsize=wordvocabsize,
                                                    posivocabsize=posivocabsize,
                                                    charvocabsize=charvocabsize,
                                                    tagvocabsize=tagvocabsize,
@@ -499,7 +500,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp'
-    # modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_round'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1'
 
     print(modelname)
 
@@ -523,9 +524,9 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
