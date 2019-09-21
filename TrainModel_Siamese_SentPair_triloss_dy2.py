@@ -353,7 +353,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=8)
     checkpointer = ModelCheckpoint(filepath=os.path.join('./model', 'model-{epoch:02d}.h5'), monitor='val_loss', verbose=0,
-                                   save_best_only=False, save_weights_only=True)
+                                   save_best_only=True, save_weights_only=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
@@ -396,18 +396,17 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         for ix in range(increment):
             ff = os.path.join('./model', 'model-0' + str(ix+1) + '.h5')
             if os.path.exists(ff):
+                print('test best_model ......>>>>>>>>>>>>>>> ' + str(ff))
                 nn_model.load_weights(ff)
                 P, R, F = test_model3(nn_model, tagDict_test)
-                print('test best_model ......>>>>>>>>>>>>>>> ', str(ff), 'P= ', P, '  R= ', R, '  F= ', F)
+                print('best_model ... P= ', P, '  R= ', R, '  F= ', F)
 
                 if F > maxF:
                     earlystop = 0
                     maxF = F
                     nn_model.save_weights(modelfile, overwrite=True)
 
-                print(str(inum), earlystop, nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
-
-                os.remove(ff)
+                print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
         if earlystop >= 10:
             break
