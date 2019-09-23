@@ -241,7 +241,7 @@ def Model_BiLSTM_SentPair_tripletloss_Hloss_round(wordvocabsize, posivocabsize, 
     return mymodel
 
 
-def Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+def Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
@@ -342,7 +342,7 @@ def Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1(wordvocabsize, posivocabsi
 
     # margin = 1.
     margin = 0.5
-    at_margin = 1.
+    at_margin = 0.5
     gamma = 2
     # + at_margin * K.round(K.maximum(0.5 - K.epsilon(), 0.5 + X[1] - X[0] - margin)) * (
             # K.square(K.relu(X[0] - 0.2)) + K.square(K.relu(0.8 - X[1])))
