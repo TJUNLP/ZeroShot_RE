@@ -13,8 +13,8 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05_sp
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_exp
 import keras
 
@@ -392,7 +392,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
             maxF = F
             nn_model.save_weights(modelfile, overwrite=True)
 
-        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+        print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
         if earlystop >= 20:
             break
@@ -442,8 +442,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05(wordvocabsize=wordvocabsize,
+    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp(wordvocabsize=wordvocabsize,
                                                    posivocabsize=posivocabsize,
                                                    charvocabsize=charvocabsize,
                                                    tagvocabsize=tagvocabsize,
@@ -453,6 +453,16 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                    w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                    batch_size=batch_size)
 
+    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05_sp':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05_sp(wordvocabsize=wordvocabsize,
+                                                   posivocabsize=posivocabsize,
+                                                   charvocabsize=charvocabsize,
+                                                   tagvocabsize=tagvocabsize,
+                                                   word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                   input_sent_lenth=input_sent_lenth,
+                                                   input_maxword_length=max_c,
+                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                   batch_size=batch_size)
 
     return nn_model
 
@@ -497,11 +507,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at1'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_exp05_at05'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp'
 
     print(modelname)
 
@@ -525,9 +531,9 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -556,7 +562,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(0, 3):
+    for inum in range(3, 6):
 
         nn_model = SelectModel(modelname,
                                wordvocabsize=len(word_vob),

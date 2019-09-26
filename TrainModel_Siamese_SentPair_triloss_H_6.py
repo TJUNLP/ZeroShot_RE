@@ -8,7 +8,7 @@
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
 
-import pickle, datetime, codecs, math
+import pickle, datetime, codecs, math, gc
 import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
@@ -560,17 +560,19 @@ if __name__ == "__main__":
     posi_W, posi_k, type_W, type_k,\
     max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-    nn_model = SelectModel(modelname,
-                           wordvocabsize=len(word_vob),
-                           tagvocabsize=len(target_vob),
-                           posivocabsize=max_posi+1,
-                           charvocabsize=len(char_vob),
-                           word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
-                           input_sent_lenth=max_s,
-                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
-                           batch_size=batch_size)
+
 
     for inum in range(0, 3):
+
+        nn_model = SelectModel(modelname,
+                               wordvocabsize=len(word_vob),
+                               tagvocabsize=len(target_vob),
+                               posivocabsize=max_posi + 1,
+                               charvocabsize=len(char_vob),
+                               word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
+                               input_sent_lenth=max_s,
+                               w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
+                               batch_size=batch_size)
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
@@ -592,6 +594,9 @@ if __name__ == "__main__":
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
+
+        del nn_model
+        gc.collect()
 
 
 # import tensorflow as tf
