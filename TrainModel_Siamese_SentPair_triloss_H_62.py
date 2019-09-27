@@ -552,7 +552,6 @@ if __name__ == "__main__":
         ProcessData_Siamese_SentPair.get_data(trainfile, testfile, rel_prototypes_file,
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
-        
 
     for inum in range(3, 6):
 
