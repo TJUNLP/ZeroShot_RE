@@ -236,7 +236,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
                 best_value = cos
                 best = tec
 
-        if best_value > 0.5:
+        if best_value > 0.0:
             predict += 1
             if truth_tag_list[i] == best:
                 predict_right += 1
