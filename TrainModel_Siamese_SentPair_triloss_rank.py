@@ -147,6 +147,12 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     totel_right = 0
 
     class_RankDict, train_tag_list = get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None)
+    print(len(train_tag_list))
+    tagDict_prototypes = {}
+    for ty in train_tag_list:
+        tagDict_prototypes[ty] = [tag2sentDict_train[ty][0]]
+    assert tagDict_prototypes.keys() == tag2sentDict_train.keys()
+    print(len(tagDict_prototypes.keys()))
 
     truth_tag_list = []
     for tag in tag2sentDict_test.keys():
@@ -157,7 +163,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
 
             for si, ty in enumerate(train_tag_list):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tag2sentDict_train[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
@@ -193,7 +199,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
-
+    
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
                                                   outputs=nn_model.get_layer('right_cos').output)
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)

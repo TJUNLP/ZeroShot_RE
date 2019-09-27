@@ -388,11 +388,11 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir):
     # P, R, F = test_model(nnmodel, tagDict_test, target_vob)
     # print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the tagDict_train rank result-----------------------')
+    print('the test rank result-----------------------')
     P, R, F = test_rank(nnmodel, tagDict_train)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the tagDict_test rank result-----------------------')
+    print('the test rank result-----------------------')
     P, R, F = test_rank(nnmodel, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
