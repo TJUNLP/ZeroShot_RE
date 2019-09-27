@@ -531,8 +531,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
