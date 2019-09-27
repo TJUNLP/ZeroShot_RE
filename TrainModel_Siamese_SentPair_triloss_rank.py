@@ -199,7 +199,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
-    
+
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
                                                   outputs=nn_model.get_layer('right_cos').output)
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
