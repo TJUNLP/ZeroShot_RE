@@ -117,9 +117,10 @@ def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
         #         break
         #     print(target_id2word[s[0]], s[1])
 
-        ijlist = dict(ijlist)
-        ijlist = list(ijlist.keys())
-        RankDict[i] = ijlist
+        # ijlist = dict(ijlist)
+        # ijlist = list(ijlist.keys())
+        # RankDict[i] = ijlist
+        RankDict[i] = list(i_j.values())
         # print(RankDict[i])
 
     return RankDict, train_tag_list
@@ -308,7 +309,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents)//100):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
