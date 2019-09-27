@@ -158,7 +158,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents)//100):
             totel_right += 1
 
             for si, ty in enumerate(train_tag_list):
@@ -208,7 +208,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     if len(predictions) < 10:
         predictions = predictions[0]
 
-    width = len(tag2sentDict_test.keys())
+    width = len(tagDict_prototypes.keys())
     assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
