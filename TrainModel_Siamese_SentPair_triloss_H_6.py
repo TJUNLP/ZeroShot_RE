@@ -562,7 +562,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(1, 3):
+    for inum in range(2, 3):
 
         nn_model = SelectModel(modelname,
                                wordvocabsize=len(word_vob),
