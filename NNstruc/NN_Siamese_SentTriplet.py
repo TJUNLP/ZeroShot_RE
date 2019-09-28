@@ -1154,11 +1154,12 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     BiLSTM_x3 = BiLSTM_layer(embedding_x3)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    sent_x1_mlp1 = Dense(200, activation='tanh', use_bias=False)(BiLSTM_x1)
-    sent_x1_mlp1 = Dropout(0.25)(sent_x1_mlp1)
-    sent_x1_mlp2 = Dense(100, activation='tanh', use_bias=False)(sent_x1_mlp1)
-    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape, name='EDistance')([sent_x1_mlp2, tag_embedding])
-    distance = Lambda(lambda x: K.sum(K.square(x[0] - x[1]), 1, keepdims=True), name='EDistance')([sent_x1_mlp2, tag_embedding])
+    class_input = concatenate([tag_embedding, BiLSTM_x2], axis=-1)
+    # class_input = Flatten()(class_input)
+    class_mlp1 = Dense(150, activation='tanh')(class_input)
+    class_mlp1 = Dropout(0.25)(class_mlp1)
+    class_mlp2 = Dense(2)(class_mlp1)
+    class_output = Activation('sigmoid', name='CLASS')(class_mlp2)
 
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
@@ -1171,13 +1172,14 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
                      word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3, input_tag],
-                    [loss, distance])
+                    [loss, class_output])
 
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
-    mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'EDistance': lambda y_true, y_pred: y_pred},
-                    loss_weights={'TripletLoss': 1., 'EDistance': 0.01}, #0.2
-                    optimizer=optimizers.Adam(lr=0.001))
+    mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
+                    loss_weights={'TripletLoss': 1., 'CLASS': 0.5},
+                    optimizer=optimizers.Adam(lr=0.001),
+                    metrics={'TripletLoss': [], 'CLASS': ['acc']})
     return mymodel
 
 
@@ -1218,6 +1220,11 @@ def contrastive_loss(y_true, y_pred):
     margin = 1
     return K.mean(y_true * K.square(y_pred) +
                   (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
+
+
+def contrastive_softmax_loss(y_true, y_pred):
+
+    return K.mean(y_true * y_pred + (1 - y_true) * (1 - y_pred))
 
 
 def anti_contrastive_loss(y_true, y_pred):

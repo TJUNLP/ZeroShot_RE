@@ -521,6 +521,83 @@ def CreateTriplet(tagDict_train, target_vob=None, istest=False):
     return pairs, labels
 
 
+def CreateTriplet_withSoftmax(tagDict_train, istest=False):
+
+
+
+    labels = []
+    data_tag_all = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+    data_s_all_2 = []
+    data_e1_posi_all_2 = []
+    data_e2_posi_all_2 = []
+    char_s_all_2 = []
+
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc = random.randrange(1, len(sents))
+        i = 0
+        while i < len(sents):
+            p0 = i
+            p1 = (inc + i) % len(sents)
+
+            i += 1
+
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
+            data_s_all_1.append(data_s)
+            data_e1_posi_all_1.append(data_e1_posi)
+            data_e2_posi_all_1.append(data_e2_posi)
+            char_s_all_1.append(char_s)
+
+            keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
+            data_s_all_2.append(data_s)
+            data_e1_posi_all_2.append(data_e1_posi)
+            data_e2_posi_all_2.append(data_e2_posi)
+            char_s_all_2.append(char_s)
+
+            targetvec = np.zeros(2)
+            if i % 2 == 0:
+                targetvec[0] = 1
+                data_tag_all.append([keylist[ran1]])
+            else:
+                targetvec[1] = 1
+                data_tag_all.append([tag])
+            labels.append(targetvec)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
+             data_tag_all]
+
+    return pairs, labels
+
+
 def get_split_train_dev(target_vob_train):
 
     rel4dev = {}

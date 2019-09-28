@@ -474,7 +474,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet(tagDict, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -492,13 +492,14 @@ def Dynamic_get_trainSet(istest):
     train_x3_sent_cahr = np.asarray(pairs_train[11], dtype="int32")
     train_tag = np.asarray(pairs_train[12], dtype="int32")
 
+    train_y0 = np.zeros(len(labels_train), dtype="int32")
     train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
-    inputs_train_y = [train_y, train_y]
+    inputs_train_y = [train_y0, train_y]
 
     return inputs_train_x, inputs_train_y
 
