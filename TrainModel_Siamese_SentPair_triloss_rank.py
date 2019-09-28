@@ -251,7 +251,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
             #     mul_count += mul
 
             for ty in class_RankDict[tec][:20]:
-                mul = predRank_dict[ty[0]] * class_RankDict[tec][ty[1]]
+                mul = predRank_dict[ty[0]] * ty[1]
                 mul_count += mul
 
             if mul_count > best_value:
