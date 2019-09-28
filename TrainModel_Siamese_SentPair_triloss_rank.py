@@ -784,8 +784,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
@@ -806,14 +806,15 @@ if __name__ == "__main__":
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
     print(datafile)
-    tagDict_train, tagDict_dev, tagDict_test,\
-    word_vob, word_id2word, word_W, w2v_k,\
-    char_vob, char_id2char, char_W, c2v_k,\
-    target_vob, target_id2word,\
-    posi_W, posi_k, type_W, type_k,\
-    max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
     for inum in range(0, 3):
+
+        tagDict_train, tagDict_dev, tagDict_test, \
+        word_vob, word_id2word, word_W, w2v_k, \
+        char_vob, char_id2char, char_W, c2v_k, \
+        target_vob, target_id2word, \
+        posi_W, posi_k, type_W, type_k, \
+        max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
         nn_model = SelectModel(modelname,
                            wordvocabsize=len(word_vob),
