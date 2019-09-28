@@ -123,10 +123,12 @@ def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
 
         # RankDict[i] = list(i_j.values())
 
-        rank = {}
-        for p, tup in enumerate(ijlist):
-            rank[tup[0]] = p+1
-        RankDict[i] = rank
+        # rank = {}
+        # for p, tup in enumerate(ijlist):
+        #     rank[tup[0]] = p+1
+        # RankDict[i] = rank
+
+        RankDict[i] = i_j
 
         # print(RankDict[i])
 
@@ -228,26 +230,19 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
-        predRank_dict = {}
-        for si, ty in enumerate(train_tag_list):
-            predRank_dict[ty] = subpredictions[si]
-        ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
-        prank = {}
-        for p, tup in enumerate(ijlist):
-            prank[tup[0]] = p+1
-
         best = None
         best_value = -1
+
         for tec in class_RankDict.keys():
             if tec in train_tag_list:
                 continue
+            mul_count = 0
+            for si, ty in enumerate(train_tag_list):
+                mul = subpredictions[si] * class_RankDict[tec][ty]
+                mul_count += mul
 
-            countv = 0
-            for ri in prank.keys():
-                countv += abs(prank[ri] -class_RankDict[tec][ri])
-
-            if countv < best_value:
-                best_value = countv
+            if mul_count > best_value:
+                best_value = mul_count
                 best = tec
 
         if best_value > 0.0:
@@ -256,6 +251,32 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
                 predict_right += 1
 
 
+        # predRank_dict = {}
+        # for si, ty in enumerate(train_tag_list):
+        #     predRank_dict[ty] = subpredictions[si]
+        # ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
+        # prank = {}
+        # for p, tup in enumerate(ijlist):
+        #     prank[tup[0]] = p+1
+        #
+        # best = None
+        # best_value = -1
+        # for tec in class_RankDict.keys():
+        #     if tec in train_tag_list:
+        #         continue
+        #
+        #     countv = 0
+        #     for ri in prank.keys():
+        #         countv += abs(prank[ri] -class_RankDict[tec][ri])
+        #
+        #     if countv < best_value:
+        #         best_value = countv
+        #         best = tec
+        #
+        #
+        # predict += 1
+        # if truth_tag_list[i] == best:
+        #     predict_right += 1
 
 
         # best = None
