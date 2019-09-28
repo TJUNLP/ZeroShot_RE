@@ -120,7 +120,14 @@ def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
         # ijlist = dict(ijlist)
         # ijlist = list(ijlist.keys())
         # RankDict[i] = ijlist
-        RankDict[i] = list(i_j.values())
+
+        # RankDict[i] = list(i_j.values())
+
+        rank = {}
+        for p, tup in enumerate(ijlist):
+            rank[tup[0]] = p+1
+        RankDict[i] = rank
+
         # print(RankDict[i])
 
     return RankDict, train_tag_list
@@ -221,25 +228,54 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
+        predRank_dict = {}
+        for si, ty in enumerate(train_tag_list):
+            predRank_dict[ty] = subpredictions[si]
+        ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
+        prank = {}
+        for p, tup in enumerate(ijlist):
+            prank[tup[0]] = p+1
 
         best = None
         best_value = -1
         for tec in class_RankDict.keys():
             if tec in train_tag_list:
                 continue
-            vector_a = np.mat(subpredictions)
-            vector_b = np.mat(class_RankDict[tec])
-            num = float(vector_a * vector_b.T)
-            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
-            cos = num / denom
-            if cos > best_value:
-                best_value = cos
+
+            countv = 0
+            for ri in prank.keys():
+                countv += abs(prank[ri] -class_RankDict[tec][ri])
+
+            if countv < best_value:
+                best_value = countv
                 best = tec
 
         if best_value > 0.0:
             predict += 1
             if truth_tag_list[i] == best:
                 predict_right += 1
+
+
+
+
+        # best = None
+        # best_value = -1
+        # for tec in class_RankDict.keys():
+        #     if tec in train_tag_list:
+        #         continue
+        #     vector_a = np.mat(subpredictions)
+        #     vector_b = np.mat(class_RankDict[tec])
+        #     num = float(vector_a * vector_b.T)
+        #     denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+        #     cos = num / denom
+        #     if cos > best_value:
+        #         best_value = cos
+        #         best = tec
+        #
+        # if best_value > 0.0:
+        #     predict += 1
+        #     if truth_tag_list[i] == best:
+        #         predict_right += 1
 
         # distantDict = {}
         # for num, disvlaue in enumerate(subpredictions):
