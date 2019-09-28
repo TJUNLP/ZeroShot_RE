@@ -128,7 +128,7 @@ def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
         #     rank[tup[0]] = p+1
         # RankDict[i] = rank
 
-        RankDict[i] = i_j
+        RankDict[i] = ijlist
 
         # print(RankDict[i])
 
@@ -233,18 +233,25 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
         best = None
         best_value = -1
 
+        topk = 0
         for tec in class_RankDict.keys():
             if tec in train_tag_list:
                 continue
+            topk += 1
+
             mul_count = 0
 
             predRank_dict = {}
             for si, ty in enumerate(train_tag_list):
                 predRank_dict[ty] = subpredictions[si]
-            ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
+            # ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
 
-            for ty in ijlist[:20]:
-                mul = ty[1] * class_RankDict[tec][ty[0]]
+            # for ty in ijlist[:20]:
+            #     mul = ty[1] * class_RankDict[tec][ty[0]]
+            #     mul_count += mul
+
+            for ty in class_RankDict[tec][:20]:
+                mul = predRank_dict[ty[0]] * class_RankDict[tec][ty[1]]
                 mul_count += mul
 
             if mul_count > best_value:
