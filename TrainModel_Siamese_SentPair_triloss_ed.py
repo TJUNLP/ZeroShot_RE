@@ -93,11 +93,16 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
+def test_class_softmax():
+    pass
+
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0
     predict_right = 0
-    predict_right05 = 0
+
+    predict_class = 0
+    predict_right_class = 0
 
 
     data_s_all_0 = []
@@ -111,7 +116,7 @@ def test_model3(nn_model, tag2sentDict_test):
     char_s_all_1 = []
 
     data_tag_all = []
-
+    class_labels = []
     labels_all = []
     totel_right = 0
 
@@ -142,11 +147,16 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e2_posi_all_1.append(data_e2_posi)
                 char_s_all_1.append(char_s)
 
+                targetvec = np.zeros(2)
                 if tag == ty:
                     labels_all.append(1)
                     truth_tag_list.append(si)
+                    targetvec[1] = 1
                 else:
                     labels_all.append(0)
+                    targetvec[0] = 1
+
+                class_labels.append(targetvec)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
@@ -174,119 +184,10 @@ def test_model3(nn_model, tag2sentDict_test):
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
-    if len(predictions) < 10:
-        predictions = predictions[0]
+    intermediate_layer_model_2 = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('CLASS').output)
+    predictions_class = intermediate_layer_model_2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
-    width = len(tag2sentDict_test.keys())
-    assert len(predictions) // width == totel_right
-    assert len(truth_tag_list) == totel_right
-    predict_rank = 0
-
-    for i in range(len(predictions) // width) :
-        left = i * width
-        right = (i + 1) * width
-        subpredictions = predictions[left:right]
-        subpredictions = subpredictions.flatten().tolist()
-
-        distantDict = {}
-        for num, disvlaue in enumerate(subpredictions):
-            distantDict[num] = disvlaue
-
-        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-        distantDict = dict(distantList)
-        distantList = list(distantDict.keys())
-        target_where = distantList.index(truth_tag_list[i]) + 1
-        predict_rank += target_where
-
-        mindis = max(subpredictions)
-        mindis_where = subpredictions.index(mindis)
-
-        if mindis > 0.5:
-            predict += 1
-
-            if mindis_where == truth_tag_list[i]:
-                predict_right += 1
-
-        if subpredictions[truth_tag_list[i]] > 0.5:
-            predict_right05 += 1
-
-    P = predict_right / max(predict, 0.000001)
-    R = predict_right / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
-    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    print('test predict_rank = ', predict_rank / totel_right)
-    print('test distance > 0.5  = ', predict_right05 / totel_right)
-    print('P =, R =, F = ', P, R, F)
-    return P, R, F
-
-
-def test_model2(nn_model, tag2sentDict_test):
-
-    predict = 0
-    predict_right = 0
-    predict_right05 = 0
-
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_tag_all = []
-
-    labels_all = []
-    totel_right = 0
-
-    truth_tag_list = []
-    for tag in tag2sentDict_test.keys():
-        sents = tag2sentDict_test[tag]
-
-        for s in range(1, len(sents)):
-            totel_right += 1
-
-            for si, ty in enumerate(tag2sentDict_test.keys()):
-
-                data_s, data_e1_posi, data_e2_posi, char_s = tag2sentDict_test[ty][0]
-                data_s_all_0.append(data_s)
-                data_e1_posi_all_0.append(data_e1_posi)
-                data_e2_posi_all_0.append(data_e2_posi)
-                char_s_all_0.append(char_s)
-                data_tag_all.append([ty])
-
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
-                data_s_all_1.append(data_s)
-                data_e1_posi_all_1.append(data_e1_posi)
-                data_e2_posi_all_1.append(data_e2_posi)
-                char_s_all_1.append(char_s)
-
-                if tag == ty:
-                    labels_all.append(1)
-                    truth_tag_list.append(si)
-                else:
-                    labels_all.append(0)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
-
-    train_x1_sent = np.asarray(pairs[0], dtype="int32")
-    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
-    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
-    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
-    train_x2_sent = np.asarray(pairs[4], dtype="int32")
-    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
-    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
-    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-    train_tag = np.asarray(pairs[8], dtype="int32")
-
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
-
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     if len(predictions) < 10:
         predictions = predictions[0]
@@ -302,15 +203,6 @@ def test_model2(nn_model, tag2sentDict_test):
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
-        distantDict = {}
-        for num, disvlaue in enumerate(subpredictions):
-            distantDict[num] = disvlaue
-
-        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-        distantDict = dict(distantList)
-        distantList = list(distantDict.keys())
-        target_where = distantList.index(truth_tag_list[i]) + 1
-        predict_rank += target_where
 
         mindis = max(subpredictions)
         mindis_where = subpredictions.index(mindis)
@@ -321,16 +213,29 @@ def test_model2(nn_model, tag2sentDict_test):
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
 
-        if subpredictions[truth_tag_list[i]] > 0.5:
-            predict_right05 += 1
+        subpredictions_class = predictions_class[left:right]
+        subpredictions_class = subpredictions_class[:, 1]
+        class_where = subpredictions_class.index(max(subpredictions_class))
+        predict_class += 1
+
+        if class_where == truth_tag_list[i]:
+            predict_right_class += 1
+
+
 
     P = predict_right / max(predict, 0.000001)
     R = predict_right / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
     print('test predict_rank = ', predict_rank / totel_right)
-    print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
+
+    P = predict_right_class / max(predict_class, 0.000001)
+    R = predict_right_class / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+    print('test class ... P =, R =, F = ', P, R, F)
+
     return P, R, F
 
 
