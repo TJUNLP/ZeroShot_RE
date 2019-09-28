@@ -129,7 +129,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//100):
+        for s in range(1, len(sents)):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -179,9 +179,9 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('right_cos').output)
-    predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+    #                                               outputs=nn_model.get_layer('right_cos').output)
+    # predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
     intermediate_layer_model_2 = keras.models.Model(inputs=nn_model.input,
@@ -191,25 +191,24 @@ def test_model3(nn_model, tag2sentDict_test):
 
 
     width = len(tag2sentDict_test.keys())
-    assert len(predictions) // width == totel_right
+    assert len(predictions_class) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
 
-    for i in range(len(predictions) // width) :
+    for i in range(len(predictions_class) // width) :
         left = i * width
         right = (i + 1) * width
-        subpredictions = predictions[left:right]
-        subpredictions = subpredictions.flatten().tolist()
-
-
-        mindis = max(subpredictions)
-        mindis_where = subpredictions.index(mindis)
-
-        if mindis > 0.5:
-            predict += 1
-
-            if mindis_where == truth_tag_list[i]:
-                predict_right += 1
+        # subpredictions = predictions[left:right]
+        # subpredictions = subpredictions.flatten().tolist()
+        #
+        # mindis = max(subpredictions)
+        # mindis_where = subpredictions.index(mindis)
+        #
+        # if mindis > 0.5:
+        #     predict += 1
+        #
+        #     if mindis_where == truth_tag_list[i]:
+        #         predict_right += 1
 
         subpredictions_class = predictions_class[left:right]
         subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
@@ -221,12 +220,12 @@ def test_model3(nn_model, tag2sentDict_test):
 
 
 
-    P = predict_right / max(predict, 0.000001)
-    R = predict_right / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
-    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    print('test predict_rank = ', predict_rank / totel_right)
-    print('P =, R =, F = ', P, R, F)
+    # P = predict_right / max(predict, 0.000001)
+    # R = predict_right / totel_right
+    # F = 2 * P * R / max((P + R), 0.000001)
+    # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    # print('test predict_rank = ', predict_rank / totel_right)
+    # print('P =, R =, F = ', P, R, F)
 
     P = predict_right_class / max(predict_class, 0.000001)
     R = predict_right_class / totel_right
@@ -437,8 +436,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"

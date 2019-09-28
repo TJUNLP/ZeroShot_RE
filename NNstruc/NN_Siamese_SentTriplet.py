@@ -1,7 +1,7 @@
 # coding:utf-8
 
 from keras.layers.core import Dropout, RepeatVector, Reshape
-from keras.layers.merge import concatenate, add, subtract, average, maximum
+from keras.layers.merge import concatenate, add, subtract, average, maximum, multiply
 from keras.layers import TimeDistributed, Input, Bidirectional, Dense, Embedding, LSTM, Conv1D, GlobalMaxPooling1D
 from keras.models import Model
 from keras import optimizers
@@ -1154,12 +1154,17 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     BiLSTM_x3 = BiLSTM_layer(embedding_x3)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    class_input = concatenate([tag_embedding, BiLSTM_x2], axis=-1)
+    class_BiLSTM = Dense(100, activation='tanh')(BiLSTM_x2)
+    sub = subtract([tag_embedding, class_BiLSTM])
+    mul = multiply([tag_embedding, class_BiLSTM])
+    max = maximum([tag_embedding, class_BiLSTM])
+    avg = average([tag_embedding, class_BiLSTM])
+    class_input = concatenate([tag_embedding, BiLSTM_x2, sub, mul, max, avg], axis=-1)
     # class_input = Flatten()(class_input)
-    class_mlp1 = Dense(150, activation='tanh')(class_input)
-    class_mlp1 = Dropout(0.25)(class_mlp1)
+    class_mlp1 = Dense(200, activation='tanh')(class_input)
+    class_mlp1 = Dropout(0.5)(class_mlp1)
     class_mlp2 = Dense(2)(class_mlp1)
-    class_output = Activation('sigmoid', name='CLASS')(class_mlp2)
+    class_output = Activation('softmax', name='CLASS')(class_mlp2)
 
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
