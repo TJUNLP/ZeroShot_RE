@@ -129,7 +129,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents)//100):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -189,8 +189,6 @@ def test_model3(nn_model, tag2sentDict_test):
     predictions_class = intermediate_layer_model_2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
-    if len(predictions) < 10:
-        predictions = predictions[0]
 
     width = len(tag2sentDict_test.keys())
     assert len(predictions) // width == totel_right
@@ -214,7 +212,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 predict_right += 1
 
         subpredictions_class = predictions_class[left:right]
-        subpredictions_class = subpredictions_class[:, 1]
+        subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
         class_where = subpredictions_class.index(max(subpredictions_class))
         predict_class += 1
 
