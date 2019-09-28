@@ -237,8 +237,14 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
             if tec in train_tag_list:
                 continue
             mul_count = 0
+
+            predRank_dict = {}
             for si, ty in enumerate(train_tag_list):
-                mul = subpredictions[si] * class_RankDict[tec][ty]
+                predRank_dict[ty] = subpredictions[si]
+            ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
+
+            for ty in ijlist[:20]:
+                mul = ty[1] * class_RankDict[tec][ty[0]]
                 mul_count += mul
 
             if mul_count > best_value:
