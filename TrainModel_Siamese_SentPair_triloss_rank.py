@@ -168,7 +168,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//100):
+        for s in range(1, len(sents)//20):
             totel_right += 1
 
             for si, ty in enumerate(train_tag_list):
@@ -379,7 +379,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//100):
+        for s in range(1, len(sents)//20):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -667,10 +667,10 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
     print('the test_model_rank result-----------------------')
-    P, R, F = test_model_rank(nn_model, tagDict_test, tagDict_train)
+    P, R, F = test_model_rank(nn_model, tagDict_dev, tagDict_train)
     print('P = ', P, 'R = ', R, 'F = ', F)
     print('the test 3 result-----------------------')
-    P, R, F = test_model3(nn_model, tagDict_test)
+    P, R, F = test_model3(nn_model, tagDict_dev)
     print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
@@ -784,8 +784,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
