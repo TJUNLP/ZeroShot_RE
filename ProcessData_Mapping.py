@@ -189,7 +189,7 @@ def get_data(sentpair_datafile, s2v_trainfile, s2v_devfile, s2v_testfile, t2v_fi
     s2v_dict, tag2sentDict_train = get_sent_index(s2v_trainfile, s2v_dict)
     print('s2v_dict, tag2sentDict_train len', len(s2v_dict), len(tag2sentDict_train))
 
-    s2v_dict, tag2sentDict_dev = get_sent_index(s2v_devfile, s2v_dict)
+    s2v_dict, tag2sentDict_dev = get_sent_index(s2v_devfile, s2v_dict, start=len(s2v_dict))
     print('s2v_dict, tag2sentDict_dev len', len(s2v_dict), len(tag2sentDict_dev))
 
     s2v_dict, tag2sentDict_test = get_sent_index(s2v_testfile, s2v_dict, start=len(s2v_dict))
