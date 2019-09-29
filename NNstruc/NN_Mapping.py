@@ -40,7 +40,7 @@ def Model_sent2tag_MLP_1(sentvocabsize, tagvocabsize,
     mul = multiply([x2_0, x1_1])
     max = maximum([x2_0, x1_1])
     avg = average([x2_0, x1_1])
-    class_input = concatenate([tag_embedding, x1_1, sub, mul, max, avg], axis=-1)
+    class_input = concatenate([x2_0, x1_1, sub, mul, max, avg], axis=-1)
     # class_input = Flatten()(class_input)
     class_mlp1 = Dense(200, activation='tanh')(class_input)
     class_mlp1 = Dropout(0.5)(class_mlp1)
