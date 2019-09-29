@@ -182,7 +182,6 @@ def get_sent2vec(nn_model, tag2sentDict_test, w2file):
     print(inx, len(sent_vob))
 
 
-
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0

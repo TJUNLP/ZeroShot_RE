@@ -16,114 +16,30 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Mapping import Model_sent2tag_MLP_1
 
 
-
-# def test_model(nn_model, tag2sentDict_test):
-#
-#     predict = 0
-#     predict_right = 0
-#     predict_right05 = 0
-#
-#     data_s_all = []
-#     data_tag_all = []
-#     labels_all = []
-#     totel_right = 0
-#     truth_tag_list = []
-#     for tag in tag2sentDict_test.keys():
-#         for sent in tag2sentDict_test[tag]:
-#             totel_right += 1
-#
-#             for numi, ins in enumerate(target_vob.values()):
-#                 assert numi == ins
-#
-#                 data_s_all.append([sent])
-#                 data_tag_all.append([ins])
-#
-#                 if tag == ins:
-#                     labels_all.append(1)
-#                     truth_tag_list.append(tag)
-#                 else:
-#                     labels_all.append(0)
-#
-#     pairs_test = [data_s_all, data_tag_all]
-#
-#     test_x1_sent = np.asarray(pairs_test[0], dtype="int32")
-#     test_x2_tag = np.asarray(pairs_test[1], dtype="int32")
-#
-#     inputs_train_x = [test_x1_sent, test_x2_tag]
-#
-#     predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
-#
-#     assert len(predictions) // len(target_vob) == totel_right
-#     assert len(truth_tag_list) == totel_right
-#     predict_rank = 0
-#
-#     for i in range(len(predictions) // len(target_vob)):
-#         left = i * len(target_vob)
-#         right = (i + 1) * len(target_vob)
-#         subpredictions = predictions[left:right]
-#         subpredictions = subpredictions.flatten().tolist()
-#
-#         distantDict = {}
-#         for num, disvlaue in enumerate(subpredictions):
-#             distantDict[num] = disvlaue
-#
-#         distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-#         distantDict = dict(distantList)
-#         distantList = list(distantDict.keys())
-#         target_where = distantList.index(truth_tag_list[i]) + 1
-#         predict_rank += target_where
-#
-#         mindis = max(subpredictions)
-#         mindis_where = subpredictions.index(mindis)
-#
-#         if mindis > 0.5:
-#             predict += 1
-#
-#             if mindis_where == truth_tag_list[i]:
-#                 predict_right += 1
-#
-#         if subpredictions[truth_tag_list[i]] > 0.5:
-#             predict_right05 += 1
-#
-#     P = predict_right / max(predict, 0.000001)
-#     R = predict_right / totel_right
-#     F = 2 * P * R / max((P + R), 0.000001)
-#     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-#     print('test predict_rank = ', predict_rank / totel_right)
-#     print('test distance > 0.5  = ', predict_right05 / totel_right)
-#
-#     return P, R, F
-
-
-
-
 def test_model(nn_model, tag2sentDict_test):
 
     predict = 0
     predict_right = 0
-    predict_right05 = 0
 
     data_s_all = []
     data_tag_all = []
-    labels_all = []
+
     totel_right = 0
     truth_tag_list = []
+
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
-        if len(sents) < 2:
-            continue
-        for s in range(1, len(sents)):
+
+        for s in range(len(sents)):
             totel_right += 1
 
             for si, ty in enumerate(tag2sentDict_test.keys()):
                 data_s_all.append([sents[s]])
-                data_tag_all.append([tag2sentDict_test[ty][0]])
+                data_tag_all.append([ty])
 
                 if tag == ty:
-                    labels_all.append(1)
                     truth_tag_list.append(si)
-                else:
-                    labels_all.append(0)
+
 
     pairs_test = [data_s_all, data_tag_all]
 
@@ -132,7 +48,7 @@ def test_model(nn_model, tag2sentDict_test):
 
     inputs_train_x = [test_x1_sent, test_x2_tag]
 
-    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=0)
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
     width = len(tag2sentDict_test.keys())
     assert len(predictions) // width == totel_right
@@ -145,43 +61,28 @@ def test_model(nn_model, tag2sentDict_test):
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
 
-        distantDict = {}
-        for num, disvlaue in enumerate(subpredictions):
-            distantDict[num] = disvlaue
-
-        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
-        distantDict = dict(distantList)
-        distantList = list(distantDict.keys())
-        target_where = distantList.index(truth_tag_list[i]) + 1
-        predict_rank += target_where
-
         mindis = max(subpredictions)
         mindis_where = subpredictions.index(mindis)
 
-        if mindis > 0.5:
+        if mindis > 0.0:
             predict += 1
 
             if mindis_where == truth_tag_list[i]:
                 predict_right += 1
 
-        if subpredictions[truth_tag_list[i]] > 0.5:
-            predict_right05 += 1
 
     P = predict_right / max(predict, 0.000001)
     R = predict_right / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
     print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
     print('test predict_rank = ', predict_rank / totel_right)
-    print('test distance > 0.5  = ', predict_right05 / totel_right)
 
     return P, R, F
 
 
+def Dynamic_get_trainSet(tag2sentDict):
 
-def Dynamic_get_trainSet():
-    pairs_train, labels_train = ProcessData_Mapping.CreatePairs_sentpair(tag2sentDict_train)
-
-    # pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict_train)
+    pairs_train, labels_train = ProcessData_Mapping.CreatePairs(tag2sentDict, target_vob)
 
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
@@ -233,12 +134,13 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet()
+        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(tag2sentDict_train)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(tag2sentDict_dev)
 
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
-                               validation_split=0.2,
+                               validation_data=[inputs_dev_x, inputs_dev_y],
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
@@ -297,8 +199,9 @@ if __name__ == "__main__":
     print(modelname)
 
     t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    s2v_model_name = ''
+    s2v_model_name = 'Model_BiLSTM_SentPair_tripletloss_ed__WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit__0.test.txt'
     s2v_trainfile = './data/s2v/' + s2v_model_name + '.train.txt'
+    s2v_devfile = './data/s2v/' + s2v_model_name + '.dev.txt'
     s2v_testfile = './data/s2v/' + s2v_model_name + '.test.txt'
     resultdir = "./data/result/"
 
@@ -307,7 +210,9 @@ if __name__ == "__main__":
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
-    sentpair_datafile = "./model/model_data/data_Siamese.WordChar.Sentpair.pkl"
+    sentpair_datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    sentpair_datafile = "./model/model_data/" + sentpair_datafname + ".pkl"
+
 
     modelfile = "next ...."
 
@@ -322,13 +227,13 @@ if __name__ == "__main__":
         print("Precess data....")
 
         ProcessData_Mapping.get_data(sentpair_datafile,
-                                     s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100)
+                                     s2v_trainfile, s2v_devfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100)
 
 
 
-    for inum in range(1, 3):
+    for inum in range(0, 1):
 
-        tag2sentDict_train, tag2sentDict_test, \
+        tag2sentDict_train, tag2sentDict_dev, tag2sentDict_test, \
         sent_W, sent_k, \
         target_vob, target_id2word, type_W, type_k, s2v_dict = pickle.load(open(datafile, 'rb'))
 

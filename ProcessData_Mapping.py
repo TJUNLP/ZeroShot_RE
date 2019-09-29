@@ -66,6 +66,27 @@ def load_vec_Sentrepresentation(s2v_k, s2v):
     return s2v_k, W
 
 
+def load_vec_random(vocab_c_inx, k=30):
+
+    W = np.zeros(shape=(vocab_c_inx.__len__(), k))
+
+    for i in vocab_c_inx.keys():
+        W[vocab_c_inx[i]] = np.random.uniform(-1*math.sqrt(3/k), math.sqrt(3/k), k)
+
+    return k, W
+
+
+def load_vec_onehot(k=124):
+    vocab_w_inx = [i for i in range(0, k)]
+
+    W = np.zeros(shape=(vocab_w_inx.__len__(), k))
+
+    for word in vocab_w_inx:
+        W[vocab_w_inx[word], vocab_w_inx[word]] = 1.
+
+    return k, W
+
+
 def get_sent_index(s2v_file, s2v, start=0):
 
     tag2sent_Dict = {}
@@ -86,27 +107,6 @@ def get_sent_index(s2v_file, s2v, start=0):
     f.close()
 
     return s2v, tag2sent_Dict
-
-
-def load_vec_random(vocab_c_inx, k=30):
-
-    W = np.zeros(shape=(vocab_c_inx.__len__(), k))
-
-    for i in vocab_c_inx.keys():
-        W[vocab_c_inx[i]] = np.random.uniform(-1*math.sqrt(3/k), math.sqrt(3/k), k)
-
-    return k, W
-
-
-def load_vec_onehot(k=124):
-    vocab_w_inx = [i for i in range(0, k)]
-
-    W = np.zeros(shape=(vocab_w_inx.__len__(), k))
-
-    for word in vocab_w_inx:
-        W[vocab_w_inx[word], vocab_w_inx[word]] = 1.
-
-    return k, W
 
 
 def CreatePairs_sentpair(tagDict_train):
@@ -138,7 +138,7 @@ def CreatePairs_sentpair(tagDict_train):
     return pairs, labels
 
 
-def CreatePairs(tagDict_train):
+def CreatePairs(tagDict_train, target_vob):
 
     labels = []
     data_s_all = []
@@ -147,26 +147,30 @@ def CreatePairs(tagDict_train):
     for tag in tagDict_train.keys():
         sents = tagDict_train[tag]
 
-        for sent in sents:
-            labels.append(1)
-            data_s_all.append([sent])
-            data_t_all.append([tag])
+        for k, sent in enumerate(sents):
 
-            labels.append(0)
             data_s_all.append([sent])
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            data_t_all.append([keylist[ran1]])
 
+            targetvec = np.zeros(2)
+            if k % 2 == 0:
+                targetvec[1] = 1
+                data_t_all.append([tag])
+            else:
+                targetvec[0] = 1
+                keylist = list(target_vob.values())
+                ran1 = random.randrange(0, len(keylist))
+                if keylist[ran1] == tag:
+                    ran1 = (ran1 + 1) % len(keylist)
+                data_t_all.append([keylist[ran1]])
+
+            labels.append(targetvec)
 
     pairs = [data_s_all, data_t_all]
 
     return pairs, labels
 
 
-def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100):
+def get_data(sentpair_datafile, s2v_trainfile, s2v_devfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100):
 
     """
     数据处理的入口函数
@@ -184,6 +188,9 @@ def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, t2v_file, datafile,
     s2v_dict = {}
     s2v_dict, tag2sentDict_train = get_sent_index(s2v_trainfile, s2v_dict)
     print('s2v_dict, tag2sentDict_train len', len(s2v_dict), len(tag2sentDict_train))
+
+    s2v_dict, tag2sentDict_dev = get_sent_index(s2v_devfile, s2v_dict)
+    print('s2v_dict, tag2sentDict_dev len', len(s2v_dict), len(tag2sentDict_dev))
 
     s2v_dict, tag2sentDict_test = get_sent_index(s2v_testfile, s2v_dict, start=len(s2v_dict))
     print('s2v_dict, tag2sentDict_test len', len(s2v_dict), len(tag2sentDict_test))
@@ -203,7 +210,7 @@ def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, t2v_file, datafile,
 
     print(datafile, "dataset created!")
     out = open(datafile, 'wb')
-    pickle.dump([tag2sentDict_train, tag2sentDict_test,
+    pickle.dump([tag2sentDict_train, tag2sentDict_dev, tag2sentDict_test,
                  sent_W, sent_k,
                  target_vob, target_id2word, type_W, type_k,
                  s2v_dict], out, 0)

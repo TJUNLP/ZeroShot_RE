@@ -31,16 +31,16 @@ def Model_sent2tag_MLP_1(sentvocabsize, tagvocabsize,
                                     trainable=False,
                                     weights=[tag_W])(input_tag)
 
-    x1_0 = Flatten()(sent_embedding)
+    x1_1 = Flatten()(sent_embedding)
     x2_0 = Flatten()(tag_embedding)
 
-    x1_1 = Dense(100, activation='tanh')(x1_0)
+    # x1_1 = Dense(100, activation='tanh')(x1_0)
 
     sub = subtract([x2_0, x1_1])
     mul = multiply([x2_0, x1_1])
     max = maximum([x2_0, x1_1])
     avg = average([x2_0, x1_1])
-    class_input = concatenate([tag_embedding, x1_0, sub, mul, max, avg], axis=-1)
+    class_input = concatenate([tag_embedding, x1_1, sub, mul, max, avg], axis=-1)
     # class_input = Flatten()(class_input)
     class_mlp1 = Dense(200, activation='tanh')(class_input)
     class_mlp1 = Dropout(0.5)(class_mlp1)
