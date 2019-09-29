@@ -227,7 +227,7 @@ if __name__ == "__main__":
         print("Precess data....")
 
         ProcessData_Mapping.get_data(sentpair_datafile,
-                                     s2v_trainfile, s2v_devfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100)
+                                     s2v_trainfile, s2v_devfile, s2v_testfile, t2v_file, datafile, s2v_k=100, t2v_k=100)
 
 
 
