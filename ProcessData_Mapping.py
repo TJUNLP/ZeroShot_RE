@@ -41,13 +41,13 @@ def load_vec_KGrepresentation(fname, vocab, k):
     w2v = {}
     for line in f.readlines():
         values = line.rstrip('\n').split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
+        word = ' '.join(values[:len(values)-100])
+        coefs = np.asarray(values[len(values)-100:], dtype='float32')
         w2v[word] = coefs
     f.close()
 
     W = np.zeros(shape=(vocab.__len__(), k))
-    for item in vocab:
+    for item in vocab.keys():
 
         try:
             W[vocab[item]] = w2v[item]
