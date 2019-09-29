@@ -532,6 +532,44 @@ def find_rel_from_corpus():
         print(ri, rel, len(relDict[rel]))
 
 
+def find_rel_questions_from_corpus():
+
+    f = './data/WikiReading/relation_splits/'
+    fw = codecs.open(f + 'WikiReading.quenstion.txt', 'w', encoding='utf-8')
+    fname = ['train.', 'dev.', 'test.']
+    relDict = {}
+
+    for name in fname:
+        for fni in range(0, 10):
+            print(name, fni)
+            fr = codecs.open(f+name+str(fni), 'r', encoding='utf-8')
+            lines = fr.readlines()
+            for line in lines:
+                lsp = line.rstrip('\n').split('\t')
+
+                rel = lsp[0]
+                if rel not in relDict.keys():
+                    relDict[rel] = []
+                val = lsp[1]
+                if val not in relDict[rel]:
+                    relDict[rel] += [val]
+
+            fr.close()
+
+
+    for ri, rel in enumerate(relDict.keys()):
+
+        print(ri, rel, len(relDict[rel]))
+        ss = rel + ' \t '
+        for v in relDict[rel]:
+            if v[-1] != '?':
+                v += '?'
+            ss += ' '.join(nltk.word_tokenize(v)) + ' '
+
+        fw.write(ss[:-1] + '\n')
+    fw.close()
+
+
 def find_rel_in_test():
 
     fr = './data/WikiReading/WikiReading.txt'
@@ -561,8 +599,10 @@ if __name__ == '__main__':
     # get_rel2v_ave_glove100()
 
     # find_rel_from_corpus()
-    #
-    Process_Corpus()
+
+    find_rel_questions_from_corpus()
+
+    # Process_Corpus()
 
     # Process_Corpus_2()
 

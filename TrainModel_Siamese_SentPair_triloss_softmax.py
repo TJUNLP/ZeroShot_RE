@@ -14,7 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_softmax_ques
 import keras
 
 
@@ -225,7 +225,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
-                data_tag_all.append([ty])
+                data_tag_all.append(prototype_tagDict[ty])
 
                 data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_1.append(data_s)
@@ -382,7 +382,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
             maxF = F
             nn_model.save_weights(modelfile, overwrite=True)
 
-        print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
+        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
         if earlystop >= 20:
             break
@@ -421,8 +421,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_ed_unseenclass':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_softmax_ques':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_softmax_ques(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -442,18 +442,6 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    elif modelname is 'Model_BiLSTM_SentPair_tripletloss_ed':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize=wordvocabsize,
-                                                   posivocabsize=posivocabsize,
-                                                   charvocabsize=charvocabsize,
-                                                   tagvocabsize=tagvocabsize,
-                                                   word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                   input_sent_lenth=input_sent_lenth,
-                                                   input_maxword_length=max_c,
-                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                   batch_size=batch_size)
-
-
     return nn_model
 
 
@@ -464,7 +452,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax_ques(tagDict, prototype_tagDict, target_vob=None, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -498,10 +486,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed_unseenclass'
+
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_softmax_ques'
 
     print(modelname)
 
@@ -525,8 +511,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
@@ -558,6 +544,8 @@ if __name__ == "__main__":
         target_vob, target_id2word, \
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
+
+        prototype_k, prototype_tagDict = ProcessData_Siamese_SentPair.get_prototypes_byques(target_vob, word_vob)
 
         nn_model = SelectModel(modelname,
                                wordvocabsize=len(word_vob),
