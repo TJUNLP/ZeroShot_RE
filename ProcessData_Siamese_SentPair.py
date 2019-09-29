@@ -521,9 +521,11 @@ def CreateTriplet(tagDict_train, target_vob=None, istest=False):
     return pairs, labels
 
 
-def CreateTriplet_withSoftmax(tagDict_train, istest=False):
+def CreateTriplet_withSoftmax(tagDict_train, target_vob=None, istest=False):
 
-
+    """
+    if target_vob != None, unseen classes are used for pos examples
+    """
 
     labels = []
     data_tag_all = []
@@ -584,7 +586,15 @@ def CreateTriplet_withSoftmax(tagDict_train, istest=False):
             targetvec = np.zeros(2)
             if i % 2 == 0:
                 targetvec[0] = 1
-                data_tag_all.append([keylist[ran1]])
+
+                if target_vob != None:
+                    data_tag_all.append([keylist[ran1]])
+                else:
+                    keylist = list(target_vob.values())
+                    ran1 = random.randrange(0, len(keylist))
+                    if keylist[ran1] == tag:
+                        ran1 = (ran1 + 1) % len(keylist)
+                    data_tag_all.append([keylist[ran1]])
             else:
                 targetvec[1] = 1
                 data_tag_all.append([tag])

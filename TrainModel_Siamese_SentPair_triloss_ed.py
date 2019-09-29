@@ -421,8 +421,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_1':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_ed_unseenclass':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -464,7 +464,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=target_vob, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -501,6 +501,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_ed'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed_unseenclass'
 
     print(modelname)
 
@@ -538,7 +539,7 @@ if __name__ == "__main__":
 
     retrain = False
     Test = True
-    GetVec = True
+    GetVec = False
 
     if not os.path.exists(datafile):
         print("Precess data....")
@@ -549,7 +550,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(0, 1):
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
