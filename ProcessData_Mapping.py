@@ -10,20 +10,6 @@ import keras
 from Seq2fragment import Seq2frag, Seq2frag4test
 
 
-def load_vec_pkl(fname,vocab,k=300):
-    """
-    Loads 300x1 word vecs from word2vec
-    """
-    W = np.zeros(shape=(vocab.__len__() + 1, k))
-    w2v = pickle.load(open(fname,'rb'))
-    w2v["UNK"] = np.random.uniform(-0.25, 0.25, k)
-    for word in vocab:
-        if not w2v.__contains__(word):
-            w2v[word] = w2v["UNK"]
-        W[vocab[word]] = w2v[word]
-    return w2v,k,W
-
-
 def load_vec_txt(fname, vocab, k=300):
     f = codecs.open(fname, 'r', encoding='utf-8')
     w2v={}
@@ -186,12 +172,14 @@ def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, t2v_file, datafile,
     数据处理的入口函数
     Converts the input files  into the model input formats
     """
-    tagDict_train, tagDict_test,\
-    word_vob, word_id2word, word_W, w2v_k,\
-    char_vob, char_id2char, char_W, c2v_k,\
-    target_vob, target_id2word, type_W, type_k,\
-    posi_W, posi_k,\
+
+    tagDict_train, tagDict_dev, tagDict_test, \
+    word_vob, word_id2word, word_W, w2v_k, \
+    char_vob, char_id2char, char_W, c2v_k, \
+    target_vob, target_id2word, \
+    posi_W, posi_k, type_W, type_k, \
     max_s, max_posi, max_c = pickle.load(open(sentpair_datafile, 'rb'))
+
 
     s2v_dict = {}
     s2v_dict, tag2sentDict_train = get_sent_index(s2v_trainfile, s2v_dict)
@@ -214,10 +202,11 @@ def get_data(sentpair_datafile, s2v_trainfile, s2v_testfile, t2v_file, datafile,
 
 
     print(datafile, "dataset created!")
-    out = open(datafile, 'wb')#
+    out = open(datafile, 'wb')
     pickle.dump([tag2sentDict_train, tag2sentDict_test,
                  sent_W, sent_k,
-                 target_vob, target_id2word, type_W, type_k], out, 0)
+                 target_vob, target_id2word, type_W, type_k,
+                 s2v_dict], out, 0)
     out.close()
 
 
@@ -238,29 +227,3 @@ if __name__=="__main__":
     datafile = "./model/model_data/" + datafname + ".pkl"
 
     sentpair_datafile = "./model/model_data/data_Siamese.WordChar.Sentpair.pkl"
-
-    tagDict_train, tagDict_test,\
-    word_vob, word_id2word, word_W, w2v_k,\
-    char_vob, char_id2char, char_W, c2v_k,\
-    target_vob, target_id2word, type_W, type_k,\
-    posi_W, posi_k,\
-    max_s, max_posi, max_c = pickle.load(open(sentpair_datafile, 'rb'))
-    s2v_k = 400
-    t2v_k = 100
-
-
-    sent_W = {}
-    sent_k, sent_W, tag2sentDict_train = load_vec_Sentrepresentation(s2v_trainfile, s2v_k, sent_W)
-    print('sent_k, sent_W, tag2sentDict_train len', sent_k, len(sent_W), len(tag2sentDict_train))
-
-    sent_k, sent_W, tag2sentDict_test = load_vec_Sentrepresentation(s2v_testfile, s2v_k, sent_W, start=len(sent_W))
-    print('sent_k, sent_W, tag2sentDict_test len', sent_k, len(sent_W), len(tag2sentDict_test))
-
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
-
-    pairs_train, labels_train = CreatePairs(tag2sentDict_train)
-    print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
-
-    pairs_test, labels_test = CreatePairs(tag2sentDict_test)
-    print('CreatePairs test len = ', len(pairs_test[0]), len(labels_test))

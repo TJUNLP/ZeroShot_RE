@@ -1270,7 +1270,7 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     BiLSTM_x3 = BiLSTM_layer(embedding_x3)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    class_BiLSTM = Dense(100, activation='tanh')(BiLSTM_x2)
+    class_BiLSTM = Dense(100, activation='tanh',name='class_BiLSTM')(BiLSTM_x2)
     sub = subtract([tag_embedding, class_BiLSTM])
     mul = multiply([tag_embedding, class_BiLSTM])
     max = maximum([tag_embedding, class_BiLSTM])

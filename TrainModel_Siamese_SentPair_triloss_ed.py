@@ -8,7 +8,7 @@
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
 
-import pickle, datetime, codecs, math
+import pickle, datetime, codecs, math, gc
 import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
@@ -72,7 +72,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     # intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
 
     intermediate_layer_model_x2 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('bidirectional_1').get_output_at(1))
+                                                  outputs=nn_model.get_layer('class_BiLSTM').output)
     intermediate_output_x2 = intermediate_layer_model_x2.predict(inputs_train_x)
 
     fw = codecs.open(w2file, 'w', encoding='utf-8')
@@ -93,8 +93,95 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
-def test_class_softmax():
-    pass
+def get_sent2vec(nn_model, tag2sentDict_test, w2file):
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+    data_tag_all = []
+    totel_right = 0
+
+    tagIndex = []
+
+    for tag in tag2sentDict_test.keys():
+        sents = tag2sentDict_test[tag]
+
+        for s in range(0, len(sents)):
+            totel_right += 1
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+            data_tag_all.append([tag])
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+            data_s_all_1.append(data_s)
+            data_e1_posi_all_1.append(data_e1_posi)
+            data_e2_posi_all_1.append(data_e2_posi)
+            char_s_all_1.append(char_s)
+
+            tagIndex.append(tag)
+
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
+
+    train_x1_sent = np.asarray(pairs[0], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+    train_x2_sent = np.asarray(pairs[4], dtype="int32")
+    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
+    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
+    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
+    train_x3_sent = train_x2_sent
+    train_x3_e1_posi = train_x2_e1_posi
+    train_x3_e2_posi = train_x2_e2_posi
+    train_x3_sent_cahr = train_x2_sent_cahr
+    train_tag = np.asarray(pairs[8], dtype="int32")
+
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+
+
+    sent_vob = {}
+
+    # intermediate_layer_model_x1 = keras.models.Model(inputs=nn_model.input,
+    #                                               outputs=nn_model.get_layer('bidirectional_1').get_output_at(0))
+    # intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
+
+    intermediate_layer_model_x2 = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('class_BiLSTM').output)
+    intermediate_output_x2 = intermediate_layer_model_x2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+
+    fw = codecs.open(w2file, 'w', encoding='utf-8')
+    inx = 0
+    for i, op in enumerate(intermediate_output_x2):
+
+        key = (inx, tagIndex[i])
+        sent_vob[key] = op
+        inx += 1
+        fw.write(str(key[0]) + ' ' + str(key[1]))
+        for item in op:
+            fw.write(' ' + str(item))
+        fw.write('\n')
+        # key = (inx, tagIndex[1])
+        # sent_vob[key] = intermediate_output_x2[i]
+        # print(i, len(sent_vob[key]))
+        # inx += 1
+    print(inx, len(sent_vob))
+
+
 
 def test_model3(nn_model, tag2sentDict_test):
 
@@ -213,6 +300,8 @@ def test_model3(nn_model, tag2sentDict_test):
         subpredictions_class = predictions_class[left:right]
         subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
         class_where = subpredictions_class.index(max(subpredictions_class))
+
+
         predict_class += 1
 
         if class_where == truth_tag_list[i]:
@@ -450,6 +539,7 @@ if __name__ == "__main__":
 
     retrain = False
     Test = True
+    GetVec = True
 
     if not os.path.exists(datafile):
         print("Precess data....")
@@ -458,24 +548,26 @@ if __name__ == "__main__":
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
-    tagDict_train, tagDict_dev, tagDict_test,\
-    word_vob, word_id2word, word_W, w2v_k,\
-    char_vob, char_id2char, char_W, c2v_k,\
-    target_vob, target_id2word,\
-    posi_W, posi_k, type_W, type_k,\
-    max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-    nn_model = SelectModel(modelname,
-                           wordvocabsize=len(word_vob),
-                           tagvocabsize=len(target_vob),
-                           posivocabsize=max_posi+1,
-                           charvocabsize=len(char_vob),
-                           word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
-                           input_sent_lenth=max_s,
-                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
-                           batch_size=batch_size)
 
-    for inum in range(0, 3):
+    for inum in range(0, 1):
+
+        tagDict_train, tagDict_dev, tagDict_test, \
+        word_vob, word_id2word, word_W, w2v_k, \
+        char_vob, char_id2char, char_W, c2v_k, \
+        target_vob, target_id2word, \
+        posi_W, posi_k, type_W, type_k, \
+        max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
+
+        nn_model = SelectModel(modelname,
+                               wordvocabsize=len(word_vob),
+                               tagvocabsize=len(target_vob),
+                               posivocabsize=max_posi + 1,
+                               charvocabsize=len(char_vob),
+                               word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
+                               input_sent_lenth=max_s,
+                               w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
+                               batch_size=batch_size)
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
@@ -497,6 +589,29 @@ if __name__ == "__main__":
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
+
+        if GetVec:
+            nn_model.load_weights(modelfile)
+            resultfile = './data/s2v/' + modelname + "__" + datafname + "__" + str(inum) + '.test.txt'
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.test.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_test, w2file=w2file)
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.dev.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_dev, w2file=w2file)
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.train.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_train, w2file=w2file)
+
+
+        del nn_model
+        gc.collect()
 
 
 # import tensorflow as tf

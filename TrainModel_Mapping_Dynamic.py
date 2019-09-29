@@ -8,12 +8,12 @@
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
 
-import pickle, datetime, codecs, math
+import pickle, datetime, codecs, math, gc
 import os.path
 import numpy as np
 import ProcessData_Mapping
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Mapping import Model_sent_MLP__KGembed
+from NNstruc.NN_Mapping import Model_sent2tag_MLP_1
 
 
 
@@ -279,8 +279,8 @@ def SelectModel(modelname, sentvocabsize, tagvocabsize,
 
     nn_model = None
 
-    if modelname is 'Model_sent_MLP__KGembed':
-        nn_model = Model_sent_MLP__KGembed(sentvocabsize=sentvocabsize,
+    if modelname is 'Model_sent2tag_MLP_1':
+        nn_model = Model_sent2tag_MLP_1(sentvocabsize=sentvocabsize,
                                                   tagvocabsize=tagvocabsize,
                                                   sent_W=sent_W, tag_W=tag_W,
                                                   s2v_k=s2v_k, tag2v_k=tag2v_k)
@@ -292,17 +292,18 @@ if __name__ == "__main__":
 
     maxlen = 50
 
-    modelname = 'Model_sent_MLP__KGembed'
+    modelname = 'Model_sent2tag_MLP_1'
 
     print(modelname)
 
     t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
-    s2v_trainfile = './data/Model_BiLSTM_SentPair_2__data_Siamese.WordChar.Sentpair__1.h5.train.txt'
-    s2v_testfile = './data/Model_BiLSTM_SentPair_2__data_Siamese.WordChar.Sentpair__1.h5.test.txt'
+    s2v_model_name = ''
+    s2v_trainfile = './data/s2v/' + s2v_model_name + '.train.txt'
+    s2v_testfile = './data/s2v/' + s2v_model_name + '.test.txt'
     resultdir = "./data/result/"
 
     # datafname = 'data_Siamese.4_allneg' #1,3, 4_allneg, 4_allneg_segmentNeg
-    datafname = 'data_Mapping.PTransE'
+    datafname = 'data_Mapping.' + s2v_model_name
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -312,7 +313,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 256
+    batch_size = 512
 
     retrain = False
     Test = True
@@ -321,17 +322,19 @@ if __name__ == "__main__":
         print("Precess data....")
 
         ProcessData_Mapping.get_data(sentpair_datafile,
-                                     s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=100, t2v_k=100)
+                                     s2v_trainfile, s2v_testfile, t2v_file, datafile, s2v_k=400, t2v_k=100)
 
-    tag2sentDict_train, tag2sentDict_test,\
-    sent_W, sent_k, \
-    target_vob, target_id2word, type_W, type_k = pickle.load(open(datafile, 'rb'))
 
-    nn_model = SelectModel(modelname,
-                           sentvocabsize=len(sent_W), tagvocabsize=len(target_vob),
-                           sent_W=sent_W, tag_W=type_W, s2v_k=sent_k, tag2v_k=type_k)
 
     for inum in range(1, 3):
+
+        tag2sentDict_train, tag2sentDict_test, \
+        sent_W, sent_k, \
+        target_vob, target_id2word, type_W, type_k, s2v_dict = pickle.load(open(datafile, 'rb'))
+
+        nn_model = SelectModel(modelname,
+                               sentvocabsize=len(sent_W), tagvocabsize=len(target_vob),
+                               sent_W=sent_W, tag_W=type_W, s2v_k=sent_k, tag2v_k=type_k)
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
@@ -353,6 +356,9 @@ if __name__ == "__main__":
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir)
+
+        del nn_model
+        gc.collect()
 
 
 # import tensorflow as tf

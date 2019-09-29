@@ -1,8 +1,8 @@
 # coding:utf-8
 
 from keras.layers.core import Dropout,RepeatVector, Reshape
-from keras.layers.merge import concatenate, add, subtract, average, maximum
-from keras.layers import TimeDistributed, Input, Bidirectional, Dense, Embedding, LSTM, Conv1D, GlobalMaxPooling1D
+from keras.layers.merge import concatenate, add, subtract, average, maximum,multiply
+from keras.layers import TimeDistributed, Input, Bidirectional, Dense, Embedding, LSTM, Conv1D, GlobalMaxPooling1D, Activation
 from keras.models import Model
 from keras import optimizers
 from keras.layers.normalization import BatchNormalization
@@ -12,7 +12,7 @@ from keras.layers import merge, Lambda,Flatten
 from keras.layers.merge import dot
 
 
-def Model_sent_MLP__KGembed(sentvocabsize, tagvocabsize,
+def Model_sent2tag_MLP_1(sentvocabsize, tagvocabsize,
                      sent_W, tag_W, s2v_k, tag2v_k):
 
     input_sent = Input(shape=(1,), dtype='int32')
@@ -24,34 +24,35 @@ def Model_sent_MLP__KGembed(sentvocabsize, tagvocabsize,
                                     weights=[sent_W])(input_sent)
 
     input_tag = Input(shape=(1,), dtype='int32')
-    tag_embedding = Embedding(input_dim=sentvocabsize,
-                                    output_dim=s2v_k,
+    tag_embedding = Embedding(input_dim=tagvocabsize,
+                                    output_dim=tag2v_k,
                                     input_length=1,
                                     mask_zero=False,
                                     trainable=False,
-                                    weights=[sent_W])(input_tag)
-
-    # input_tag = Input(shape=(1,), dtype='int32')
-    # tag_embedding = Embedding(input_dim=tagvocabsize,
-    #                                 output_dim=tag2v_k,
-    #                                 input_length=1,
-    #                                 mask_zero=False,
-    #                                 trainable=False,
-    #                                 weights=[tag_W])(input_tag)
+                                    weights=[tag_W])(input_tag)
 
     x1_0 = Flatten()(sent_embedding)
     x2_0 = Flatten()(tag_embedding)
-    # mlp_x1_1 = Dense(200, activation='tanh')(x1_0)
-    # mlp_x1_1 = Dropout(0.5)(x1_0)
-    mlp_x1_2 = Dense(100, activation='tanh')(x1_0)
-    # mlp_x1_2 = Dropout(0.25)(mlp_x1_2)
+
+    x1_1 = Dense(100, activation='tanh')(x1_0)
+
+    sub = subtract([x2_0, x1_1])
+    mul = multiply([x2_0, x1_1])
+    max = maximum([x2_0, x1_1])
+    avg = average([x2_0, x1_1])
+    class_input = concatenate([tag_embedding, x1_0, sub, mul, max, avg], axis=-1)
+    # class_input = Flatten()(class_input)
+    class_mlp1 = Dense(200, activation='tanh')(class_input)
+    class_mlp1 = Dropout(0.5)(class_mlp1)
+    class_mlp2 = Dense(2)(class_mlp1)
+    class_output = Activation('softmax', name='CLASS')(class_mlp2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([mlp_x1_2, x2_0])
-    distance = dot([x1_0, x2_0], axes=-1, normalize=True)
+    # distance = dot([x1_0, x2_0], axes=-1, normalize=True)
 
-    mymodel = Model([input_sent, input_tag], distance)
+    mymodel = Model([input_sent, input_tag], class_output)
 
-    mymodel.compile(loss=anti_contrastive_loss, optimizer=optimizers.Adam(lr=0.001), metrics=[acc_siamese])
+    mymodel.compile(loss='categorical_crossentropy', optimizer=optimizers.Adam(lr=0.001), metrics=['acc'])
 
     return mymodel
 
