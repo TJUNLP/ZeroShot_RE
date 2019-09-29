@@ -140,7 +140,8 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
-                               validation_data=[inputs_dev_x, inputs_dev_y],
+                               # validation_data=[inputs_dev_x, inputs_dev_y],
+                                validation_split=0.2,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
@@ -231,7 +232,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(0, 1):
+    for inum in range(1, 2):
 
         tag2sentDict_train, tag2sentDict_dev, tag2sentDict_test, \
         sent_W, sent_k, \
