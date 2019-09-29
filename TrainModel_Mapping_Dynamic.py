@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
     print(modelname)
 
-    t2v_file = './data/KG2v/FB15K_PTransE_Relation2Vec_100.txt'
+    t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
     s2v_model_name = 'Model_BiLSTM_SentPair_tripletloss_ed__WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit__0.test.txt'
     s2v_trainfile = './data/s2v/' + s2v_model_name + '.train.txt'
     s2v_devfile = './data/s2v/' + s2v_model_name + '.dev.txt'
