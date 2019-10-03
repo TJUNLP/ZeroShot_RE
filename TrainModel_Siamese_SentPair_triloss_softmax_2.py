@@ -742,7 +742,7 @@ if __name__ == "__main__":
             neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
 
             tagDict_test_neg = ProcessData_Siamese_SentPair.get_sentDicts_neg(neg_testfile, max_s, max_posi, word_vob, char_vob, max_c)
-            print('tagDict_test_neg len', len(tagDict_test_neg))
+            print('tagDict_test_neg len', len(tagDict_test_neg[-1]))
 
             print("Test_neg model....")
             print(datafile)
