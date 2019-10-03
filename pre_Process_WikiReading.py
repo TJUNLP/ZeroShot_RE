@@ -309,6 +309,45 @@ def Process_Corpus_2():
     #         print(pos[1])
 
 
+def change_neg2Unknow():
+
+    f = './data/WikiReading/'
+    fw = codecs.open(f + 'WikiReading.neg_instances.txt', 'w', encoding='utf-8')
+    fname = ['test.', 'train.', 'dev.']
+    relDict = {}
+
+    for name in fname:
+        for fni in range(0, 10):
+            print(name, fni)
+            fr = codecs.open(f+ 'relation_splits/'+name+str(fni), 'r', encoding='utf-8')
+            lines = fr.readlines()
+            for line in lines:
+                lsp = line.rstrip('\n').split('\t')
+                if len(lsp) != 4:
+                    continue
+                rel = lsp[0]
+                sent = lsp[3]
+                sentplist = nltk.pos_tag(nltk.word_tokenize(sent))
+
+                talent = ''
+                i = len(sentplist)-1
+                while i > max(2, len(sentplist)//2):
+                    if 'NN' in sentplist[i][1]:
+                        talent += sentplist[i][0]
+                        if 'NN' in sentplist[i-1][1]:
+                            talent = sentplist[i-1][0] + ' ' + talent
+                            if 'NN' in sentplist[i - 2][1]:
+                                talent = sentplist[i - 2][0] + ' ' + talent
+                        break
+                    i -= 1
+                if talent != lsp[2]:
+                    fw.write(line.rstrip('\n') + '\t' + talent + '\n')
+
+            fr.close()
+    fw.close()
+
+
+
 def Split_zeroshotData_2_train_test():
 
     fw_train = './data/WikiReading/WikiReading_data.random.train.txt'
@@ -600,9 +639,11 @@ if __name__ == '__main__':
 
     # find_rel_from_corpus()
 
-    find_rel_questions_from_corpus()
+    # find_rel_questions_from_corpus()
 
     # Process_Corpus()
+
+    change_neg2Unknow()
 
     # Process_Corpus_2()
 

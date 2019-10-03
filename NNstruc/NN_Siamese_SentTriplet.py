@@ -1,7 +1,8 @@
 # coding:utf-8
 
 from keras.layers.core import Dropout, RepeatVector, Reshape
-from keras.layers.merge import concatenate, add, subtract, average, maximum, multiply
+from keras.layers.merge import concatenate, add, average, maximum, multiply
+from keras.layers import subtract
 from keras.layers import TimeDistributed, Input, Bidirectional, Dense, Embedding, LSTM, Conv1D, GlobalMaxPooling1D
 from keras.models import Model
 from keras import optimizers
