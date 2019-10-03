@@ -313,6 +313,80 @@ def get_prototypes_byques(target_vob, word_vob):
     return max_s, tagDict
 
 
+
+def get_sentDicts_neg(trainfile, max_s, max_posi, word_vob, char_vob, max_c):
+
+    tagDict = {}
+
+    tagDict[-1] = []
+
+    f = codecs.open(trainfile, 'r', encoding='utf-8')
+    lines = f.readlines()
+
+    for si, line in enumerate(lines):
+        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
+        sent = jline['sent'].split(' ')
+        rel = jline['rel']
+        e1_l = jline['e1_posi'][0]
+        e1_r = jline['e1_posi'][1]
+        e2_l = jline['e2_posi'][0]
+        e2_r = jline['e2_posi'][1]
+
+        max_long = max(e1_r, e2_r)
+        if len(sent) > max_s and max_long > max_s:
+            continue
+
+        data_tag = -1
+
+        # word_vob['____'] = len(word_vob)+1
+
+        data_s = []
+        for ww in sent[0:min(len(sent), max_s)]:
+            if ww not in word_vob:
+                word_vob[ww] = word_vob['**UNK**']
+            data_s.append(word_vob[ww])
+        data_s = data_s + [0] * max(0, max_s - len(sent))
+
+        list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
+        list_left.reverse()
+        feature_posi = list_left + [0 for i in range(e1_l, e1_r)] + \
+                       [min(i, max_posi) for i in range(1, len(sent) - e1_r + 1)]
+        data_e1_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
+
+        list_left = [min(i, max_posi) for i in range(1, e2_l + 1)]
+        list_left.reverse()
+        feature_posi = list_left + [0 for i in range(e2_l, e2_r)] + \
+                       [min(i, max_posi) for i in range(1, len(sent) - e2_r + 1)]
+        data_e2_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
+
+        char_s = []
+        for wi in range(0, min(len(sent), max_s)):
+            word = sent[wi]
+            data_c = []
+            for chr in range(0, min(word.__len__(), max_c)):
+                if not char_vob.__contains__(word[chr]):
+                    data_c.append(char_vob["**UNK**"])
+                else:
+                    data_c.append(char_vob[word[chr]])
+            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
+            char_s.append(data_c)
+        char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
+
+        pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
+
+
+        if data_tag not in tagDict.keys():
+            tagDict[data_tag] = []
+            # if prototypes != None and data_tag in prototypes.keys():
+            #     tagDict[data_tag].append(prototypes[data_tag][0])
+
+        tagDict[data_tag].append(pairs)
+
+    f.close()
+
+    return tagDict
+
+
 def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
                   istest=False, needDEV=False, target_vob_4dev=None, prototypes=None):
 
@@ -854,10 +928,4 @@ if __name__=="__main__":
         max_s = maxlen
     print('max soure sent lenth is ' + str(max_s))
 
-
-    categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
-    print(len(categorical_labels))
-    print(categorical_labels[1])
-    print(categorical_labels[5])
-
-    get_prototypes_byques(target_vob)
+    neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
