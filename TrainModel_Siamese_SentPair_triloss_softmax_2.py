@@ -408,7 +408,7 @@ def test_model3_neg(nn_model, tag2sentDict_test):
 
 
     width = len(tagDict_prototypes.keys())
-    assert len(predictions_class) // width == totel_right
+    assert len(tagDict_train.keys) // width == totel_right
 
 
     P, R, F = 0., 0., 0.
