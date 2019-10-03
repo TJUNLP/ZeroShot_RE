@@ -283,7 +283,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold > 1.0:
+    while threshold < 1.01:
         for i in range(len(predictions_class) // width) :
             left = i * width
             right = (i + 1) * width

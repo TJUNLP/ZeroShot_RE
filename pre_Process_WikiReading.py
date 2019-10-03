@@ -220,8 +220,10 @@ def Process_Corpus():
 
 def Process_Corpus_2():
 
-    f = './data/WikiReading/WikiReading.txt'
-    fw1w = codecs.open(f + '.json.2.txt', 'w', encoding='utf-8')
+    # f = './data/WikiReading/WikiReading.txt'
+    f = './data/WikiReading/WikiReading.neg_instances.txt'
+    # fw1w = codecs.open(f + '.json.2.txt', 'w', encoding='utf-8')
+    fw1w = codecs.open(f + '.json.neg_instances.txt', 'w', encoding='utf-8')
     frr = codecs.open(f, 'r', encoding='utf-8')
     jsondict = {}
     cc = 0
@@ -643,9 +645,9 @@ if __name__ == '__main__':
 
     # Process_Corpus()
 
-    change_neg2Unknow()
+    # change_neg2Unknow()
 
-    # Process_Corpus_2()
+    Process_Corpus_2()
 
     # Split_zeroshotData_2_train_test()
 
