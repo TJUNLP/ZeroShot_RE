@@ -187,9 +187,6 @@ def test_model3(nn_model, tag2sentDict_test):
     predict = 0
     predict_right = 0
 
-    predict_class = 0
-    predict_right_class = 0
-
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -284,6 +281,10 @@ def test_model3(nn_model, tag2sentDict_test):
     P, R, F = 0., 0., 0.
     threshold = 0.0
     while threshold < 1.01:
+
+        predict_class = 0
+        predict_right_class = 0
+
         for i in range(len(predictions_class) // width) :
             left = i * width
             right = (i + 1) * width
