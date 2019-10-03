@@ -358,9 +358,9 @@ def test_model3_neg(nn_model, tag2sentDict_test):
         for s in range(1, len(sents)):
             totel_right += 1
 
-            for si, ty in enumerate(tagDict_prototypes.keys()):
+            for si, ty in enumerate(tagDict_train.keys()):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[ty][0]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
@@ -413,7 +413,7 @@ def test_model3_neg(nn_model, tag2sentDict_test):
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold < 1.0:
+    while threshold <= 1.0:
 
         predict_class = totel_right
         predict_right_class = 0
@@ -676,7 +676,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(0, 3):
+    for inum in range(0, 1):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
