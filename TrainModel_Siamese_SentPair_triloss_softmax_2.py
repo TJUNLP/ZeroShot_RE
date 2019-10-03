@@ -346,15 +346,12 @@ def test_model3_neg(nn_model, tag2sentDict_test):
 
     data_tag_all = []
     class_labels = []
-    labels_all = []
+
     totel_right = 0
 
     tagDict_prototypes = ProcessData_Siamese_SentPair.\
         get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
 
-
-    truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
@@ -377,14 +374,6 @@ def test_model3_neg(nn_model, tag2sentDict_test):
                 data_e2_posi_all_1.append(data_e2_posi)
                 char_s_all_1.append(char_s)
 
-                targetvec = np.zeros(2)
-
-                labels_all.append(1)
-                truth_tag_list.append(si)
-                targetvec[1] = 1
-
-
-                class_labels.append(targetvec)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
@@ -418,10 +407,9 @@ def test_model3_neg(nn_model, tag2sentDict_test):
 
 
 
-    width = len(tag2sentDict_test.keys())
+    width = len(tagDict_prototypes.keys())
     assert len(predictions_class) // width == totel_right
-    assert len(truth_tag_list) == totel_right
-    predict_rank = 0
+
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
