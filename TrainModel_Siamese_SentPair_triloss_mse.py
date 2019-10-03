@@ -306,7 +306,7 @@ def test_model3(nn_model, tag2sentDict_test):
             class_max = max(subpredictions_class)
             class_where = subpredictions_class.index(class_max)
 
-            if class_max > threshold:
+            if class_max >= threshold:
                 predict_class += 1
 
                 if class_where == truth_tag_list[i]:

@@ -406,14 +406,11 @@ def test_model3_neg(nn_model, tag2sentDict_test):
     predictions_class = intermediate_layer_model_2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
-
-    width = len(tagDict_prototypes.keys())
-    assert len(tagDict_train.keys) // width == totel_right
-
+    width = len(tagDict_train.keys())
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold <= 1.0:
+    while threshold < 1.01:
 
         predict_class = totel_right
         predict_right_class = 0
@@ -438,7 +435,7 @@ def test_model3_neg(nn_model, tag2sentDict_test):
             class_max = max(subpredictions_class)
             class_where = subpredictions_class.index(class_max)
 
-            if class_max < threshold:
+            if class_max <= threshold:
 
                     predict_right_class += 1
 
