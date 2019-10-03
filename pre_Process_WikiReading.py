@@ -343,7 +343,7 @@ def change_neg2Unknow():
                         break
                     i -= 1
                 if talent != lsp[2] and talent != '':
-                    fw.write('unkown others' + '\t' +
+                    fw.write('unknow others' + '\t' +
                              lsp[0] + '____' + lsp[1] + '\t'
                              + lsp[2] + '\t'
                              + lsp[3] + '\t'
@@ -649,9 +649,9 @@ if __name__ == '__main__':
 
     # Process_Corpus()
 
-    change_neg2Unknow()
-    #
-    # Process_Corpus_2()
+    # change_neg2Unknow()
+
+    Process_Corpus_2()
 
     # Split_zeroshotData_2_train_test()
 
