@@ -343,8 +343,9 @@ def get_sentDicts_neg(trainfile, max_s, max_posi, word_vob, char_vob, max_c):
         data_s = []
         for ww in sent[0:min(len(sent), max_s)]:
             if ww not in word_vob:
-                word_vob[ww] = word_vob['**UNK**']
-            data_s.append(word_vob[ww])
+                data_s.append(word_vob['**UNK**'])
+            else:
+                data_s.append(word_vob[ww])
         data_s = data_s + [0] * max(0, max_s - len(sent))
 
         list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
