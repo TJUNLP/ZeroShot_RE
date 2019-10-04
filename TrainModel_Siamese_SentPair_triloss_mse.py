@@ -372,7 +372,7 @@ def test_model3_neg(nn_model, tag2sentDict_test):
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
 
-                data_tag_all.append(prototype_tagDict[ty])
+                data_tag_all.append([ty])
 
                 data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_1.append(data_s)
@@ -695,7 +695,7 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        prototype_k, prototype_tagDict = ProcessData_Siamese_SentPair.get_prototypes_byques(target_vob, word_vob)
+        # prototype_k, prototype_tagDict = ProcessData_Siamese_SentPair.get_prototypes_byques(target_vob, word_vob)
 
         tagDict_test_neg = None
         if Test_neg:
