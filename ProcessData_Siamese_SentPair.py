@@ -71,6 +71,74 @@ def load_vec_KGrepresentation(fname, vocab, k):
     return k, W
 
 
+def get_relembed_sim_rank(type_W):
+
+    k = len(type_W)
+    W = np.zeros(shape=(k, k))
+    RankDict = {}
+    for i in range(0, len(type_W)):
+
+        i_j = []
+        for j in range(0, len(type_W)):
+
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            i_j.append(cos)
+
+        try:
+            coefs = np.asarray(i_j, dtype='float32')
+            W[i] = coefs
+        except BaseException:
+            print('the rel is not finded ...', i)
+
+        # ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+
+        # print('------------', target_id2word[i])
+        # for si, s in enumerate(ijlist):
+        #     if si > 10:
+        #         break
+        #     print(target_id2word[s[0]], s[1])
+
+        # ijlist = dict(ijlist)
+        # ijlist = list(ijlist.keys())
+        # RankDict[i] = ijlist
+
+        # RankDict[i] = list(i_j.values())
+
+        # rank = {}
+        # for p, tup in enumerate(ijlist):
+        #     rank[tup[0]] = p+1
+        # RankDict[i] = rank
+
+        # print(RankDict[i])
+
+    return k, W
+
+
+def load_vec_ClassSimRank(fname, vocab, k=120):
+
+    W = np.zeros(shape=(k, k))
+
+    f = codecs.open(fname, 'r', encoding='utf-8')
+
+    for line in f.readlines():
+
+        values = line.rstrip('\n').split()
+        word = ' '.join(values[:len(values)-k])
+        coefs = np.asarray(values[len(values)-k:], dtype='float32')
+        try:
+            W[vocab[word]] = coefs
+        except BaseException:
+            print('the rel is not finded ...', line)
+
+    f.close()
+
+    return k, W
+
+
 def load_vec_random(vocab_c_inx, k=30):
 
     W = np.zeros(shape=(vocab_c_inx.__len__(), k))
