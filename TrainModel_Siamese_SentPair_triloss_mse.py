@@ -526,9 +526,9 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF, th)
 
-        print('the test_model3_neg result-----------------------')
-        P, R, F = test_model3_neg(nn_model, tagDict_test_neg)
-        print('P = ', P, 'R = ', R, 'F = ', F)
+        # print('the test_model3_neg result-----------------------')
+        # P, R, F = test_model3_neg(nn_model, tagDict_test_neg)
+        # print('P = ', P, 'R = ', R, 'F = ', F)
 
         if earlystop >= 20:
             break
@@ -660,8 +660,8 @@ if __name__ == "__main__":
     resultdir = "./data/result/"
 
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
-    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
-    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
+    datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
     # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
@@ -675,7 +675,7 @@ if __name__ == "__main__":
     retrain = False
     Test = True
     GetVec = False
-    Test_neg = True
+    Test_neg = False
 
     if not os.path.exists(datafile):
         print("Precess data....")
