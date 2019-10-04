@@ -526,6 +526,10 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF, th)
 
+        print('the test_model3_neg result-----------------------')
+        P, R, F = test_model3_neg(nn_model, tagDict_test_neg)
+        print('P = ', P, 'R = ', R, 'F = ', F)
+
         if earlystop >= 20:
             break
 
@@ -693,6 +697,14 @@ if __name__ == "__main__":
 
         prototype_k, prototype_tagDict = ProcessData_Siamese_SentPair.get_prototypes_byques(target_vob, word_vob)
 
+        tagDict_test_neg = None
+        if Test_neg:
+
+            neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
+
+            tagDict_test_neg = ProcessData_Siamese_SentPair.get_sentDicts_neg(neg_testfile, max_s, max_posi, word_vob, char_vob, max_c)
+            print('tagDict_test_neg len', len(tagDict_test_neg[-1]))
+
         nn_model = SelectModel(modelname,
                                wordvocabsize=len(word_vob),
                                tagvocabsize=len(target_vob),
@@ -744,11 +756,6 @@ if __name__ == "__main__":
             get_sent2vec(nn_model, tagDict_train, w2file=w2file)
 
         if Test_neg:
-
-            neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
-
-            tagDict_test_neg = ProcessData_Siamese_SentPair.get_sentDicts_neg(neg_testfile, max_s, max_posi, word_vob, char_vob, max_c)
-            print('tagDict_test_neg len', len(tagDict_test_neg[-1]))
 
             print("Test_neg model....")
             print(datafile)
