@@ -1441,6 +1441,152 @@ def Model_BiLSTM_SentPair_tripletloss_mse(wordvocabsize, posivocabsize, charvoca
     return mymodel
 
 
+def Model_BiLSTM_SentPair_tripletloss_nonL_withRank(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W, rank_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k, rank2v_k,
+                    batch_size=32):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_input_sent_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_input_sent_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+    word_embedding_sent_x2 = word_embedding_sent_layer(word_input_sent_x2)
+    word_embedding_sent_x2 = Dropout(0.25)(word_embedding_sent_x2)
+
+    word_embedding_sent_x3 = word_embedding_sent_layer(word_input_sent_x3)
+    word_embedding_sent_x3 = Dropout(0.25)(word_embedding_sent_x3)
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_input_sent_x2 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_input_sent_x3 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+    char_embedding_sent_x2 = char_embedding_sent_layer(char_input_sent_x2)
+    char_embedding_sent_x3 = char_embedding_sent_layer(char_input_sent_x3)
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    char_embedding_sent_x2 = char_cnn_sent_layer(char_embedding_sent_x2)
+    char_embedding_sent_x2 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x2)
+    char_embedding_sent_x2 = Dropout(0.25)(char_embedding_sent_x2)
+
+    char_embedding_sent_x3 = char_cnn_sent_layer(char_embedding_sent_x3)
+    char_embedding_sent_x3 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x3)
+    char_embedding_sent_x3 = Dropout(0.25)(char_embedding_sent_x3)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e1_posi_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e1_posi_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e2_posi_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e2_posi_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+    embedding_e1_posi_x2 = embedding_posi_layer(input_e1_posi_x2)
+    embedding_e1_posi_x3 = embedding_posi_layer(input_e1_posi_x3)
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+    embedding_e2_posi_x2 = embedding_posi_layer(input_e2_posi_x2)
+    embedding_e2_posi_x3 = embedding_posi_layer(input_e2_posi_x3)
+
+    input_tag = Input(shape=(1,), dtype='int32')
+    tag_embedding = Embedding(input_dim=tagvocabsize,
+                                    output_dim=tag2v_k,
+                                    input_length=1,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[tag_W])(input_tag)
+    tag_embedding = Flatten()(tag_embedding)
+
+    input_rank = Input(shape=(1,), dtype='int32')
+    rank_embedding = Embedding(input_dim=tagvocabsize,
+                                    output_dim=rank2v_k,
+                                    input_length=1,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[rank_W])(input_rank)
+    rank_embedding = Flatten()(rank_embedding)
+
+
+    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    embedding_x2 = concatenate([word_embedding_sent_x2, char_embedding_sent_x2,
+                                embedding_e1_posi_x2, embedding_e2_posi_x2], axis=-1)
+    BiLSTM_x2 = BiLSTM_layer(embedding_x2)
+    BiLSTM_x2 = Dropout(0.25)(BiLSTM_x2)
+
+    embedding_x3 = concatenate([word_embedding_sent_x3, char_embedding_sent_x3,
+                                embedding_e1_posi_x3, embedding_e2_posi_x3], axis=-1)
+    BiLSTM_x3 = BiLSTM_layer(embedding_x3)
+    BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
+
+    class_BiLSTM = Dense(100, activation='tanh', name='class_BiLSTM')(BiLSTM_x2)
+    sub = subtract([tag_embedding, class_BiLSTM])
+    mul = multiply([tag_embedding, class_BiLSTM])
+    max = maximum([tag_embedding, class_BiLSTM])
+    avg = average([tag_embedding, class_BiLSTM])
+    class_input = concatenate([tag_embedding, BiLSTM_x2, sub, mul, max, avg], axis=-1)
+    # class_input = Flatten()(class_input)
+    class_mlp1 = Dense(200, activation='tanh')(class_input)
+    class_mlp1 = Dropout(0.5)(class_mlp1)
+    class_input2 = concatenate([rank_embedding, class_mlp1], axis=-1)
+    class_mlp2 = Dense(200, activation='tanh')(class_input2)
+    class_mlp2 = Dropout(0.5)(class_mlp2)
+    class_output = Dense(1, activation='tanh', name='CLASS')(class_mlp2)
+
+
+    # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
+    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
+    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, BiLSTM_x3])
+
+    # margin = 1.
+    margin = 0.5
+    loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]), name='TripletLoss')([wrong_cos, right_cos])
+
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
+                     word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3, input_tag, input_rank],
+                    [loss, class_output])
+
+    # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'mean_squared_error'},
+                    loss_weights={'TripletLoss': 1., 'CLASS': 0.5},
+                    optimizer=optimizers.Adam(lr=0.001),
+                    metrics={'TripletLoss': [], 'CLASS': ['acc']})
+    return mymodel
+
 
 def Model_BiLSTM_SentPair_tripletloss_mse_withRank(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W, rank_W,
