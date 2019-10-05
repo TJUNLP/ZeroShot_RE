@@ -261,7 +261,8 @@ def test_model3(nn_model, tag2sentDict_test):
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag, train_tag]
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr,
+                      train_tag, train_tag]
 
     # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
     #                                               outputs=nn_model.get_layer('right_cos').output)
@@ -400,7 +401,8 @@ def test_model3_neg(nn_model, tag2sentDict_test):
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr,
+                      train_tag, train_tag]
 
     # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
     #                                               outputs=nn_model.get_layer('right_cos').output)

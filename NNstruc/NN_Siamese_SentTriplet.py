@@ -1439,7 +1439,8 @@ def Model_BiLSTM_SentPair_tripletloss_ed_withRank(wordvocabsize, posivocabsize, 
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
-                     word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3, input_tag],
+                     word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3,
+                     input_tag, input_rank],
                     [loss, class_output])
 
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
