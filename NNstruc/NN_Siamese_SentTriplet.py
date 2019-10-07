@@ -1420,7 +1420,7 @@ def Model_BiLSTM_SentPair_tripletloss_ed_multi(wordvocabsize, posivocabsize, cha
     classifer2 = Dense(1, activation='sigmoid')(class_mlp1)
     classifer3 = Dense(1, activation='tanh')(class_mlp1)
     classifer4 = Dense(1, activation='relu')(class_mlp1)
-    classifer5 = Dot(axes=-1, normalize=True, name='wrong_cos')([tag_embedding, class_BiLSTM])
+    classifer5 = Dot(axes=-1, normalize=True)([tag_embedding, class_BiLSTM])
     classifer6 = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([tag_embedding, class_BiLSTM])
     class_mlp2 = concatenate([classifer1, classifer2, classifer3,
                               classifer4, classifer5, classifer6], axis=-1)
