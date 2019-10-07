@@ -212,7 +212,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents%10)):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -304,8 +304,8 @@ def test_model3(nn_model, tag2sentDict_test):
             subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
             class_max = max(subpredictions_class)
             class_where = subpredictions_class.index(class_max)
-
-            regular = class_max / sum(subpredictions_class.sort(reverse=True)[:5])
+            subpredictions_class.sort(reverse=True)
+            regular = class_max / sum(subpredictions_class[:5])
 
 
             if regular >= threshold:
