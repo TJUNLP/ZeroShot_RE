@@ -303,8 +303,10 @@ def test_model3(nn_model, tag2sentDict_test):
             subpredictions_class = predictions_class[left:right]
             subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
             class_max = max(subpredictions_class)
-            regular = class_max / sum(subpredictions_class)
             class_where = subpredictions_class.index(class_max)
+
+            regular = class_max / sum(subpredictions_class.sort(reverse=True)[:5])
+
 
             if regular >= threshold:
                 predict_class += 1
