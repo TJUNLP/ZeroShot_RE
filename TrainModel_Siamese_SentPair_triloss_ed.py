@@ -220,14 +220,14 @@ def test_model3(nn_model, tag2sentDict_test):
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
                 data_tag_all.append([ty])
 
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
                 data_s_all_1.append(data_s)
                 data_e1_posi_all_1.append(data_e1_posi)
                 data_e2_posi_all_1.append(data_e2_posi)
@@ -283,7 +283,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold < 1.01:
+    while threshold == 0.0:
 
         predict_class = 0
         predict_right_class = 0
