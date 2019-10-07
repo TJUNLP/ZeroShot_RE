@@ -98,7 +98,7 @@ def test_model3(nn_model, tag2sentDict_test):
     predict_right = 0
     predict_right05 = 0
 
-
+    testfuzhi = 0
     data_s_all_0 = []
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
@@ -196,6 +196,9 @@ def test_model3(nn_model, tag2sentDict_test):
         target_where = distantList.index(truth_tag_list[i]) + 1
         predict_rank += target_where
 
+        if min(subpredictions) < 0:
+            testfuzhi += 1
+
         mindis = max(subpredictions)
         mindis_where = subpredictions.index(mindis)
 
@@ -215,6 +218,7 @@ def test_model3(nn_model, tag2sentDict_test):
     print('test predict_rank = ', predict_rank / totel_right)
     print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
+    print('testfuzhi############ ', testfuzhi)
     return P, R, F
 
 
