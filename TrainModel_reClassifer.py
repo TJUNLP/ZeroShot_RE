@@ -8,15 +8,15 @@
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
 
-import pickle, datetime, codecs, math, gc
+import pickle, datetime, codecs, math
 import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_softmax_ques
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed
 import keras
-
+import gc
 
 def test_model_4trainset(nn_model, pairs_test0, labels_test, classifer_labels_test, target_vob):
 
@@ -72,7 +72,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     # intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
 
     intermediate_layer_model_x2 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('class_BiLSTM').output)
+                                                  outputs=nn_model.get_layer('bidirectional_1').get_output_at(1))
     intermediate_output_x2 = intermediate_layer_model_x2.predict(inputs_train_x)
 
     fw = codecs.open(w2file, 'w', encoding='utf-8')
@@ -93,7 +93,40 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
-def get_sent2vec(nn_model, tag2sentDict_test, w2file):
+def get_relembed_sim_rank(tag2sentDict_train, type_W):
+    train_tag_list = list(tag2sentDict_train.keys())
+
+    k = len(type_W)
+    W = np.zeros(shape=(k, len(train_tag_list)))
+
+    for i in range(0, len(type_W)):
+
+        i_j = []
+        for j in train_tag_list:
+
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            i_j.append(cos)
+
+        try:
+            coefs = np.asarray(i_j, dtype='float32')
+            W[i] = coefs
+        except BaseException:
+            print('the rel is not finded ...', i)
+
+    return k, W, train_tag_list
+
+
+def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
+
+    predict = 0
+    predict_right = 0
+    predict_right05 = 0
+
+    predRank_dict = {}
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -106,30 +139,42 @@ def get_sent2vec(nn_model, tag2sentDict_test, w2file):
     char_s_all_1 = []
 
     data_tag_all = []
+
     totel_right = 0
 
-    tagIndex = []
+    __, _, train_tag_list = get_relembed_sim_rank(tag2sentDict_train, type_W)
+    print(len(train_tag_list))
 
+    tagDict_prototypes = {}
+    for ty in train_tag_list:
+        tagDict_prototypes[ty] = [tag2sentDict_train[ty][0]]
+    assert tagDict_prototypes.keys() == tag2sentDict_train.keys()
+    print(len(tagDict_prototypes.keys()))
+
+    truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
         for s in range(0, len(sents)):
             totel_right += 1
 
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-            data_tag_all.append([tag])
+            for si, ty in enumerate(train_tag_list):
 
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
+                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_prototypes[ty][0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+                data_tag_all.append([ty])
 
-            tagIndex.append(tag)
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s_all_1.append(data_s)
+                data_e1_posi_all_1.append(data_e1_posi)
+                data_e2_posi_all_1.append(data_e2_posi)
+                char_s_all_1.append(char_s)
+
+            truth_tag_list.append(tag)
+
 
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
@@ -147,45 +192,86 @@ def get_sent2vec(nn_model, tag2sentDict_test, w2file):
     train_x3_e1_posi = train_x2_e1_posi
     train_x3_e2_posi = train_x2_e2_posi
     train_x3_sent_cahr = train_x2_sent_cahr
-    train_tag = np.asarray(pairs[8], dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
+
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('right_cos').output)
+    predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
-    sent_vob = {}
+    if len(predictions) < 10:
+        predictions = predictions[0]
 
-    # intermediate_layer_model_x1 = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('bidirectional_1').get_output_at(0))
-    # intermediate_output_x1 = intermediate_layer_model_x1.predict(inputs_train_x)
+    width = len(tagDict_prototypes.keys())
+    assert len(predictions) // width == totel_right
+    assert len(truth_tag_list) == totel_right
+    predict_rank = 0
+    # mindis_dict = {}
 
-    intermediate_layer_model_x2 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('class_BiLSTM').output)
-    intermediate_output_x2 = intermediate_layer_model_x2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
+        subpredictions = predictions[left:right]
+        subpredictions = subpredictions.flatten().tolist()
 
-    fw = codecs.open(w2file, 'w', encoding='utf-8')
-    inx = 0
-    for i, op in enumerate(intermediate_output_x2):
 
-        key = (inx, tagIndex[i])
-        sent_vob[key] = op
-        inx += 1
-        fw.write(str(key[0]) + ' ' + str(key[1]))
-        for item in op:
-            fw.write(' ' + str(item))
-        fw.write('\n')
-        # key = (inx, tagIndex[1])
-        # sent_vob[key] = intermediate_output_x2[i]
-        # print(i, len(sent_vob[key]))
-        # inx += 1
-    print(inx, len(sent_vob))
+
+        best = None
+        best_value = -1
+
+        topk = 0
+        for tec in class_RankDict.keys():
+            if tec in train_tag_list:
+                continue
+            topk += 1
+
+            mul_count = 0
+
+            predRank_dict = {}
+            for si, ty in enumerate(train_tag_list):
+                predRank_dict[ty] = subpredictions[si]
+            # ijlist = sorted(predRank_dict.items(), key=lambda x: x[1], reverse=True)
+
+            # for ty in ijlist[:20]:
+            #     mul = ty[1] * class_RankDict[tec][ty[0]]
+            #     mul_count += mul
+
+            for ty in class_RankDict[tec][:20]:
+                mul = predRank_dict[ty[0]] * ty[1]
+                mul_count += mul
+
+            if mul_count > best_value:
+                best_value = mul_count
+                best = tec
+
+        if best_value > 0.0:
+            predict += 1
+            if truth_tag_list[i] == best:
+                predict_right += 1
+
+
+
+
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('test predict_rank = ', predict_rank / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+    print('P =, R =, F = ', P, R, F)
+    # mindis_list = sorted(mindis_dict.items(), key=lambda z:z[0], reverse=True)
+    # print(mindis_list)
+    return P, R, F
 
 
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0
     predict_right = 0
+    predict_right05 = 0
 
 
     data_s_all_0 = []
@@ -199,7 +285,7 @@ def test_model3(nn_model, tag2sentDict_test):
     char_s_all_1 = []
 
     data_tag_all = []
-    class_labels = []
+
     labels_all = []
     totel_right = 0
 
@@ -212,7 +298,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents)//20):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -222,7 +308,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
-                data_tag_all.append(prototype_tagDict[ty])
+                data_tag_all.append([ty])
 
                 data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_1.append(data_s)
@@ -230,16 +316,11 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e2_posi_all_1.append(data_e2_posi)
                 char_s_all_1.append(char_s)
 
-                targetvec = np.zeros(2)
                 if tag == ty:
                     labels_all.append(1)
                     truth_tag_list.append(si)
-                    targetvec[1] = 1
                 else:
                     labels_all.append(0)
-                    targetvec[0] = 1
-
-                class_labels.append(targetvec)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
@@ -256,83 +337,74 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x3_e1_posi = train_x2_e1_posi
     train_x3_e2_posi = train_x2_e2_posi
     train_x3_sent_cahr = train_x2_sent_cahr
-    train_tag = np.asarray(pairs[8], dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
 
-    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('right_cos').output)
-    # predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
-
-
-    intermediate_layer_model_2 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('CLASS').output)
-    predictions_class = intermediate_layer_model_2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('right_cos').output)
+    predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
 
+    if len(predictions) < 10:
+        predictions = predictions[0]
 
     width = len(tag2sentDict_test.keys())
-    assert len(predictions_class) // width == totel_right
+    assert len(predictions) // width == totel_right
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
+    # mindis_dict = {}
 
-    P, R, F = 0., 0., 0.
-    threshold = 0.0
-    while threshold < 1.0:
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
+        subpredictions = predictions[left:right]
+        subpredictions = subpredictions.flatten().tolist()
 
-        predict_class = 0
-        predict_right_class = 0
+        distantDict = {}
+        for num, disvlaue in enumerate(subpredictions):
+            distantDict[num] = disvlaue
 
-        for i in range(len(predictions_class) // width) :
-            left = i * width
-            right = (i + 1) * width
-            # subpredictions = predictions[left:right]
-            # subpredictions = subpredictions.flatten().tolist()
-            #
-            # mindis = max(subpredictions)
-            # mindis_where = subpredictions.index(mindis)
-            #
-            # if mindis > 0.5:
-            #     predict += 1
-            #
-            #     if mindis_where == truth_tag_list[i]:
-            #         predict_right += 1
+        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+        distantDict = dict(distantList)
+        distantList = list(distantDict.keys())
+        target_where = distantList.index(truth_tag_list[i]) + 1
+        predict_rank += target_where
 
-            subpredictions_class = predictions_class[left:right]
-            subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
-            class_max = max(subpredictions_class)/sum(subpredictions_class)
-            class_where = subpredictions_class.index(class_max)
+        mindis = max(subpredictions)
+        mindis_where = subpredictions.index(mindis)
 
-            if class_max >= threshold:
-                predict_class += 1
+        if mindis > 0.5:
+            predict += 1
 
-                if class_where == truth_tag_list[i]:
-                    predict_right_class += 1
+            if mindis_where == truth_tag_list[i]:
+                predict_right += 1
+                # if round(mindis, 2) not in mindis_dict.keys():
+                #     mindis_dict[round(mindis, 2)] = 0
+                # mindis_dict[round(mindis, 2)] += 1
 
+        if subpredictions[truth_tag_list[i]] > 0.5:
+            predict_right05 += 1
 
-
-        # P = predict_right / max(predict, 0.000001)
-        # R = predict_right / totel_right
-        # F = 2 * P * R / max((P + R), 0.000001)
-        # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-        # print('test predict_rank = ', predict_rank / totel_right)
-        # print('P =, R =, F = ', P, R, F)
-
-        P = predict_right_class / max(predict_class, 0.000001)
-        R = predict_right_class / totel_right
-        F = 2 * P * R / max((P + R), 0.000001)
-        print('threshold-------------------------', threshold)
-        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-        print('test class ... P =, R =, F = ', P, R, F)
-
-        threshold += 0.05
-
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('test predict_rank = ', predict_rank / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+    print('P =, R =, F = ', P, R, F)
+    # mindis_list = sorted(mindis_dict.items(), key=lambda z:z[0], reverse=True)
+    # print(mindis_list)
     return P, R, F
 
 
-def test_model3_neg(nn_model, tag2sentDict_test):
+def test_model2(nn_model, tag2sentDict_test):
+
+    predict = 0
+    predict_right = 0
+    predict_right05 = 0
+
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -345,28 +417,25 @@ def test_model3_neg(nn_model, tag2sentDict_test):
     char_s_all_1 = []
 
     data_tag_all = []
-    class_labels = []
 
+    labels_all = []
     totel_right = 0
 
-    tagDict_prototypes = ProcessData_Siamese_SentPair.\
-        get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-
+    truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
         for s in range(1, len(sents)):
             totel_right += 1
 
-            for si, ty in enumerate(tagDict_train.keys()):
+            for si, ty in enumerate(tag2sentDict_test.keys()):
 
-                data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[ty][0]
+                data_s, data_e1_posi, data_e2_posi, char_s = tag2sentDict_test[ty][0]
                 data_s_all_0.append(data_s)
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
-
-                data_tag_all.append(prototype_tagDict[ty])
+                data_tag_all.append([ty])
 
                 data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
                 data_s_all_1.append(data_s)
@@ -374,6 +443,11 @@ def test_model3_neg(nn_model, tag2sentDict_test):
                 data_e2_posi_all_1.append(data_e2_posi)
                 char_s_all_1.append(char_s)
 
+                if tag == ty:
+                    labels_all.append(1)
+                    truth_tag_list.append(si)
+                else:
+                    labels_all.append(0)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
@@ -386,144 +460,57 @@ def test_model3_neg(nn_model, tag2sentDict_test):
     train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
     train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
     train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-    train_x3_sent = train_x2_sent
-    train_x3_e1_posi = train_x2_e1_posi
-    train_x3_e2_posi = train_x2_e2_posi
-    train_x3_sent_cahr = train_x2_sent_cahr
     train_tag = np.asarray(pairs[8], dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr, train_tag]
 
-    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('right_cos').output)
-    # predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+    predictions = nn_model.predict(inputs_train_x, batch_size=batch_size, verbose=1)
 
+    if len(predictions) < 10:
+        predictions = predictions[0]
 
-    intermediate_layer_model_2 = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('CLASS').output)
-    predictions_class = intermediate_layer_model_2.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+    width = len(tag2sentDict_test.keys())
+    assert len(predictions) // width == totel_right
+    assert len(truth_tag_list) == totel_right
+    predict_rank = 0
 
+    for i in range(len(predictions) // width) :
+        left = i * width
+        right = (i + 1) * width
+        subpredictions = predictions[left:right]
+        subpredictions = subpredictions.flatten().tolist()
 
-    width = len(tagDict_train.keys())
+        distantDict = {}
+        for num, disvlaue in enumerate(subpredictions):
+            distantDict[num] = disvlaue
 
-    P, R, F = 0., 0., 0.
-    threshold = 0.0
-    while threshold < 1.01:
+        distantList = sorted(distantDict.items(), key=lambda s: s[1], reverse=True)
+        distantDict = dict(distantList)
+        distantList = list(distantDict.keys())
+        target_where = distantList.index(truth_tag_list[i]) + 1
+        predict_rank += target_where
 
-        predict_class = totel_right
-        predict_right_class = 0
+        mindis = max(subpredictions)
+        mindis_where = subpredictions.index(mindis)
 
-        for i in range(len(predictions_class) // width) :
-            left = i * width
-            right = (i + 1) * width
-            # subpredictions = predictions[left:right]
-            # subpredictions = subpredictions.flatten().tolist()
-            #
-            # mindis = max(subpredictions)
-            # mindis_where = subpredictions.index(mindis)
-            #
-            # if mindis > 0.5:
-            #     predict += 1
-            #
-            #     if mindis_where == truth_tag_list[i]:
-            #         predict_right += 1
+        if mindis > 0.5:
+            predict += 1
 
-            subpredictions_class = predictions_class[left:right]
-            subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
-            class_max = max(subpredictions_class)
-            class_where = subpredictions_class.index(class_max)
+            if mindis_where == truth_tag_list[i]:
+                predict_right += 1
 
-            if class_max <= threshold:
+        if subpredictions[truth_tag_list[i]] > 0.5:
+            predict_right05 += 1
 
-                    predict_right_class += 1
-
-
-
-        # P = predict_right / max(predict, 0.000001)
-        # R = predict_right / totel_right
-        # F = 2 * P * R / max((P + R), 0.000001)
-        # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-        # print('test predict_rank = ', predict_rank / totel_right)
-        # print('P =, R =, F = ', P, R, F)
-
-        P = predict_right_class / max(predict_class, 0.000001)
-        R = predict_right_class / totel_right
-        F = 2 * P * R / max((P + R), 0.000001)
-        print('threshold-------------------------', threshold)
-        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-        print('test class ... P =, R =, F = ', P, R, F)
-
-        threshold += 0.05
-
+    P = predict_right / max(predict, 0.000001)
+    R = predict_right / totel_right
+    F = 2 * P * R / max((P + R), 0.000001)
+    print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+    print('test predict_rank = ', predict_rank / totel_right)
+    print('test distance > 0.5  = ', predict_right05 / totel_right)
+    print('P =, R =, F = ', P, R, F)
     return P, R, F
-
-
-def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
-                    resultdir,
-                    npoches=100, batch_size=50, retrain=False, inum=0):
-
-    if retrain:
-        nn_model.load_weights(modelfile)
-        modelfile = modelfile + '.2nd.h5'
-
-    nn_model.summary()
-
-    early_stopping = EarlyStopping(monitor='val_loss', patience=8)
-    checkpointer = ModelCheckpoint(filepath=modelfile + ".best_model.h5", monitor='val_loss', verbose=0,
-                                   save_best_only=True, save_weights_only=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
-
-    # nn_model.fit(inputs_train_x, inputs_train_y,
-    #              batch_size=batch_size,
-    #              epochs=npoches,
-    #              verbose=1,
-    #              shuffle=True,
-    #              validation_split=0.1,
-    #
-    #              callbacks=[reduce_lr, checkpointer, early_stopping])
-    #
-    # nn_model.save_weights(modelfile, overwrite=True)
-    #
-    # print('the test result-----------------------')
-    # P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
-
-    nowepoch = 1
-    increment = 1
-    earlystop = 0
-    maxF = 0.
-    while nowepoch <= npoches:
-        nowepoch += increment
-        earlystop += 1
-
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
-
-        nn_model.fit(inputs_train_x, inputs_train_y,
-                               batch_size=batch_size,
-                               epochs=increment,
-                               validation_data=[inputs_dev_x, inputs_dev_y],
-                               shuffle=True,
-                               # class_weight={0: 1., 1: 3.},
-                               verbose=1,
-                               callbacks=[reduce_lr])
-
-        print('the test result-----------------------')
-        # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
-        P, R, F = test_model3(nn_model, tagDict_test)
-        if F > maxF:
-            earlystop = 0
-            maxF = F
-            nn_model.save_weights(modelfile, overwrite=True)
-
-        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
-
-        if earlystop >= 20:
-            break
-
-    return nn_model
 
 
 def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
@@ -531,11 +518,11 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     nnmodel.load_weights(modelfile)
     resultfile = resultdir + "result-" + modelname + '-' + str(datetime.datetime.now())+'.txt'
 
-    # print('the test 2 result-----------------------')
-    # P, R, F = test_model2(nn_model, tagDict_test)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
+    print('the test_model_rank result-----------------------')
+    P, R, F = test_model_rank(nn_model, tagDict_dev, tagDict_train)
+    print('P = ', P, 'R = ', R, 'F = ', F)
     print('the test 3 result-----------------------')
-    P, R, F = test_model3(nn_model, tagDict_test)
+    P, R, F = test_model3(nn_model, tagDict_dev)
     print('P = ', P, 'R = ', R, 'F = ', F)
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
@@ -554,11 +541,12 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      word_W, posi_W, tag_W, char_W,
                      input_sent_lenth,
                      w2v_k, posi2v_k, tag2v_k, c2v_k,
-                     batch_size=32):
+                     batch_size=32, tranfer_dim=200):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_softmax_ques':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_softmax_ques(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_1':
+
+        nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -567,6 +555,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
+
     elif modelname is 'Model_BiLSTM_SentPair_tripletloss_05':
         nn_model = Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
@@ -578,6 +567,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
+
     return nn_model
 
 
@@ -588,7 +578,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax_ques(tagDict, prototype_tagDict, target_vob=None, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -604,16 +594,15 @@ def Dynamic_get_trainSet(istest):
     train_x3_e1_posi = np.asarray(pairs_train[9], dtype="int32")
     train_x3_e2_posi = np.asarray(pairs_train[10], dtype="int32")
     train_x3_sent_cahr = np.asarray(pairs_train[11], dtype="int32")
-    train_tag = np.asarray(pairs_train[12], dtype="int32")
+    # train_tag = np.asarray(pairs_train[12], dtype="int32")
 
-    train_y0 = np.zeros(len(labels_train), dtype="int32")
     train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
-    inputs_train_y = [train_y0, train_y]
+                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr]
+    inputs_train_y = [train_y]
 
     return inputs_train_x, inputs_train_y
 
@@ -622,8 +611,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_softmax_ques'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
 
     print(modelname)
 
@@ -649,7 +638,7 @@ if __name__ == "__main__":
     # datafname = 'FewRel_data_Siamese.WordChar.Sentpair'
     # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPublish'
     datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.relPunish.devsplit'
-    # datafname = 'WikiReading_data_Siamese.Sentpair.1-pseudo-descrip'
+    # datafname = 'WikiReading_data_Siamese.WordChar.Sentpair.mixdev'
 
     datafile = "./model/model_data/" + datafname + ".pkl"
 
@@ -661,8 +650,6 @@ if __name__ == "__main__":
 
     retrain = False
     Test = True
-    GetVec = False
-    Test_neg = False
 
     if not os.path.exists(datafile):
         print("Precess data....")
@@ -670,10 +657,9 @@ if __name__ == "__main__":
         ProcessData_Siamese_SentPair.get_data(trainfile, testfile, rel_prototypes_file,
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
+    print(datafile)
 
-
-
-    for inum in range(0, 1):
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
@@ -682,17 +668,15 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        prototype_k, prototype_tagDict = ProcessData_Siamese_SentPair.get_prototypes_byques(target_vob, word_vob)
-
         nn_model = SelectModel(modelname,
-                               wordvocabsize=len(word_vob),
-                               tagvocabsize=len(target_vob),
-                               posivocabsize=max_posi + 1,
-                               charvocabsize=len(char_vob),
-                               word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
-                               input_sent_lenth=max_s,
-                               w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
-                               batch_size=batch_size)
+                           wordvocabsize=len(word_vob),
+                           tagvocabsize=len(target_vob),
+                           posivocabsize=max_posi+1,
+                           charvocabsize=len(char_vob),
+                           word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
+                           input_sent_lenth=max_s,
+                           w2v_k=w2v_k, posi2v_k=max_posi+1, tag2v_k=type_k, c2v_k=c2v_k,
+                           batch_size=batch_size)
 
         modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
@@ -700,57 +684,12 @@ if __name__ == "__main__":
             print("Lstm data has extisted: " + datafile)
             print("Training EE model....")
             print(modelfile)
-            train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-                            resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
-
-        else:
-            if retrain:
-                print("ReTraining EE model....")
-                train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-                                resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
 
         if Test:
             print("test EE model....")
             print(datafile)
             print(modelfile)
             infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
-
-        if GetVec:
-            nn_model.load_weights(modelfile)
-            resultfile = './data/s2v/' + modelname + "__" + datafname + "__" + str(inum) + '.test.txt'
-
-            print('the get_sent2vec result-----------------------')
-            w2file = resultfile + '.test.txt'
-            print(w2file)
-            get_sent2vec(nn_model, tagDict_test, w2file=w2file)
-
-            print('the get_sent2vec result-----------------------')
-            w2file = resultfile + '.dev.txt'
-            print(w2file)
-            get_sent2vec(nn_model, tagDict_dev, w2file=w2file)
-
-            print('the get_sent2vec result-----------------------')
-            w2file = resultfile + '.train.txt'
-            print(w2file)
-            get_sent2vec(nn_model, tagDict_train, w2file=w2file)
-
-        if Test_neg:
-
-            neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
-
-            tagDict_test_neg = ProcessData_Siamese_SentPair.get_sentDicts_neg(neg_testfile, max_s, max_posi, word_vob, char_vob, max_c)
-            print('tagDict_test_neg len', len(tagDict_test_neg[-1]))
-
-            print("Test_neg model....")
-            print(datafile)
-            print(modelfile)
-
-            nn_model.load_weights(modelfile)
-
-            print('the test_model3_neg result-----------------------')
-            P, R, F = test_model3_neg(nn_model, tagDict_test_neg)
-            print('P = ', P, 'R = ', R, 'F = ', F)
-
 
         del nn_model
         gc.collect()

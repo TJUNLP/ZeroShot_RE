@@ -93,7 +93,7 @@ def get_sent_index(nn_model, inputs_train_x, tagIndex, w2file):
     print(inx, len(sent_vob))
 
 
-def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
+def get_relembed_sim_rank0(tag2sentDict_train, type_W, target_id2word=None):
 
     train_tag_list = list(tag2sentDict_train.keys())
     RankDict = {}
@@ -135,6 +135,33 @@ def get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None):
     return RankDict, train_tag_list
 
 
+def get_relembed_sim_rank(tag2sentDict_train, type_W):
+    train_tag_list = list(tag2sentDict_train.keys())
+
+    k = len(type_W)
+    W = np.zeros(shape=(k, len(train_tag_list)))
+
+    for i in range(0, len(type_W)):
+
+        i_j = []
+        for j in train_tag_list:
+
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            i_j.append(cos)
+
+        try:
+            coefs = np.asarray(i_j, dtype='float32')
+            W[i] = coefs
+        except BaseException:
+            print('the rel is not finded ...', i)
+
+    return k, W, train_tag_list
+
+
 def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
 
     predict = 0
@@ -156,8 +183,9 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
 
     totel_right = 0
 
-    class_RankDict, train_tag_list = get_relembed_sim_rank(tag2sentDict_train, type_W, target_id2word=None)
+    __, _, train_tag_list = get_relembed_sim_rank(tag2sentDict_train, type_W)
     print(len(train_tag_list))
+
     tagDict_prototypes = {}
     for ty in train_tag_list:
         tagDict_prototypes[ty] = [tag2sentDict_train[ty][0]]
@@ -168,7 +196,7 @@ def test_model_rank(nn_model, tag2sentDict_test, tag2sentDict_train):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//20):
+        for s in range(0, len(sents)):
             totel_right += 1
 
             for si, ty in enumerate(train_tag_list):
@@ -594,73 +622,6 @@ def test_model2(nn_model, tag2sentDict_test):
     return P, R, F
 
 
-def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
-                    resultdir,
-                    npoches=100, batch_size=50, retrain=False, inum=0):
-
-    if retrain:
-        nn_model.load_weights(modelfile)
-        modelfile = modelfile + '.2nd.h5'
-
-    nn_model.summary()
-
-    early_stopping = EarlyStopping(monitor='val_loss', patience=8)
-    checkpointer = ModelCheckpoint(filepath=modelfile + ".best_model.h5", monitor='val_loss', verbose=0,
-                                   save_best_only=True, save_weights_only=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
-
-    # nn_model.fit(inputs_train_x, inputs_train_y,
-    #              batch_size=batch_size,
-    #              epochs=npoches,
-    #              verbose=1,
-    #              shuffle=True,
-    #              validation_split=0.1,
-    #
-    #              callbacks=[reduce_lr, checkpointer, early_stopping])
-    #
-    # nn_model.save_weights(modelfile, overwrite=True)
-    #
-    # print('the test result-----------------------')
-    # P, R, F = test_model(nn_model, pairs_test, labels_test, classifer_labels_test, target_vob)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
-
-    nowepoch = 1
-    increment = 1
-    earlystop = 0
-    maxF = 0.
-    while nowepoch <= npoches:
-        nowepoch += increment
-        earlystop += 1
-
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
-
-        nn_model.fit(inputs_train_x, inputs_train_y,
-                               batch_size=batch_size,
-                               epochs=increment,
-                               validation_data=[inputs_dev_x, inputs_dev_y],
-                               shuffle=True,
-                               # class_weight={0: 1., 1: 3.},
-                               verbose=1,
-                               callbacks=[reduce_lr])
-
-        print('the test result-----------------------')
-        # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
-        # P, R, F = test_model3(nn_model, tagDict_test)
-        P, R, F = test_model_rank(nn_model, tagDict_test, tagDict_train)
-        if F > maxF:
-            earlystop = 0
-            maxF = F
-            nn_model.save_weights(modelfile, overwrite=True)
-
-        print(str(inum), nowepoch, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
-
-        if earlystop >= 20:
-            break
-
-    return nn_model
-
-
 def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
 
     nnmodel.load_weights(modelfile)
@@ -832,14 +793,6 @@ if __name__ == "__main__":
             print("Lstm data has extisted: " + datafile)
             print("Training EE model....")
             print(modelfile)
-            train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-                            resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
-
-        else:
-            if retrain:
-                print("ReTraining EE model....")
-                train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-                                resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
 
         if Test:
             print("test EE model....")
