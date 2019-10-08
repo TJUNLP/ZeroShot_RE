@@ -475,7 +475,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=None, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -561,7 +561,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(3, 6):
+    for inum in range(6, 9):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
