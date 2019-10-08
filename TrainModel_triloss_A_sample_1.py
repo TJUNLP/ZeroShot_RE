@@ -454,7 +454,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_sample(tagDict, sample_n=2000)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_sample(tagDict, sample_n=1000)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
