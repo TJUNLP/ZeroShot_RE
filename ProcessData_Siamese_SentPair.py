@@ -700,6 +700,93 @@ def CreateTriplet(tagDict_train, target_vob=None, istest=False):
     return pairs, labels
 
 
+def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
+
+    categorical_labels = None
+    if target_vob != None:
+        categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
+    labels = []
+    data_tag_all = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+    data_s_all_2 = []
+    data_e1_posi_all_2 = []
+    data_e2_posi_all_2 = []
+    char_s_all_2 = []
+
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc0 = random.randrange(0, len(sents))
+        inc1 = random.randrange(0, len(sents))
+        if inc1 == inc0:
+            inc1 = (inc1 + 1) % len(sents)
+        i = 0
+        count = 0
+        while i < len(sents):
+            if count >= sample_n:
+                break
+
+            p0 = (inc0 + i) % len(sents)
+            p1 = (inc1 + i) % len(sents)
+
+            i += 1
+            if target_vob != None:
+                labels.append(categorical_labels[tag])
+            else:
+                labels.append(1)
+            data_tag_all.append([tag])
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
+            data_s_all_1.append(data_s)
+            data_e1_posi_all_1.append(data_e1_posi)
+            data_e2_posi_all_1.append(data_e2_posi)
+            char_s_all_1.append(char_s)
+
+            keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
+            data_s_all_2.append(data_s)
+            data_e1_posi_all_2.append(data_e1_posi)
+            data_e2_posi_all_2.append(data_e2_posi)
+            char_s_all_2.append(char_s)
+
+            count += 1
+            if i == len(sents):
+                i = 0
+                inc0 = random.randrange(0, len(sents))
+                inc1 = random.randrange(0, len(sents))
+                if inc1 == inc0:
+                    inc1 = (inc1 + 1) % len(sents)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
+             data_tag_all]
+
+    return pairs, labels
+
+
 def CreateTriplet_withSoftmax(tagDict_train, target_vob=None, istest=False):
 
     """
