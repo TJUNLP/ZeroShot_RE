@@ -14,7 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_1
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed_multi
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed_1_1
 import keras
 
 
@@ -432,8 +432,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_ed_multi':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_ed_multi(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_ed_1_1':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_ed_1_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -464,7 +464,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_withSoftmax(tagDict, target_vob=None, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -501,7 +501,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_1'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_ed'
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed_multi'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_ed_1_1'
 
     print(modelname)
 

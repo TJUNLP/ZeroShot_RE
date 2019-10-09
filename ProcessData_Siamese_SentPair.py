@@ -774,8 +774,8 @@ def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
             count += 1
             if i == len(sents):
                 i = 0
-                inc0 = random.randrange(0, len(sents))
-                inc1 = random.randrange(0, len(sents))
+                inc0 = (inc0 + random.randrange(1, len(sents))) % len(sents)
+                inc1 = (inc1 + random.randrange(1, len(sents))) % len(sents)
                 if inc1 == inc0:
                     inc1 = (inc1 + 1) % len(sents)
 
