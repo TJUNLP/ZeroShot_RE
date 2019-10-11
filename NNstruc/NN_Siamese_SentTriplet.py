@@ -1305,7 +1305,7 @@ def Model_BiLSTM_SentPair_tripletloss_ed(wordvocabsize, posivocabsize, charvocab
     return mymodel
 
 
-def Model_BiLSTM_SentPair_tripletloss_ed_1_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+def Model_BiLSTM_SentPair_tripletloss_ed_1_01(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
@@ -1434,7 +1434,7 @@ def Model_BiLSTM_SentPair_tripletloss_ed_1_1(wordvocabsize, posivocabsize, charv
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 1., 'CLASS': 1.},
+                    loss_weights={'TripletLoss': 1., 'CLASS': 0.1},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'CLASS': ['acc']})
     return mymodel
