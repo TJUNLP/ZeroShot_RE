@@ -536,7 +536,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 512 # 256
+    batch_size = 512 # 1024
 
     retrain = False
     Test = True
@@ -551,7 +551,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(3, 6):
+    for inum in range(6, 7):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
