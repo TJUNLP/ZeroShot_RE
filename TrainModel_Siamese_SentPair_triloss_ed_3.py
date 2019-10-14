@@ -13,7 +13,7 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_Atloss_ed_05
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_Atloss_ed_05_nochar
 from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_ed_1_01
 import keras
 
@@ -442,8 +442,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
-    elif modelname is 'Model_BiLSTM_SentPair_Atloss_ed_05':
-        nn_model = Model_BiLSTM_SentPair_Atloss_ed_05(wordvocabsize=wordvocabsize,
+    elif modelname is 'Model_BiLSTM_SentPair_Atloss_ed_05_nochar':
+        nn_model = Model_BiLSTM_SentPair_Atloss_ed_05_nochar(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -502,7 +502,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_tripletloss_05'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_ed'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_ed_1_01'
-    modelname = 'Model_BiLSTM_SentPair_Atloss_ed_05'
+    modelname = 'Model_BiLSTM_SentPair_Atloss_ed_05_nochar'
 
     print(modelname)
 
