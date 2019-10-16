@@ -20,13 +20,6 @@ import keras
 
 def test_model3(nn_model, tag2sentDict_test):
 
-    predict = 0
-    predict_right = 0
-
-    predict_class = 0
-    predict_right_class = 0
-
-
     data_s_all_0 = []
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
@@ -39,11 +32,9 @@ def test_model3(nn_model, tag2sentDict_test):
 
     data_tag_all = []
     class_labels = []
-    labels_all = []
+
     totel_right = 0
 
-
-    truth_tag_list = []
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
@@ -65,14 +56,8 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e2_posi_all_1.append(data_e2_posi)
                 char_s_all_1.append(char_s)
 
-                targetvec = np.zeros(2)
-                if tag == ty:
-                    labels_all.append(1)
-                    truth_tag_list.append(si)
-                    targetvec[1] = 1
-                else:
-                    labels_all.append(0)
-                    targetvec[0] = 1
+                targetvec = np.zeros(120)
+                targetvec[tag] = 1
 
                 class_labels.append(targetvec)
 
@@ -93,11 +78,13 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x3_sent_cahr = train_x2_sent_cahr
     train_tag = np.asarray(pairs[8], dtype="int32")
 
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+    inputs_test_y = np.asarray(class_labels, dtype="int32")
+
+    inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    acc = nn_model.evaluate(inputs_train_x, verbose=1, batch_size=batch_size)
+    acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=1, batch_size=batch_size)
 
     P = acc
     R = acc
