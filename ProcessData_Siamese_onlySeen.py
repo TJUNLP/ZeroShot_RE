@@ -753,7 +753,7 @@ def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
     return pairs, labels
 
 
-def CreateTriplet_withSoftmax(tagDict_train, shuffle=True):
+def CreateTriplet_withSoftmax(tagDict_train, shuffle=True, class_num=2):
 
     labels = []
     data_tag_all = []
@@ -811,13 +811,19 @@ def CreateTriplet_withSoftmax(tagDict_train, shuffle=True):
             data_e2_posi_all_2.append(data_e2_posi)
             char_s_all_2.append(char_s)
 
-            targetvec = np.zeros(2)
+            targetvec = np.zeros(class_num)
             if i % 2 == 0:
-                targetvec[0] = 1
+                if class_num == 2:
+                    targetvec[0] = 1
+                elif class_num == 120:
+                    targetvec[keylist[ran1]] = 1
                 data_tag_all.append([keylist[ran1]])
 
             else:
-                targetvec[1] = 1
+                if class_num == 2:
+                    targetvec[1] = 1
+                elif class_num == 120:
+                    targetvec[tag] = 1
                 data_tag_all.append([tag])
             labels.append(targetvec)
 

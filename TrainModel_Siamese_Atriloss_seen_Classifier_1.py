@@ -220,7 +220,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 def Dynamic_get_trainSet(shuffle=True):
 
 
-    pairs_train, labels_train = ProcessData_Siamese_onlySeen.CreateTriplet_withSoftmax(tagDict_train, shuffle)
+    pairs_train, labels_train = ProcessData_Siamese_onlySeen.CreateTriplet_withSoftmax(tagDict_train, shuffle, class_num=120)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
     train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
