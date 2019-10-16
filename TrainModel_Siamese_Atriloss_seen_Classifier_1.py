@@ -97,7 +97,7 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    _, acc = nn_model.evaluate(inputs_train_x, verbose=1, batch_size=batch_size)
+    acc = nn_model.evaluate(inputs_train_x, verbose=1, batch_size=batch_size)
 
     P = acc
     R = acc
