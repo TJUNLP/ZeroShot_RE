@@ -345,116 +345,6 @@ def get_Character_index(files):
     return source_vob, sourc_idex_word, max_c
 
 
-def get_prototypes_byques(target_vob, word_vob):
-
-    quesfile = './data/WikiReading/WikiReading.quenstion.txt'
-
-    tagDict = {}
-
-    f = codecs.open(quesfile, 'r', encoding='utf-8')
-    lines = f.readlines()
-    max_s = 245
-    for si, line in enumerate(lines):
-        jline = line.rstrip('\n').split(' \t ')
-        sent = jline[1].split(' ')
-        rel = target_vob[jline[0]]
-
-        if rel not in tagDict:
-            tagDict[rel] = []
-
-        data_s = []
-        for ww in sent[0:min(len(sent), max_s)]:
-            if ww not in word_vob:
-                # word_vob[ww] = word_vob['**UNK**']
-                data_s.append(word_vob['**UNK**'])
-            else:
-                data_s.append(word_vob[ww])
-        data_s = data_s + [0] * max(0, max_s - len(sent))
-
-
-        tagDict[rel] = data_s
-
-    print(len(tagDict))
-
-    f.close()
-
-    return max_s, tagDict
-
-
-def get_sentDicts_neg(trainfile, max_s, max_posi, word_vob, char_vob, max_c):
-
-    tagDict = {}
-
-    tagDict[-1] = []
-
-    f = codecs.open(trainfile, 'r', encoding='utf-8')
-    lines = f.readlines()
-
-    for si, line in enumerate(lines):
-        jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
-        sent = jline['sent'].split(' ')
-        rel = jline['rel']
-        e1_l = jline['e1_posi'][0]
-        e1_r = jline['e1_posi'][1]
-        e2_l = jline['e2_posi'][0]
-        e2_r = jline['e2_posi'][1]
-
-        max_long = max(e1_r, e2_r)
-        if len(sent) > max_s and max_long > max_s:
-            continue
-
-        data_tag = -1
-
-        # word_vob['____'] = len(word_vob)+1
-
-        data_s = []
-        for ww in sent[0:min(len(sent), max_s)]:
-            if ww not in word_vob:
-                data_s.append(word_vob['**UNK**'])
-            else:
-                data_s.append(word_vob[ww])
-        data_s = data_s + [0] * max(0, max_s - len(sent))
-
-        list_left = [min(i, max_posi) for i in range(1, e1_l+1)]
-        list_left.reverse()
-        feature_posi = list_left + [0 for i in range(e1_l, e1_r)] + \
-                       [min(i, max_posi) for i in range(1, len(sent) - e1_r + 1)]
-        data_e1_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
-
-        list_left = [min(i, max_posi) for i in range(1, e2_l + 1)]
-        list_left.reverse()
-        feature_posi = list_left + [0 for i in range(e2_l, e2_r)] + \
-                       [min(i, max_posi) for i in range(1, len(sent) - e2_r + 1)]
-        data_e2_posi = feature_posi[0:min(len(sent), max_s)] + [max_posi] * max(0, max_s - len(sent))
-
-        char_s = []
-        for wi in range(0, min(len(sent), max_s)):
-            word = sent[wi]
-            data_c = []
-            for chr in range(0, min(word.__len__(), max_c)):
-                if not char_vob.__contains__(word[chr]):
-                    data_c.append(char_vob["**UNK**"])
-                else:
-                    data_c.append(char_vob[word[chr]])
-            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
-            char_s.append(data_c)
-        char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
-
-        pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
-
-
-        if data_tag not in tagDict.keys():
-            tagDict[data_tag] = []
-            # if prototypes != None and data_tag in prototypes.keys():
-            #     tagDict[data_tag].append(prototypes[data_tag][0])
-
-        tagDict[data_tag].append(pairs)
-
-    f.close()
-
-    return tagDict
-
-
 def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c):
 
     tagDict = {}
@@ -523,234 +413,6 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
     f.close()
 
     return tagDict
-
-
-def CreatePairs(tagDict_train, istest=False):
-
-    labels = []
-    data_tag_all = []
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-
-    for tag in tagDict_train.keys():
-        sents = tagDict_train[tag]
-
-        if len(sents) < 2:
-            continue
-        inc = random.randrange(1, len(sents))
-        i = 0
-        while i < len(sents):
-            p0 = i
-            p1 = (inc + i) % len(sents)
-
-            i += 1
-
-            labels.append(1)
-            data_tag_all.append([tag])
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-            labels.append(0)
-            data_tag_all.append([tag])
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
-             data_tag_all]
-
-    return pairs, labels
-
-
-def CreateTriplet(tagDict_train, target_vob=None, istest=False):
-
-    categorical_labels = None
-    if target_vob != None:
-        categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
-    labels = []
-    data_tag_all = []
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_s_all_2 = []
-    data_e1_posi_all_2 = []
-    data_e2_posi_all_2 = []
-    char_s_all_2 = []
-
-
-    for tag in tagDict_train.keys():
-        sents = tagDict_train[tag]
-
-        if len(sents) < 2:
-            continue
-        inc = random.randrange(1, len(sents))
-        i = 0
-        while i < len(sents):
-            p0 = i
-            p1 = (inc + i) % len(sents)
-
-            i += 1
-            if target_vob != None:
-                labels.append(categorical_labels[tag])
-            else:
-                labels.append(1)
-            data_tag_all.append([tag])
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_2.append(data_s)
-            data_e1_posi_all_2.append(data_e1_posi)
-            data_e2_posi_all_2.append(data_e2_posi)
-            char_s_all_2.append(char_s)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
-             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
-             data_tag_all]
-
-    return pairs, labels
-
-
-def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
-
-    categorical_labels = None
-    if target_vob != None:
-        categorical_labels = to_categorical(list(target_vob.values()), num_classes=None)
-    labels = []
-    data_tag_all = []
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_s_all_2 = []
-    data_e1_posi_all_2 = []
-    data_e2_posi_all_2 = []
-    char_s_all_2 = []
-
-
-    for tag in tagDict_train.keys():
-        sents = tagDict_train[tag]
-
-        if len(sents) < 2:
-            continue
-        inc0 = random.randrange(0, len(sents))
-        inc1 = random.randrange(0, len(sents))
-        if inc1 == inc0:
-            inc1 = (inc1 + 1) % len(sents)
-        i = 0
-        count = 0
-        while i < len(sents):
-            if count >= sample_n:
-                break
-
-            p0 = (inc0 + i) % len(sents)
-            p1 = (inc1 + i) % len(sents)
-
-            i += 1
-            if target_vob != None:
-                labels.append(categorical_labels[tag])
-            else:
-                labels.append(1)
-            data_tag_all.append([tag])
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_2.append(data_s)
-            data_e1_posi_all_2.append(data_e1_posi)
-            data_e2_posi_all_2.append(data_e2_posi)
-            char_s_all_2.append(char_s)
-
-            count += 1
-            if i == len(sents):
-                i = 0
-                inc0 = (inc0 + random.randrange(1, len(sents))) % len(sents)
-                inc1 = (inc1 + random.randrange(1, len(sents))) % len(sents)
-                if inc1 == inc0:
-                    inc1 = (inc1 + 1) % len(sents)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
-             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
-             data_tag_all]
-
-    return pairs, labels
 
 
 def CreateTriplet_withSoftmax(tagDict_train, shuffle=True, class_num=2):
@@ -846,11 +508,7 @@ def CreateTriplet_withSoftmax(tagDict_train, shuffle=True, class_num=2):
     return pairs, labels
 
 
-def CreateTriplet_withSoftmax_ques(tagDict_train, prototype_tagDict, target_vob=None, istest=False):
-
-    """
-    if target_vob != None, unseen classes are used for pos examples
-    """
+def Create4Classifier(tagDict_train, shuffle=True, class_num=120):
 
     labels = []
     data_tag_all = []
@@ -859,16 +517,6 @@ def CreateTriplet_withSoftmax_ques(tagDict_train, prototype_tagDict, target_vob=
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
     char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_s_all_2 = []
-    data_e1_posi_all_2 = []
-    data_e2_posi_all_2 = []
-    char_s_all_2 = []
 
 
     for tag in tagDict_train.keys():
@@ -880,10 +528,7 @@ def CreateTriplet_withSoftmax_ques(tagDict_train, prototype_tagDict, target_vob=
         i = 0
         while i < len(sents):
             p0 = i
-            p1 = (inc + i) % len(sents)
-
             i += 1
-
 
             data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
             data_s_all_0.append(data_s)
@@ -891,130 +536,27 @@ def CreateTriplet_withSoftmax_ques(tagDict_train, prototype_tagDict, target_vob=
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
+            targetvec = np.zeros(class_num)
 
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_2.append(data_s)
-            data_e1_posi_all_2.append(data_e1_posi)
-            data_e2_posi_all_2.append(data_e2_posi)
-            char_s_all_2.append(char_s)
-
-            targetvec = np.zeros(2)
-            if i % 2 == 0:
-                targetvec[0] = 1
-
-                if target_vob == None:
-                    data_tag_all.append(prototype_tagDict[keylist[ran1]])
-                else:
-                    keylist = list(target_vob.values())
-                    ran1 = random.randrange(0, len(keylist))
-                    if keylist[ran1] == tag:
-                        ran1 = (ran1 + 1) % len(keylist)
-                    data_tag_all.append(prototype_tagDict[keylist[ran1]])
-            else:
+            if class_num == 2:
                 targetvec[1] = 1
-                data_tag_all.append(prototype_tagDict[tag])
+            elif class_num == 120:
+                targetvec[tag] = 1
+            data_tag_all.append([tag])
+
             labels.append(targetvec)
 
+    if shuffle:
+        sh = list(zip(data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+                 data_tag_all, labels))
+        random.shuffle(sh)
+        data_s_all_0[:], data_e1_posi_all_0[:], data_e2_posi_all_0[:], char_s_all_0[:],\
+        data_tag_all[:], labels[:] = zip(*sh)
+
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
-             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
              data_tag_all]
 
     return pairs, labels
-
-
-def CreateTriplet_withMSE(tagDict_train):
-
-    labels = []
-    data_tag_all = []
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
-    data_s_all_2 = []
-    data_e1_posi_all_2 = []
-    data_e2_posi_all_2 = []
-    char_s_all_2 = []
-
-
-    for tag in tagDict_train.keys():
-        sents = tagDict_train[tag]
-
-        if len(sents) < 2:
-            continue
-        inc = random.randrange(1, len(sents))
-        i = 0
-        while i < len(sents):
-            p0 = i
-            p1 = (inc + i) % len(sents)
-
-            i += 1
-
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
-
-            data_s, data_e1_posi, data_e2_posi, char_s = sents[p1]
-            data_s_all_1.append(data_s)
-            data_e1_posi_all_1.append(data_e1_posi)
-            data_e2_posi_all_1.append(data_e2_posi)
-            char_s_all_1.append(char_s)
-
-            keylist = list(tagDict_train.keys())
-            ran1 = random.randrange(0, len(keylist))
-            if keylist[ran1] == tag:
-                ran1 = (ran1 + 1) % len(keylist)
-            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
-            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
-            data_s_all_2.append(data_s)
-            data_e1_posi_all_2.append(data_e1_posi)
-            data_e2_posi_all_2.append(data_e2_posi)
-            char_s_all_2.append(char_s)
-
-            targetvec = 0
-            if i % 2 == 0:
-                targetvec = 0
-                data_tag_all.append([keylist[ran1]])
-
-            else:
-                targetvec = 1
-                data_tag_all.append([tag])
-            labels.append(targetvec)
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
-             data_s_all_2, data_e1_posi_all_2, data_e2_posi_all_2, char_s_all_2,
-             data_tag_all]
-
-    return pairs, labels
-
-
-def get_rel_prototypes(file, max_s, max_posi, word_vob, target_vob, char_vob, max_c):
-
-    tagDict_prototypes, _ = get_sentDicts(file, max_s, max_posi, word_vob, target_vob, char_vob, max_c, needDEV=False)
-    print('tagDict_prototypes len', len(tagDict_prototypes))
-
-    return tagDict_prototypes
 
 
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50):

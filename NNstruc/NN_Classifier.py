@@ -258,6 +258,82 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, 
     return mymodel
 
 
+def Model_BiLSTM_Classifier(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k,
+                    batch_size=32):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+
+    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    class_BiLSTM = Dense(200, activation='tanh', name='class_BiLSTM')(BiLSTM_x1)
+    class_BiLSTM = Dropout(0.5)(class_BiLSTM)
+    class_output = Dense(120)(class_BiLSTM)
+    class_output = Activation('softmax', name='CLASS')(class_output)
+
+
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1],
+                    class_output)
+
+    # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    mymodel.compile(loss='categorical_crossentropy',
+                    optimizer=optimizers.Adam(lr=0.001),
+                    metrics=['acc'])
+    return mymodel
+
+
 
 
 def euclidean_distance(vects):

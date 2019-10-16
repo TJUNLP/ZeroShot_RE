@@ -13,7 +13,9 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_onlySeen
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Classifier import Model_BiLSTM_SentPair_Atloss_ed_05_Classifier
+from NNstruc.NN_Classifier import Model_BiLSTM_Classifier
+
+import keras
 
 
 def test_model3(nn_model, tag2sentDict_test):
@@ -36,7 +38,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//100):
+        for s in range(1, len(sents)):
             totel_right += 1
 
             for si, ty in enumerate(target_vob.values()):
@@ -61,7 +63,6 @@ def test_model3(nn_model, tag2sentDict_test):
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
-    print(len(pairs))
 
     train_x1_sent = np.asarray(pairs[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
@@ -83,7 +84,7 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    _, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=1, batch_size=batch_size)
+    acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=1, batch_size=batch_size)
 
     P = acc
     R = acc
@@ -189,8 +190,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_Atloss_ed_05_Classifier':
-        nn_model = Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_Classifier':
+        nn_model = Model_BiLSTM_Classifier(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -205,32 +206,20 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(shuffle=True):
 
-
-    pairs_train, labels_train = ProcessData_Siamese_onlySeen.CreateTriplet_withSoftmax(tagDict_train, shuffle, class_num=120)
+    pairs_train, labels_train = ProcessData_Siamese_onlySeen.Create4Classifier(tagDict_train, shuffle, class_num=120)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
     train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs_train[1], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs_train[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs_train[3], dtype="int32")
-    train_x2_sent = np.asarray(pairs_train[4], dtype="int32")
-    train_x2_e1_posi = np.asarray(pairs_train[5], dtype="int32")
-    train_x2_e2_posi = np.asarray(pairs_train[6], dtype="int32")
-    train_x2_sent_cahr = np.asarray(pairs_train[7], dtype="int32")
-    train_x3_sent = np.asarray(pairs_train[8], dtype="int32")
-    train_x3_e1_posi = np.asarray(pairs_train[9], dtype="int32")
-    train_x3_e2_posi = np.asarray(pairs_train[10], dtype="int32")
-    train_x3_sent_cahr = np.asarray(pairs_train[11], dtype="int32")
+
     train_tag = np.asarray(pairs_train[12], dtype="int32")
 
-    train_y0 = np.zeros(len(labels_train), dtype="int32")
     train_y = np.asarray(labels_train, dtype="int32")
-    # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
-    inputs_train_y = [train_y0, train_y]
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr, train_tag]
+    inputs_train_y = [train_y]
 
     return inputs_train_x, inputs_train_y
 
@@ -239,7 +228,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_Atloss_ed_05_Classifier'
+    modelname = 'Model_BiLSTM_Classifier'
 
     print(modelname)
 
