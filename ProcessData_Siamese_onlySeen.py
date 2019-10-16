@@ -1053,7 +1053,10 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
 
     tagDict_1 = get_sentDicts(testfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
     tagDict_2 = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    tagDict = dict(tagDict_1, **tagDict_2)
+    tagDict = {}
+    tagDict.update(tagDict_1)
+    tagDict.update(tagDict_2)
+    assert len(tagDict.keys()) == len(tagDict_1.keys()) + len(tagDict_2.keys())
     print('tagDict_train len', len(tagDict))
 
     tagDict_train = {}
