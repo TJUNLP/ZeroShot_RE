@@ -36,7 +36,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//100):
+        for s in range(1, len(sents)):
             totel_right += 1
 
             for si, ty in enumerate(target_vob.values()):
@@ -77,13 +77,14 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x3_sent_cahr = train_x2_sent_cahr
     train_tag = np.asarray(pairs[8], dtype="int32")
 
+    inputs_test_y0 = np.zeros(len(pairs[8]), dtype="int32")
     inputs_test_y = np.asarray(class_labels, dtype="int32")
 
     inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    _, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=1, batch_size=batch_size)
+    loss, loss1, loss2, acc = nn_model.evaluate(inputs_test_x, [inputs_test_y0, inputs_test_y], verbose=1, batch_size=batch_size)
 
     P = acc
     R = acc
