@@ -25,11 +25,6 @@ def test_model3(nn_model, tag2sentDict_test):
     data_e2_posi_all_0 = []
     char_s_all_0 = []
 
-    data_s_all_1 = []
-    data_e1_posi_all_1 = []
-    data_e2_posi_all_1 = []
-    char_s_all_1 = []
-
     data_tag_all = []
     class_labels = []
 
@@ -50,39 +45,22 @@ def test_model3(nn_model, tag2sentDict_test):
                 char_s_all_0.append(char_s)
                 data_tag_all.append([ty])
 
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[0]
-                data_s_all_1.append(data_s)
-                data_e1_posi_all_1.append(data_e1_posi)
-                data_e2_posi_all_1.append(data_e2_posi)
-                char_s_all_1.append(char_s)
 
                 targetvec = np.zeros(120)
                 targetvec[tag] = 1
 
                 class_labels.append(targetvec)
 
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1, data_tag_all]
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0]
 
     train_x1_sent = np.asarray(pairs[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
-    train_x2_sent = np.asarray(pairs[4], dtype="int32")
-    train_x2_e1_posi = np.asarray(pairs[5], dtype="int32")
-    train_x2_e2_posi = np.asarray(pairs[6], dtype="int32")
-    train_x2_sent_cahr = np.asarray(pairs[7], dtype="int32")
-    train_x3_sent = train_x2_sent
-    train_x3_e1_posi = train_x2_e1_posi
-    train_x3_e2_posi = train_x2_e2_posi
-    train_x3_sent_cahr = train_x2_sent_cahr
-    train_tag = np.asarray(pairs[8], dtype="int32")
 
     inputs_test_y = np.asarray(class_labels, dtype="int32")
 
-    inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
-                      train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
+    inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr]
 
     loss, acc = nn_model.evaluate(inputs_test_x, inputs_test_y, verbose=1, batch_size=1024)
 
@@ -218,7 +196,7 @@ def Dynamic_get_trainSet(shuffle=True):
 
     train_y = np.asarray(labels_train, dtype="int32")
 
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr, train_tag]
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr]
     inputs_train_y = [train_y]
 
     return inputs_train_x, inputs_train_y
