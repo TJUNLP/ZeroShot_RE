@@ -214,7 +214,7 @@ def Dynamic_get_trainSet(shuffle=True):
     train_x1_e2_posi = np.asarray(pairs_train[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs_train[3], dtype="int32")
 
-    train_tag = np.asarray(pairs_train[12], dtype="int32")
+    train_tag = np.asarray(pairs_train[4], dtype="int32")
 
     train_y = np.asarray(labels_train, dtype="int32")
 
