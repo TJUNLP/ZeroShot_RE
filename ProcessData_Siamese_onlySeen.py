@@ -474,19 +474,18 @@ def CreateTriplet_withSoftmax(tagDict_train, shuffle=True, class_num=2):
             char_s_all_2.append(char_s)
 
             targetvec = np.zeros(class_num)
-            if i % 2 == 0:
-                if class_num == 2:
+            if class_num == 2:
+                if i % 2 == 0:
                     targetvec[0] = 1
-                elif class_num == 120:
-                    targetvec[keylist[ran1]] = 1
-                data_tag_all.append([keylist[ran1]])
-
-            else:
-                if class_num == 2:
+                    data_tag_all.append([keylist[ran1]])
+                else:
                     targetvec[1] = 1
-                elif class_num == 120:
-                    targetvec[tag] = 1
+                    data_tag_all.append([tag])
+
+            elif class_num == 120:
+                targetvec[tag] = 1
                 data_tag_all.append([tag])
+
             labels.append(targetvec)
 
     if shuffle:

@@ -84,7 +84,7 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_x3_sent, train_x3_e1_posi, train_x3_e2_posi, train_x3_sent_cahr, train_tag]
 
-    loss, loss1, loss2, acc = nn_model.evaluate(inputs_test_x, [inputs_test_y0, inputs_test_y], verbose=1, batch_size=batch_size)
+    loss, loss1, loss2, acc = nn_model.evaluate(inputs_test_x, [inputs_test_y0, inputs_test_y], verbose=1, batch_size=1024)
 
     P = acc
     R = acc
