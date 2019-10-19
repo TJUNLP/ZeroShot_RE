@@ -595,7 +595,7 @@ def Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize, pos
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
-                    batch_size=32):
+                    batch_size=32, margin=0.5, at_margin=0.1):
 
     word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
     word_input_sent_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
@@ -691,8 +691,9 @@ def Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize, pos
     at_cos = Dot(axes=-1, normalize=True, name='at_cos')([BiLSTM_x2, BiLSTM_x3])
 
     # margin = 1.
-    margin = 0.5
-    at_margin = 0.1
+    # margin = 0.5
+    # margin = 0.1
+    # at_margin = 0.1
     gamma = 2
     # + at_margin * K.round(K.maximum(0.5 - K.epsilon(), 0.5 + X[1] - X[0] - margin)) * (
             # K.square(K.relu(X[0] - 0.2)) + K.square(K.relu(0.8 - X[1])))

@@ -252,7 +252,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, 
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 1., 'CLASS': 0.5},
+                    loss_weights={'TripletLoss': 0.5, 'CLASS': 1.},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'CLASS': ['acc']})
     return mymodel
