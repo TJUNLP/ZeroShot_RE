@@ -442,9 +442,9 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_005_at01_allexp_2m':
-        margin = 0.05
-        at_margin = 0.1
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_03_at015_allexp_2m':
+        margin = 0.3
+        at_margin = 0.15
         nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -502,6 +502,7 @@ if __name__ == "__main__":
 
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m'
     modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_005_at01_allexp_2m'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_03_at015_allexp_2m'
 
     print(modelname)
 
