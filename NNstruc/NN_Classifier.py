@@ -129,7 +129,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, 
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
-                    batch_size=32):
+                    batch_size=32, margin=0.5, at_margin=0.1, loss_weights=None):
 
     word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
     word_input_sent_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
@@ -237,9 +237,9 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, 
     at_cos = Dot(axes=-1, normalize=True, name='at_cos')([BiLSTM_x2, BiLSTM_x3])
 
     # margin = 1.
-    margin = 0.5
-    at_margin = 0.1
-    gamma = 2
+    # margin = 0.1
+    # at_margin = 0.05
+    # gamma = 2
 
     loss = Lambda(lambda X: K.exp((margin + X[0] - X[1]) / (margin + 2.)) * (K.relu(margin + X[0] - X[1]) + at_margin * K.square(X[2])), name='TripletLoss')([wrong_cos, right_cos, at_cos])
 
@@ -252,7 +252,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, 
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 0.5, 'CLASS': 1.},
+                    loss_weights=loss_weights,
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'CLASS': ['acc']})
     return mymodel
