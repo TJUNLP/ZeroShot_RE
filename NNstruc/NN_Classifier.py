@@ -128,8 +128,8 @@ def Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize, posivocabsize, charvocabs
 def Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
-                     w2v_k, posi2v_k, c2v_k, tag2v_k,
-                    batch_size=32, margin=0.5, at_margin=0.1, loss_weights=None):
+                     w2v_k, posi2v_k, c2v_k, tag2v_k, loss_weights,
+                    batch_size=32, margin=0.5, at_margin=0.1):
 
     word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
     word_input_sent_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
