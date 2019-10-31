@@ -1672,7 +1672,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     BiLSTM_x3 = concatenate([forward_h_x3, backward_h_x3], axis=-1)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=-2)
+    class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=0)
 
     class_BiLSTM = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(class_pinjie)
     class_BiLSTM = Dropout(0.5)(class_BiLSTM)
