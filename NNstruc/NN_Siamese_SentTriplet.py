@@ -1651,7 +1651,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     # tag_embedding = Flatten()(tag_embedding)
 
 
-    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh', return_sequences=True, return_state=True), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh', return_sequences=True, return_state=True), merge_mode='ave')
 
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
@@ -1672,7 +1672,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     BiLSTM_x3 = concatenate([forward_h_x3, backward_h_x3], axis=-1)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=1)
+    class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=0)
 
     class_BiLSTM = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(class_pinjie)
     class_BiLSTM = Dropout(0.5)(class_BiLSTM)
