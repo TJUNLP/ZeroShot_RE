@@ -1567,6 +1567,143 @@ def Model_BiLSTM_SentPair_Atloss_ed_05(wordvocabsize, posivocabsize, charvocabsi
     return mymodel
 
 
+def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k,
+                    batch_size=32):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_input_sent_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_input_sent_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+    word_embedding_sent_x2 = word_embedding_sent_layer(word_input_sent_x2)
+    word_embedding_sent_x2 = Dropout(0.25)(word_embedding_sent_x2)
+
+    word_embedding_sent_x3 = word_embedding_sent_layer(word_input_sent_x3)
+    word_embedding_sent_x3 = Dropout(0.25)(word_embedding_sent_x3)
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_input_sent_x2 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_input_sent_x3 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+    char_embedding_sent_x2 = char_embedding_sent_layer(char_input_sent_x2)
+    char_embedding_sent_x3 = char_embedding_sent_layer(char_input_sent_x3)
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    char_embedding_sent_x2 = char_cnn_sent_layer(char_embedding_sent_x2)
+    char_embedding_sent_x2 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x2)
+    char_embedding_sent_x2 = Dropout(0.25)(char_embedding_sent_x2)
+
+    char_embedding_sent_x3 = char_cnn_sent_layer(char_embedding_sent_x3)
+    char_embedding_sent_x3 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x3)
+    char_embedding_sent_x3 = Dropout(0.25)(char_embedding_sent_x3)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e1_posi_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e1_posi_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e2_posi_x2 = Input(shape=(input_sent_lenth,), dtype='int32')
+    input_e2_posi_x3 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+    embedding_e1_posi_x2 = embedding_posi_layer(input_e1_posi_x2)
+    embedding_e1_posi_x3 = embedding_posi_layer(input_e1_posi_x3)
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+    embedding_e2_posi_x2 = embedding_posi_layer(input_e2_posi_x2)
+    embedding_e2_posi_x3 = embedding_posi_layer(input_e2_posi_x3)
+
+    input_tag = Input(shape=(1,), dtype='int32')
+    tag_embedding = Embedding(input_dim=tagvocabsize,
+                                    output_dim=tag2v_k,
+                                    input_length=1,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[tag_W])(input_tag)
+    # tag_embedding = Flatten()(tag_embedding)
+
+
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    embedding_x2 = concatenate([word_embedding_sent_x2, char_embedding_sent_x2,
+                                embedding_e1_posi_x2, embedding_e2_posi_x2], axis=-1)
+    BiLSTM_x2 = BiLSTM_layer(embedding_x2)
+    BiLSTM_x2 = Dropout(0.25)(BiLSTM_x2)
+
+    embedding_x3 = concatenate([word_embedding_sent_x3, char_embedding_sent_x3,
+                                embedding_e1_posi_x3, embedding_e2_posi_x3], axis=-1)
+    BiLSTM_x3 = BiLSTM_layer(embedding_x3)
+    BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
+
+    class_pinjie = concatenate([tag_embedding, BiLSTM_x1], axis=0)
+
+    class_BiLSTM = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(class_pinjie)
+    class_BiLSTM = Dropout(0.5)(class_BiLSTM)
+    class_BiLSTM = Dense(100, activation='tanh',name='class_BiLSTM')(class_BiLSTM)
+    class_BiLSTM = Dropout(0.5)(class_BiLSTM)
+
+    class_mlp2 = Dense(2)(class_BiLSTM)
+    class_output = Activation('softmax', name='CLASS')(class_mlp2)
+
+    # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
+    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, BiLSTM_x2])
+    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, BiLSTM_x3])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([BiLSTM_x2, BiLSTM_x3])
+
+    # margin = 1.
+    margin = 0.5
+    at_margin = 0.1
+    gamma = 2
+
+    loss = Lambda(lambda X: K.exp((margin + X[0] - X[1]) / (margin + 2.)) * (K.relu(margin + X[0] - X[1]) + at_margin * K.square(X[2])), name='TripletLoss')([wrong_cos, right_cos, at_cos])
+
+
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
+                     word_input_sent_x3, input_e1_posi_x3, input_e2_posi_x3, char_input_sent_x3, input_tag],
+                    [loss, class_output])
+
+    # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
+                    loss_weights={'TripletLoss': 1., 'CLASS': 0.5},
+                    optimizer=optimizers.Adam(lr=0.001),
+                    metrics={'TripletLoss': [], 'CLASS': ['acc']})
+    return mymodel
+
 
 def Model_BiLSTM_SentPair_Atloss_ed_05_nochar(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
