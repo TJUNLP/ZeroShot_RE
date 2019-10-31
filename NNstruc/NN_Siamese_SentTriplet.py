@@ -1651,24 +1651,28 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     # tag_embedding = Flatten()(tag_embedding)
 
 
-    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh', return_sequences=True, return_state=True), merge_mode='ave')
+
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
-    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_seq_x1, forward_h_x1, forward_c, backward_h_x1, backward_c = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = concatenate([forward_h_x1, backward_h_x1], axis=-1)
     BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
 
     embedding_x2 = concatenate([word_embedding_sent_x2, char_embedding_sent_x2,
                                 embedding_e1_posi_x2, embedding_e2_posi_x2], axis=-1)
-    BiLSTM_x2 = BiLSTM_layer(embedding_x2)
+    BiLSTM_seq_x2, forward_h_x2, forward_c, backward_h_x2, backward_c = BiLSTM_layer(embedding_x2)
+    BiLSTM_x2 = concatenate([forward_h_x2, backward_h_x2], axis=-1)
     BiLSTM_x2 = Dropout(0.25)(BiLSTM_x2)
 
     embedding_x3 = concatenate([word_embedding_sent_x3, char_embedding_sent_x3,
                                 embedding_e1_posi_x3, embedding_e2_posi_x3], axis=-1)
-    BiLSTM_x3 = BiLSTM_layer(embedding_x3)
+    BiLSTM_seq_x3, forward_h_x3, forward_c, backward_h_x3, backward_c = BiLSTM_layer(embedding_x3)
+    BiLSTM_x3 = concatenate([forward_h_x3, backward_h_x3], axis=-1)
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
-    class_pinjie = concatenate([tag_embedding, BiLSTM_x1], axis=0)
+    class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=0)
 
     class_BiLSTM = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(class_pinjie)
     class_BiLSTM = Dropout(0.5)(class_BiLSTM)
