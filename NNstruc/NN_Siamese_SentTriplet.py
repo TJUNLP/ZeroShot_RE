@@ -1673,11 +1673,12 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     BiLSTM_x3 = Dropout(0.25)(BiLSTM_x3)
 
     # class_pinjie = concatenate([tag_embedding, BiLSTM_seq_x1], axis=1)
-    class_pinjie = Lambda(lambda x: K.concatenate([x[0],x[1]], axis=1))([tag_embedding, BiLSTM_seq_x1])
+    class_pinjie = Lambda(lambda x: K.concatenate([x[0], x[1]], axis=1))([tag_embedding, BiLSTM_seq_x1])
+
     class_BiLSTM = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')(class_pinjie)
     class_BiLSTM = Dropout(0.5)(class_BiLSTM)
-    class_BiLSTM = Dense(100, activation='tanh',name='class_BiLSTM')(class_BiLSTM)
-    class_BiLSTM = Dropout(0.5)(class_BiLSTM)
+    # class_BiLSTM = Dense(100, activation='tanh',name='class_BiLSTM')(class_BiLSTM)
+    # class_BiLSTM = Dropout(0.5)(class_BiLSTM)
 
     class_mlp2 = Dense(2)(class_BiLSTM)
     class_output = Activation('softmax', name='CLASS')(class_mlp2)
@@ -1703,7 +1704,7 @@ def Model_BiLSTM_SentPair_Atloss_ed_05_pinjie(wordvocabsize, posivocabsize, char
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'CLASS': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 1., 'CLASS': 0.5},
+                    loss_weights={'TripletLoss': 0.5, 'CLASS': 1.},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'CLASS': ['acc']})
     return mymodel

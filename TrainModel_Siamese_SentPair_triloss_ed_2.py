@@ -564,7 +564,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(6, 7):
+    for inum in range(6, 8):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
