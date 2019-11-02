@@ -190,10 +190,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_Atloss_ed_01_005__01_1_Classifier':
+    if modelname is 'Model_BiLSTM_SentPair_Atloss_ed_01_005__02_1_Classifier':
         margin = 0.1
         at_margin = 0.05
-        loss_weights = {'TripletLoss': 0.1, 'CLASS': 1.}
+        loss_weights = {'TripletLoss': 0.2, 'CLASS': 1.}
         nn_model = Model_BiLSTM_SentPair_Atloss_ed_05_Classifier(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -247,6 +247,7 @@ if __name__ == "__main__":
     modelname = 'Model_BiLSTM_SentPair_Atloss_ed_05_Classifier'
     modelname = 'Model_BiLSTM_SentPair_Atloss_ed_01_005__05_1_Classifier'
     modelname = 'Model_BiLSTM_SentPair_Atloss_ed_01_005__01_1_Classifier'
+    modelname = 'Model_BiLSTM_SentPair_Atloss_ed_01_005__02_1_Classifier'
 
 
     print(modelname)
