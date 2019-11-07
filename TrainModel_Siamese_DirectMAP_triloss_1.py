@@ -110,10 +110,10 @@ def test_model3(nn_model, tag2sentDict_test):
             #     if mindis_where == truth_tag_list[i]:
             #         predict_right += 1
 
-            subpredictions_class = predictions[left:right]
-            subpredictions_class = subpredictions_class[:, 1].flatten().tolist()
-            class_max = max(subpredictions_class)
-            class_where = subpredictions_class.index(class_max)
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
+            class_max = max(subpredictions)
+            class_where = subpredictions.index(class_max)
 
             if class_max > threshold:
                 predict_class += 1
