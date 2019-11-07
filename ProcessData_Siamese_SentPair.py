@@ -787,6 +787,57 @@ def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
     return pairs, labels
 
 
+def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
+
+    labels = []
+    data_tag_all_p = []
+    data_tag_all_n = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc = random.randrange(1, len(sents))
+        i = 0
+        while i < len(sents):
+            p0 = i
+            p1 = (inc + i) % len(sents)
+
+            i += 1
+
+            labels.append(1)
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            data_tag_all_p.append([tag])
+
+            if target_vob != None:
+                keylist = list(target_vob.values())
+            else:
+                keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+
+            data_tag_all_n.append([keylist[ran1]])
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all_p, data_tag_all_n]
+
+    return pairs, labels
+
+
 def CreateTriplet_withSoftmax(tagDict_train, target_vob=None, istest=False):
 
     """
