@@ -14,6 +14,7 @@ from keras_ordered_neurons import ONLSTM
 from keras.engine import Layer
 from tensorflow.python.framework import ops
 import tensorflow as tf
+import flipGradientTF
 
 def Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
@@ -301,8 +302,9 @@ def Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1(wordvocabsize, posivocabsize,
     n_mlp2 = Dropout(0.5)(n_mlp2)
     wrong_cos = Dense(1, activation='sigmoid', name='wrong_cos')(n_mlp2)
 
-    flip = GradientReversal(hp_lambda=1.0)(n_mlp2)
-    unseen_output = Dense(2, activation='softmax', name='ISunseen_Classifier')(flip)
+    Flip = flipGradientTF.GradientReversal(hp_lambda=1.0)
+    dann_in = Flip(n_mlp2)
+    unseen_output = Dense(2, activation='softmax', name='ISunseen_Classifier')(dann_in)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
