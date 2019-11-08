@@ -289,7 +289,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05'
+    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05-01_className'
 
     print(modelname)
 
