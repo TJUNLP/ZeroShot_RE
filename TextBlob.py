@@ -7,7 +7,7 @@ from textblob.wordnet import VERB, NOUN
 
 
 
-word = Word("mouth")
+word = Word("death")
 print(word.synsets)
 define = word.definitions
 print(define)
