@@ -14,7 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m
-from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1
 import keras
 
 
@@ -251,8 +251,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_1':
-        nn_model = Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1':
+        margin = 0.5
+        at_margin = 0.1
+        nn_model = Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1(wordvocabsize=wordvocabsize,
                                                                                     posivocabsize=posivocabsize,
                                                                                     charvocabsize=charvocabsize,
                                                                                     tagvocabsize=tagvocabsize,
@@ -262,6 +264,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                                                     input_maxword_length=max_c,
                                                                                     w2v_k=w2v_k, posi2v_k=posi2v_k,
                                                                                     c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                             margin=margin, at_margin=at_margin,
                                                                                     batch_size=batch_size)
 
 
@@ -275,7 +278,8 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_DirectMAP(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train, unseen_train = ProcessData_Siamese_SentPair.\
+        CreateTriplet_DirectMAP_AL(tagDict, tagDict_dev, tagDict_test)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -287,12 +291,12 @@ def Dynamic_get_trainSet(istest):
     train_tag_n = np.asarray(pairs_train[5], dtype="int32")
 
     train_y0 = np.zeros(len(labels_train), dtype="int32")
-    train_y = np.asarray(labels_train, dtype="int32")
+    train_y = np.asarray(unseen_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_tag_p, train_tag_n]
-    inputs_train_y = [train_y0]
+    inputs_train_y = [train_y0, train_y]
 
     return inputs_train_x, inputs_train_y
 
@@ -302,7 +306,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m'
-    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_1'
+    modelname = 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1'
 
     print(modelname)
 
