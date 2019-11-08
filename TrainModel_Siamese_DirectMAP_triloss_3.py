@@ -306,6 +306,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_01_className'
+    modelname = 'Model_ONBiLSTM_directMAPbyLSTM_tripletloss_className'
 
     print(modelname)
 
