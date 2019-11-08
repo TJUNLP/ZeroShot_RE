@@ -531,8 +531,8 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
         pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
 
         # if needDEV == True and si < thd:
-        # if needDEV == True and rel in target_vob_4dev.keys():
-        if needDEV == True and (si < thd or rel in target_vob_4dev.keys()):
+        if needDEV == True and rel in target_vob_4dev.keys():
+        # if needDEV == True and (si < thd or rel in target_vob_4dev.keys()):
 
             if data_tag not in tagDict_dev.keys():
 

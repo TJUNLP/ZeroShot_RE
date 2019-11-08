@@ -280,11 +280,9 @@ def Model_ONBiLSTM_directMAP_tripletloss_Hloss_className(wordvocabsize, posivoca
                                     weights=[word_W])
 
     tag_embedding_p = tag_embedding_layer(input_tag_p)
-    tag_embedding_p = Flatten()(tag_embedding_p)
     tag_embedding_n = tag_embedding_layer(input_tag_n)
-    tag_embedding_n = Flatten()(tag_embedding_n)
 
-    tag_BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='concat')
+    tag_BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh', return_sequences=False), merge_mode='concat')
     tag_p = tag_BiLSTM_layer(tag_embedding_p)
     tag_n = tag_BiLSTM_layer(tag_embedding_n)
 
@@ -292,7 +290,7 @@ def Model_ONBiLSTM_directMAP_tripletloss_Hloss_className(wordvocabsize, posivoca
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, tag_p])
     wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_n])
-    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_n])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_p, tag_n])
 
     # margin = 1.
     # margin = 0.5
