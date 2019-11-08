@@ -11,9 +11,9 @@
 import pickle, datetime, codecs, math, gc
 import os.path
 import numpy as np
-import ProcessData_Siamese_SentPair
+import ProcessData_Siamese_DirectMap
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_Hloss_className
 import keras
 
 
@@ -36,7 +36,7 @@ def test_model3(nn_model, tag2sentDict_test):
     labels_all = []
     totel_right = 0
 
-    tagDict_prototypes = ProcessData_Siamese_SentPair.\
+    tagDict_prototypes = ProcessData_Siamese_DirectMap.\
         get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
     assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
 
@@ -56,7 +56,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
 
-                data_tag_all.append([ty])
+                data_tag_all.append(classNameDict[ty])
 
                 if tag == ty:
                     labels_all.append(1)
@@ -239,8 +239,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m':
-        nn_model = Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05-01_className':
+        margin = 0.5
+        at_margin = 0.1
+        nn_model = Model_ONBiLSTM_directMAP_tripletloss_Hloss_className(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -248,7 +250,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_sent_lenth=input_sent_lenth,
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  margin=0.5, at_margin=0.1)
 
     return nn_model
 
@@ -260,7 +263,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_DirectMAP(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_DirectMap.CreateTriplet_DirectMAP(tagDict, classNameDict, target_vob=target_vob, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -286,7 +289,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m'
+    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05'
 
     print(modelname)
 
@@ -329,7 +332,7 @@ if __name__ == "__main__":
     if not os.path.exists(datafile):
         print("Precess data....")
 
-        ProcessData_Siamese_SentPair.get_data(trainfile, testfile, rel_prototypes_file,
+        ProcessData_Siamese_DirectMap.get_data(trainfile, testfile, rel_prototypes_file,
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
@@ -342,7 +345,8 @@ if __name__ == "__main__":
         char_vob, char_id2char, char_W, c2v_k, \
         target_vob, target_id2word, \
         posi_W, posi_k, type_W, type_k, \
-        max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
+        classNameDict,\
+        max_s, max_posi, max_c, max_l = pickle.load(open(datafile, 'rb'))
 
         nn_model = SelectModel(modelname,
                                wordvocabsize=len(word_vob),

@@ -13,6 +13,7 @@ from keras.layers.merge import dot
 from keras.layers.merge import dot, Dot
 from keras_ordered_neurons import ONLSTM
 
+
 def Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
@@ -93,6 +94,205 @@ def Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize, 
     right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, tag_embedding_p])
     wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_embedding_n])
     at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_embedding_n])
+
+    # margin = 1.
+    # margin = 0.5
+    # margin = 0.1
+    # at_margin = 0.1
+    gamma = 2
+    # + at_margin * K.round(K.maximum(0.5 - K.epsilon(), 0.5 + X[1] - X[0] - margin)) * (
+            # K.square(K.relu(X[0] - 0.2)) + K.square(K.relu(0.8 - X[1])))
+    loss = Lambda(lambda X: K.exp((margin + X[0] - X[1]) / (margin + 2.)) * (K.relu(margin + X[0] - X[1]) + at_margin * K.square(X[2])))([wrong_cos, right_cos, at_cos])
+
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     input_tag_p, input_tag_n], loss)
+
+    mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    return mymodel
+
+
+def Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k,
+                    batch_size=32, margin=0.5, at_margin=0.1):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+
+
+    # BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    input_tag_p = Input(shape=(1,), dtype='int32')
+    input_tag_n = Input(shape=(1,), dtype='int32')
+
+    tag_embedding_layer = Embedding(input_dim=tagvocabsize,
+                                    output_dim=tag2v_k,
+                                    input_length=1,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[tag_W])
+
+    tag_embedding_p = tag_embedding_layer(input_tag_p)
+    tag_embedding_p = Flatten()(tag_embedding_p)
+    tag_embedding_n = tag_embedding_layer(input_tag_n)
+    tag_embedding_n = Flatten()(tag_embedding_n)
+
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
+    # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
+    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, tag_embedding_p])
+    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_embedding_n])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_embedding_n])
+
+    # margin = 1.
+    # margin = 0.5
+    # margin = 0.1
+    # at_margin = 0.1
+    gamma = 2
+
+    loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]))([wrong_cos, right_cos])
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     input_tag_p, input_tag_n], loss)
+
+    mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    return mymodel
+
+
+
+def Model_ONBiLSTM_directMAP_tripletloss_Hloss_className(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k, max_l=6,
+                    batch_size=32, margin=0.5, at_margin=0.1):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+
+
+    # BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='concat')
+
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    input_tag_p = Input(shape=(max_l,), dtype='int32')
+    input_tag_n = Input(shape=(max_l,), dtype='int32')
+
+    tag_embedding_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=max_l,
+                                    mask_zero=True,
+                                    trainable=False,
+                                    weights=[word_W])
+
+    tag_embedding_p = tag_embedding_layer(input_tag_p)
+    tag_embedding_p = Flatten()(tag_embedding_p)
+    tag_embedding_n = tag_embedding_layer(input_tag_n)
+    tag_embedding_n = Flatten()(tag_embedding_n)
+
+    tag_BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='concat')
+    tag_p = tag_BiLSTM_layer(tag_embedding_p)
+    tag_n = tag_BiLSTM_layer(tag_embedding_n)
+
+    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
+    # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
+    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, tag_p])
+    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_n])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_n])
 
     # margin = 1.
     # margin = 0.5

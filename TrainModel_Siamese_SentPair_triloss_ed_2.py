@@ -573,63 +573,59 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        print('tagDict_train key:', tagDict_train.keys())
-        print('tagDict_dev key:', tagDict_dev.keys())
-        print('tagDict_test key:', tagDict_test.keys())
+        nn_model = SelectModel(modelname,
+                               wordvocabsize=len(word_vob),
+                               tagvocabsize=len(target_vob),
+                               posivocabsize=max_posi + 1,
+                               charvocabsize=len(char_vob),
+                               word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
+                               input_sent_lenth=max_s,
+                               w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
+                               batch_size=batch_size)
 
-        # nn_model = SelectModel(modelname,
-        #                        wordvocabsize=len(word_vob),
-        #                        tagvocabsize=len(target_vob),
-        #                        posivocabsize=max_posi + 1,
-        #                        charvocabsize=len(char_vob),
-        #                        word_W=word_W, posi_W=posi_W, tag_W=type_W, char_W=char_W,
-        #                        input_sent_lenth=max_s,
-        #                        w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
-        #                        batch_size=batch_size)
-        #
-        # modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
-        #
-        # if not os.path.exists(modelfile):
-        #     print("Lstm data has extisted: " + datafile)
-        #     print("Training EE model....")
-        #     print(modelfile)
-        #     train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-        #                     resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
-        #
-        # else:
-        #     if retrain:
-        #         print("ReTraining EE model....")
-        #         train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
-        #                         resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
-        #
-        # if Test:
-        #     print("test EE model....")
-        #     print(datafile)
-        #     print(modelfile)
-        #     infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
-        #
-        # if GetVec:
-        #     nn_model.load_weights(modelfile)
-        #     resultfile = './data/s2v/' + modelname + "__" + datafname + "__" + str(inum) + '.test.txt'
-        #
-        #     print('the get_sent2vec result-----------------------')
-        #     w2file = resultfile + '.test.txt'
-        #     print(w2file)
-        #     get_sent2vec(nn_model, tagDict_test, w2file=w2file)
-        #
-        #     print('the get_sent2vec result-----------------------')
-        #     w2file = resultfile + '.dev.txt'
-        #     print(w2file)
-        #     get_sent2vec(nn_model, tagDict_dev, w2file=w2file)
-        #
-        #     print('the get_sent2vec result-----------------------')
-        #     w2file = resultfile + '.train.txt'
-        #     print(w2file)
-        #     get_sent2vec(nn_model, tagDict_train, w2file=w2file)
-        #
-        #
-        # del nn_model
-        # gc.collect()
+        modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
+
+        if not os.path.exists(modelfile):
+            print("Lstm data has extisted: " + datafile)
+            print("Training EE model....")
+            print(modelfile)
+            train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
+                            resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
+
+        else:
+            if retrain:
+                print("ReTraining EE model....")
+                train_e2e_model(nn_model, modelfile, inputs_train_x=[], inputs_train_y=[],
+                                resultdir=resultdir, npoches=100, batch_size=batch_size, retrain=False, inum=inum)
+
+        if Test:
+            print("test EE model....")
+            print(datafile)
+            print(modelfile)
+            infer_e2e_model(nn_model, modelname, modelfile, resultdir, w2file=modelfile)
+
+        if GetVec:
+            nn_model.load_weights(modelfile)
+            resultfile = './data/s2v/' + modelname + "__" + datafname + "__" + str(inum) + '.test.txt'
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.test.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_test, w2file=w2file)
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.dev.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_dev, w2file=w2file)
+
+            print('the get_sent2vec result-----------------------')
+            w2file = resultfile + '.train.txt'
+            print(w2file)
+            get_sent2vec(nn_model, tagDict_train, w2file=w2file)
+
+
+        del nn_model
+        gc.collect()
 
 
 # import tensorflow as tf

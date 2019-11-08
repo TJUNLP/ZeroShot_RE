@@ -569,34 +569,14 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
 
 
 
-def get_classDicts(max_l, source_vob, sourc_idex_word, word_w2v, target_vob, char_vob, max_c,
-                  istest=False, needDEV=False, target_vob_4dev=None, prototypes=None):
+def get_classDicts(max_l, source_vob, target_vob):
 
-    tagDict = {}
-    tagDict_dev = {}
-
-    for si, line in enumerate(target_vob.keys()):
-
-        max_l = 0
-        rel = line
-        rel_words = rel.split(' ')
-        for word in rel_words:
-            if not source_vob.__contains__(word):
-                count = len(source_vob)+1
-                source_vob[word] = count
-                sourc_idex_word[count] = word
-
-        max_l = max(max_l, len(rel_words))
-
+    classDict = {}
 
     for si, line in enumerate(target_vob.keys()):
 
         rel = line
         sent = rel.split(' ')
-
-        data_tag = target_vob[rel]
-
-        # word_vob['____'] = len(word_vob)+1
 
         data_s = []
         for ww in sent[0:min(len(sent), max_l)]:
@@ -605,57 +585,10 @@ def get_classDicts(max_l, source_vob, sourc_idex_word, word_w2v, target_vob, cha
             data_s.append(source_vob[ww])
         data_s = data_s + [0] * max(0, max_l - len(sent))
 
-        char_s = []
-        for wi in range(0, min(len(sent), max_s)):
-            word = sent[wi]
-            data_c = []
-            for chr in range(0, min(word.__len__(), max_c)):
-                if not char_vob.__contains__(word[chr]):
-                    data_c.append(char_vob["**UNK**"])
-                else:
-                    data_c.append(char_vob[word[chr]])
-            data_c = data_c + [0] * max(max_c - word.__len__(), 0)
-            char_s.append(data_c)
-        char_s = char_s + [[0] * max_c] * max(0, max_s - len(char_s))
-
-        pairs = [data_s, data_e1_posi, data_e2_posi, char_s]
-
-        # if needDEV == True and si < thd:
-        # if needDEV == True and rel in target_vob_4dev.keys():
-        if needDEV == True and (si < thd or rel in target_vob_4dev.keys()):
-
-            if data_tag not in tagDict_dev.keys():
-
-                tagDict_dev[data_tag] = []
-
-                # if prototypes != None and data_tag in prototypes.keys():
-                #     tagDict_dev[data_tag].append(prototypes[data_tag][0])
-
-            tagDict_dev[data_tag].append(pairs)
+        classDict[target_vob[rel]] = data_s
 
 
-        # elif istest == True:
-        #
-        #     if data_tag not in tagDict.keys():
-        #         if prototypes != None:
-        #             tagDict[data_tag] = prototypes[data_tag]
-        #         else:
-        #             tagDict[data_tag] = []
-        #     if len(tagDict[data_tag]) < 400:
-        #         tagDict[data_tag].append(pairs)
-
-        else:
-
-            if data_tag not in tagDict.keys():
-                tagDict[data_tag] = []
-                # if prototypes != None and data_tag in prototypes.keys():
-                #     tagDict[data_tag].append(prototypes[data_tag][0])
-
-            tagDict[data_tag].append(pairs)
-
-    f.close()
-
-    return tagDict, tagDict_dev
+    return classDict
 
 
 def CreatePairs(tagDict_train, istest=False):
@@ -886,7 +819,7 @@ def CreateTriplet_sample(tagDict_train, target_vob=None, sample_n=2000):
     return pairs, labels
 
 
-def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
+def CreateTriplet_DirectMAP(tagDict_train, classNameDict, target_vob=None, istest=False):
 
     labels = []
     data_tag_all_p = []
@@ -919,7 +852,7 @@ def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
-            data_tag_all_p.append([tag])
+            data_tag_all_p.append(classNameDict[tag])
 
             if target_vob != None:
                 keylist = list(target_vob.values())
@@ -929,7 +862,7 @@ def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
             if keylist[ran1] == tag:
                 ran1 = (ran1 + 1) % len(keylist)
 
-            data_tag_all_n.append([keylist[ran1]])
+            data_tag_all_n.append(classNameDict[keylist[ran1]])
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_tag_all_p, data_tag_all_n]
@@ -1188,22 +1121,12 @@ def CreateTriplet_withMSE(tagDict_train):
     return pairs, labels
 
 
-def get_split_train_dev(target_vob_train):
+def get_split_train_dev(target_id2word):
 
     rel4dev = {}
-    relList = list(target_vob_train.keys())
-    i = 0
-    # while i * 10 + 9 < len(relList):
-    #     nd = random.randint(0, 9)
-    #     k = relList[i * 10 + nd]
-    #     rel4dev[k] = target_vob_train[k]
-    #     i += 1
-    while i * 16 + 15 < len(relList):
-        nd = random.randint(0, 15)
-        k = relList[i * 16 + nd]
-        rel4dev[k] = target_vob_train[k]
-        i += 1
 
+    for i in [7, 14, 25, 39, 43, 55, 60, 72, 83]:
+        rel4dev[target_id2word[i]] = i
     return rel4dev
 
 
@@ -1251,6 +1174,10 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
     type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=t2v_k)
     print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
+    classNameDict = get_classDicts(max_l, word_vob, target_vob)
+
+
+
 
     max_posi = 20
     posi_k, posi_W = load_vec_onehot(k=max_posi + 1)
@@ -1268,7 +1195,7 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
     assert tagDict_dev == {}
     print('tagDict_test len', len(tagDict_test))
 
-    target_vob_4dev = get_split_train_dev(target_vob_train)
+    target_vob_4dev = get_split_train_dev(target_id2word)
     print('target_vob len', len(target_vob), 'target_vob_4dev len', len(target_vob_4dev))
 
     tagDict_train, tagDict_dev = get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, max_c,
@@ -1288,7 +1215,8 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
                  char_vob, char_id2char, char_W, c2v_k,
                  target_vob, target_id2word,
                  posi_W, posi_k, type_W, type_k,
-                max_s, max_posi, max_c], out, 0)
+                 classNameDict,
+                max_s, max_posi, max_c, max_l], out, 0)
     out.close()
 
 
@@ -1297,4 +1225,18 @@ if __name__=="__main__":
 
     alpha = 10
     maxlen = 50
+
+    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
+    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
+
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train, max_l = get_word_index([trainfile, testfile, rel_prototypes_file])
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
+    if max_s > maxlen:
+        max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
+    print('max_l', max_l)
 
