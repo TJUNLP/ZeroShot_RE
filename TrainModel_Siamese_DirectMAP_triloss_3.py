@@ -14,6 +14,7 @@ import numpy as np
 import ProcessData_Siamese_DirectMap
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_Hloss_className
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyLSTM_tripletloss_className
 import keras
 
 
@@ -252,6 +253,21 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size,
                                                   margin=margin, at_margin=at_margin)
+
+    elif modelname is 'Model_ONBiLSTM_directMAPbyLSTM_tripletloss_className':
+        margin = 0.5
+        at_margin = 0.1
+        nn_model = Model_ONBiLSTM_directMAP_tripletloss_Hloss_className(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size,
+                                                  margin=margin, at_margin=at_margin)
+
 
     return nn_model
 
