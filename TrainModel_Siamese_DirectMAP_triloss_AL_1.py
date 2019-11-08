@@ -251,8 +251,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    if modelname is 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1':
-        margin = 0.5
+    if modelname is 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_09_1':
+        margin = 0.9
         at_margin = 0.1
         nn_model = Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1(wordvocabsize=wordvocabsize,
                                                                                     posivocabsize=posivocabsize,
@@ -306,7 +306,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m'
-    modelname = 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1'
+    modelname = 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_09_1'
 
     print(modelname)
 
