@@ -285,7 +285,7 @@ def Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize, posivocabsize, char
     tag_embedding_n = tag_embedding_layer(input_tag_n)
     tag_embedding_n = Flatten()(tag_embedding_n)
 
-    mlp1_layer = Dense(200, activation='tanh')
+    mlp1_layer = Dense(100, activation='tanh')
     mlp2_layer = Dense(200, activation='tanh')
     dp_layer = Dropout(0.5)
 
@@ -300,7 +300,7 @@ def Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize, posivocabsize, char
     n_mlp2 = dp_layer(n_mlp2)
 
 
-    Flip = flipGradientTF.GradientReversal(hp_lambda=1.0)
+    Flip = flipGradientTF.GradientReversal(hp_lambda=0.2)
     unseen_output_layer = Dense(2, activation='softmax', name='ISunseen_Classifier')
     dann_in = Flip(n_mlp2)
     unseen_output = unseen_output_layer(dann_in)
@@ -320,7 +320,7 @@ def Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize, posivocabsize, char
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'ISunseen_Classifier': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 1., 'ISunseen_Classifier': 0.1},
+                    loss_weights={'TripletLoss': 1., 'ISunseen_Classifier': 0.01},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'ISunseen_Classifier': ['acc']})
     return mymodel
