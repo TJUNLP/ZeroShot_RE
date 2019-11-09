@@ -15,6 +15,7 @@ import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyMLP_tripletloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_AL_tripletloss_1
 import keras
 
 
@@ -269,6 +270,21 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                              margin=margin, at_margin=at_margin,
                                                                                     batch_size=batch_size)
 
+    if modelname is 'Model_ONBiLSTM_directMAP_AL_tripletloss_05_1':
+        margin = 0.5
+        at_margin = 0.1
+        nn_model = Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1(wordvocabsize=wordvocabsize,
+                                                                                    posivocabsize=posivocabsize,
+                                                                                    charvocabsize=charvocabsize,
+                                                                                    tagvocabsize=tagvocabsize,
+                                                                                    word_W=word_W, posi_W=posi_W,
+                                                                                    char_W=char_W, tag_W=tag_W,
+                                                                                    input_sent_lenth=input_sent_lenth,
+                                                                                    input_maxword_length=max_c,
+                                                                                    w2v_k=w2v_k, posi2v_k=posi2v_k,
+                                                                                    c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                             margin=margin, at_margin=at_margin,
+                                                                                    batch_size=batch_size)
 
     return nn_model
 
@@ -298,8 +314,8 @@ def Dynamic_get_trainSet(istest):
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_tag_p, train_tag_n]
-    # inputs_train_y = [train_y0, train_y]
-    inputs_train_y = [train_y0]
+    inputs_train_y = [train_y0, train_y]
+    # inputs_train_y = [train_y0]
 
     return inputs_train_x, inputs_train_y
 
@@ -310,6 +326,7 @@ if __name__ == "__main__":
 
     modelname = 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_09_1'
     modelname = 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1'
+    modelname = 'Model_ONBiLSTM_directMAP_AL_tripletloss_05_1'
 
     print(modelname)
 
