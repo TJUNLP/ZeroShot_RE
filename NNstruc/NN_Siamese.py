@@ -308,9 +308,9 @@ def Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize, posivocabsize, char
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
-    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, tag_embedding_p])
-    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_embedding_n])
-    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_embedding_n])
+    right_cos = Dot(axes=-1, normalize=True, name='right_cos')([BiLSTM_x1, p_mlp2])
+    wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, n_mlp2])
+    at_cos = Dot(axes=-1, normalize=True, name='at_cos')([p_mlp2, n_mlp2])
 
 
     loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]), name='TripletLoss')([wrong_cos, right_cos])
