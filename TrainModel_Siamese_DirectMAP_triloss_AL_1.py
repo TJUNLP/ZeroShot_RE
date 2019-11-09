@@ -298,7 +298,8 @@ def Dynamic_get_trainSet(istest):
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
                       train_tag_p, train_tag_n]
-    inputs_train_y = [train_y0, train_y]
+    # inputs_train_y = [train_y0, train_y]
+    inputs_train_y = [train_y0]
 
     return inputs_train_x, inputs_train_y
 
