@@ -13,8 +13,8 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAPbyMLP_tripletloss_1
 import keras
 
 
@@ -240,8 +240,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m':
-        nn_model = Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1':
+        margin = 0.9
+        at_margin = 0.1
+        nn_model = Model_ONBiLSTM_directMAPbyMLP_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -249,7 +251,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_sent_lenth=input_sent_lenth,
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size, margin=margin, at_margin=at_margin)
 
     if modelname is 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_09_1':
         margin = 0.9
@@ -305,8 +307,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m'
     modelname = 'Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_09_1'
+    modelname = 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1'
 
     print(modelname)
 
