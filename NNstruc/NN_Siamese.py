@@ -210,6 +210,104 @@ def Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize, posivocabsize, charvoc
     return mymodel
 
 
+def Model_ONBiLSTM_directMAPbyLSTM_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+                     word_W, posi_W, char_W, tag_W,
+                     input_sent_lenth, input_maxword_length,
+                     w2v_k, posi2v_k, c2v_k, tag2v_k,
+                    batch_size=32, margin=0.5, at_margin=0.1):
+
+    word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
+                                    output_dim=w2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=True,
+                                    trainable=True,
+                                    weights=[word_W])
+    word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
+    word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
+
+
+    char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
+
+    char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
+                               output_dim=c2v_k,
+                               batch_input_shape=(batch_size, input_sent_lenth, input_maxword_length),
+                               mask_zero=False,
+                               trainable=True,
+                               weights=[char_W]))
+
+    char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
+
+
+    char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
+
+    char_embedding_sent_x1 = char_cnn_sent_layer(char_embedding_sent_x1)
+    char_embedding_sent_x1 = TimeDistributed(GlobalMaxPooling1D())(char_embedding_sent_x1)
+    char_embedding_sent_x1 = Dropout(0.25)(char_embedding_sent_x1)
+
+    input_e1_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    input_e2_posi_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
+
+    embedding_posi_layer = Embedding(input_dim=posivocabsize,
+                                    output_dim=posi2v_k,
+                                    input_length=input_sent_lenth,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[posi_W])
+
+    embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
+    embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
+
+
+    # BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+
+
+    embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
+                                embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
+    BiLSTM_x1 = BiLSTM_layer(embedding_x1)
+    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+
+    input_tag_p = Input(shape=(1,), dtype='int32')
+    input_tag_n = Input(shape=(1,), dtype='int32')
+
+    tag_embedding_layer = Embedding(input_dim=tagvocabsize,
+                                    output_dim=tag2v_k,
+                                    input_length=1,
+                                    mask_zero=False,
+                                    trainable=False,
+                                    weights=[tag_W])
+
+    tag_embedding_p = tag_embedding_layer(input_tag_p)
+    tag_embedding_n = tag_embedding_layer(input_tag_n)
+
+
+    p_pinjie = Lambda(lambda x: K.concatenate([x[0], x[1]], axis=1))([tag_embedding_p, BiLSTM_x1, tag_embedding_p])
+    # pinjie_p = Lambda(lambda x: K.concatenate([x[0], x[1]], axis=1))([BiLSTM_x1, tag_embedding_p])
+    n_pinjie = Lambda(lambda x: K.concatenate([x[0], x[1]], axis=1))([tag_embedding_n, BiLSTM_x1, tag_embedding_n])
+    # pinjie_n = Lambda(lambda x: K.concatenate([x[0], x[1]], axis=1))([BiLSTM_x1, tag_embedding_n])
+
+    tag_BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh', return_sequences=False), merge_mode='concat')
+    tag_p = tag_BiLSTM_layer(p_pinjie)
+    tag_p = Dropout(0.3)(tag_p)
+    tag_n = tag_BiLSTM_layer(n_pinjie)
+    tag_n = Dropout(0.3)(tag_n)
+    cos_layer = Dense(1, activation='sigmoid', name='right_cos')
+    right_cos = cos_layer(tag_p)
+    wrong_cos = cos_layer(tag_n)
+
+
+    loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]))([wrong_cos, right_cos])
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     input_tag_p, input_tag_n], loss)
+
+    mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
+
+    return mymodel
+
+
 
 def Model_ONBiLSTM_directMAPbyMLP_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
@@ -716,7 +814,8 @@ def Model_ONBiLSTM_directMAPbyLSTM_tripletloss_className(wordvocabsize, posivoca
     tag_p = tag_BiLSTM_layer(p_pinjie)
     tag_p = Dropout(0.3)(tag_p)
     tag_n = tag_BiLSTM_layer(n_pinjie)
-    tag_p = Dropout(0.3)(tag_p)
+    #!!!!!!!!!!error before
+    tag_n = Dropout(0.3)(tag_n)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
