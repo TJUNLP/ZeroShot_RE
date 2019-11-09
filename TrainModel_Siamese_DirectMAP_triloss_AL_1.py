@@ -297,7 +297,7 @@ def Dynamic_get_trainSet(istest):
         tagDict = tagDict_train
 
     pairs_train, labels_train, unseen_train = ProcessData_Siamese_SentPair.\
-        CreateTriplet_DirectMAP_AL(tagDict, tagDict_dev, tagDict_test)
+        CreateTriplet_DirectMAP_AL(tagDict, tagDict_train, tagDict_dev, tagDict_test)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 

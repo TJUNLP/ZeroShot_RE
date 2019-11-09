@@ -838,7 +838,7 @@ def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
     return pairs, labels
 
 
-def CreateTriplet_DirectMAP_AL(tagDict_train, tagDict_dev, tagDict_test):
+def CreateTriplet_DirectMAP_AL(tagDict, tagDict_train, tagDict_dev, tagDict_test):
 
     labels = []
     unseen = []
@@ -850,8 +850,8 @@ def CreateTriplet_DirectMAP_AL(tagDict_train, tagDict_dev, tagDict_test):
     data_e2_posi_all_0 = []
     char_s_all_0 = []
 
-    for tag in tagDict_train.keys():
-        sents = tagDict_train[tag]
+    for tag in tagDict.keys():
+        sents = tagDict[tag]
 
         if len(sents) < 2:
             continue
