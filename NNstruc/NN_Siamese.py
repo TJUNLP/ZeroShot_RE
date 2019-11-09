@@ -262,7 +262,7 @@ def Model_ONBiLSTM_directMAPbyLSTM_tripletloss_1(wordvocabsize, posivocabsize, c
 
 
     # BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
-    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2, return_sequences=True), merge_mode='ave')
 
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
