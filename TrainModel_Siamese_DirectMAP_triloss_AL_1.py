@@ -273,7 +273,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     if modelname is 'Model_ONBiLSTM_directMAP_AL_tripletloss_05_1':
         margin = 0.5
         at_margin = 0.1
-        nn_model = Model_ONBiLSTM_directMAPbyMLP_AL_tripletloss_1(wordvocabsize=wordvocabsize,
+        nn_model = Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize=wordvocabsize,
                                                                                     posivocabsize=posivocabsize,
                                                                                     charvocabsize=charvocabsize,
                                                                                     tagvocabsize=tagvocabsize,
