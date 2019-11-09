@@ -288,20 +288,21 @@ def Model_ONBiLSTM_directMAPbyMLP_tripletloss_1(wordvocabsize, posivocabsize, ch
 
     mlp1_layer = Dense(200, activation='tanh')
     mlp2_layer = Dense(100, activation='tanh')
+    cos_layer = Dense(1, activation='sigmoid', name='right_cos')
 
     p_input = concatenate([BiLSTM_x1, tag_embedding_p], axis=-1)
     p_mlp1 = mlp1_layer(p_input)
     p_mlp1 = Dropout(0.5)(p_mlp1)
     p_mlp2 = mlp2_layer(p_mlp1)
     p_mlp2 = Dropout(0.5)(p_mlp2)
-    right_cos = Dense(1, activation='sigmoid', name='right_cos')(p_mlp2)
+    right_cos = cos_layer(p_mlp2)
 
     n_input = concatenate([BiLSTM_x1, tag_embedding_n], axis=-1)
     n_mlp1 = mlp1_layer(n_input)
     n_mlp1 = Dropout(0.5)(n_mlp1)
     n_mlp2 = mlp2_layer(n_mlp1)
     n_mlp2 = Dropout(0.5)(n_mlp2)
-    wrong_cos = Dense(1, activation='sigmoid', name='wrong_cos')(n_mlp2)
+    wrong_cos = cos_layer(n_mlp2)
 
     # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
     # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
