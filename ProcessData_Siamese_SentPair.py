@@ -118,6 +118,53 @@ def get_relembed_sim_rank(type_W):
     return k, W
 
 
+def CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train):
+
+    k = len(type_W)
+    W = np.zeros(shape=(k, k), dtype='float32')
+
+    RankDict = {}
+    for i in target_vob_train.values():
+
+        i_j = []
+        testlist = list(set(target_vob.values)-set(target_vob_train.values()))
+        assert len(testlist) == 24
+        for j in testlist:
+
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            W[i][j] = cos
+
+        maxposi = np.unravel_index(np.argmax(W), W.shape)
+        # maxposi = np.argwhere(W.max() == W)
+
+        # ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+
+        # print('------------', target_id2word[i])
+        # for si, s in enumerate(ijlist):
+        #     if si > 10:
+        #         break
+        #     print(target_id2word[s[0]], s[1])
+
+        # ijlist = dict(ijlist)
+        # ijlist = list(ijlist.keys())
+        # RankDict[i] = ijlist
+
+        # RankDict[i] = list(i_j.values())
+
+        # rank = {}
+        # for p, tup in enumerate(ijlist):
+        #     rank[tup[0]] = p+1
+        # RankDict[i] = rank
+
+        # print(RankDict[i])
+
+    return k, W
+
+
 def load_vec_ClassSimRank(fname, vocab, k=120):
 
     W = np.zeros(shape=(k, k))
@@ -891,7 +938,17 @@ def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
 
             data_tag_all_p.append([tag])
 
-            data_tag_all_n.append([keylist[ran1]])
+            if target_vob == None:
+
+                data_tag_all_n.append([keylist[ran1]])
+            else:
+                ran1 = random.randrange(0, len(target_vob))
+                if keylist[ran1] == tag:
+                    ran1 = (ran1 + 1) % len(keylist)
+
+                data_tag_all_n.append([keylist[ran1]])
+
+
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
@@ -1323,13 +1380,22 @@ if __name__=="__main__":
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-    print("target vocab size: " + str(len(target_vob)))
-    print("target_id2word size: " + str(len(target_id2word)))
-    if max_s > maxlen:
-        max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
+    # word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+    # print("source vocab size: ", str(len(word_vob)))
+    # print("word_id2word size: ", str(len(word_id2word)))
+    # print("target vocab size: " + str(len(target_vob)))
+    # print("target_id2word size: " + str(len(target_id2word)))
+    # if max_s > maxlen:
+    #     max_s = maxlen
+    # print('max soure sent lenth is ' + str(max_s))
+    #
+    # neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
 
-    neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
+
+    W = np.asarray([[10,50,30],
+                    [60,20,40]])
+
+    maxposi = np.unravel_index(np.argmax(W), W.shape)
+    print(maxposi)
+    maxposi = np.argwhere(W.max() == W)
+    print(maxposi)
