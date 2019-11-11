@@ -268,7 +268,7 @@ def Dynamic_get_trainSet(istest):
         tagDict = tagDict_train
 
     pairs_train, labels_train0, labels_train1 = ProcessData_Siamese_SentPair.\
-        CreateTriplet_DirectClassify(tagDict, target_vob=target_vob, istest=istest)
+        CreateTriplet_DirectClassify(tagDict, target_vob=None, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train0))
 
 

@@ -878,10 +878,7 @@ def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
 
-            if target_vob != None:
-                keylist = list(target_vob.values())
-            else:
-                keylist = list(tagDict_train.keys())
+            keylist = list(tagDict_train.keys())
             ran1 = random.randrange(0, len(keylist))
             if keylist[ran1] == tag:
                 ran1 = (ran1 + 1) % len(keylist)
