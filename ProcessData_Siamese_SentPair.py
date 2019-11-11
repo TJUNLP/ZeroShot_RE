@@ -838,6 +838,71 @@ def CreateTriplet_DirectMAP(tagDict_train, target_vob=None, istest=False):
     return pairs, labels
 
 
+def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
+
+    labels0 = []
+    labels1 = []
+    data_tag_all_p = []
+    data_tag_all_n = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc = random.randrange(1, len(sents))
+        i = 0
+        while i < len(sents):
+            p0 = i
+            p1 = (inc + i) % len(sents)
+
+            i += 1
+
+            labels0.append([1, 0])
+            labels1.append([0, 1])
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            if target_vob != None:
+                keylist = list(target_vob.values())
+            else:
+                keylist = list(tagDict_train.keys())
+            ran1 = random.randrange(0, len(keylist))
+            if keylist[ran1] == tag:
+                ran1 = (ran1 + 1) % len(keylist)
+            ran2 = random.randrange(0, len(tagDict_train[keylist[ran1]]))
+            data_s, data_e1_posi, data_e2_posi, char_s = tagDict_train[keylist[ran1]][ran2]
+            data_s_all_1.append(data_s)
+            data_e1_posi_all_1.append(data_e1_posi)
+            data_e2_posi_all_1.append(data_e2_posi)
+            char_s_all_1.append(char_s)
+
+            data_tag_all_p.append([tag])
+
+            data_tag_all_n.append([keylist[ran1]])
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_tag_all_p, data_tag_all_n]
+
+    return pairs, labels0, labels1
+
+
 def CreateTriplet_DirectMAP_AL(tagDict, tagDict_train, tagDict_dev, tagDict_test):
 
     labels = []
