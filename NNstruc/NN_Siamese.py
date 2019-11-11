@@ -320,7 +320,7 @@ def Model_ONBiLSTM_directMAP_AL_tripletloss_1(wordvocabsize, posivocabsize, char
     # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss={'TripletLoss': lambda y_true, y_pred: y_pred, 'ISunseen_Classifier': 'categorical_crossentropy'},
-                    loss_weights={'TripletLoss': 1., 'ISunseen_Classifier': 0.001},
+                    loss_weights={'TripletLoss': 1., 'ISunseen_Classifier': 1.},
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics={'TripletLoss': [], 'ISunseen_Classifier': ['acc']})
     return mymodel
