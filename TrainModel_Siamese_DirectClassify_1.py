@@ -72,11 +72,15 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
-
+    train_x2_sent = train_x1_sent
+    train_x2_e1_posi = train_x1_e1_posi
+    train_x2_e2_posi = train_x1_e2_posi
+    train_x2_sent_cahr = train_x1_sent_cahr
     train_tag_p = np.asarray(pairs[4], dtype="int32")
     train_tag_n = train_tag_p
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
                       train_tag_p, train_tag_n]
 
     # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
