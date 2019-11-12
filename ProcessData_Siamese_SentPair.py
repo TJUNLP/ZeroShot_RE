@@ -71,51 +71,45 @@ def load_vec_KGrepresentation(fname, vocab, k):
     return k, W
 
 
-def get_relembed_sim_rank(type_W):
+def get_rel_sim_rank(type_W):
 
-    k = len(type_W)
-    W = np.zeros(shape=(k, k))
     RankDict = {}
     for i in range(0, len(type_W)):
 
-        i_j = []
+        i_j = {}
+        mw = 0
+        maxs = 0
         for j in range(0, len(type_W)):
-
+            # if i == j:
+            #     continue
             vector_a = np.mat(type_W[i])
             vector_b = np.mat(type_W[j])
             num = float(vector_a * vector_b.T)
             denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
             cos = num / denom
-            i_j.append(cos)
+            i_j[j] = cos
+            if cos > maxs:
+                maxs = cos
+                mw = j
 
-        try:
-            coefs = np.asarray(i_j, dtype='float32')
-            W[i] = coefs
-        except BaseException:
-            print('the rel is not finded ...', i)
+        # print(i, mw, maxs)
 
-        # ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+        ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
 
         # print('------------', target_id2word[i])
         # for si, s in enumerate(ijlist):
         #     if si > 10:
         #         break
-        #     print(target_id2word[s[0]], s[1])
+        #     print(i, si, s[0], target_id2word[s[0]], s[1])
 
-        # ijlist = dict(ijlist)
-        # ijlist = list(ijlist.keys())
-        # RankDict[i] = ijlist
+        ijdict = dict(ijlist)
+        # print(ijdict)
+        RankDict[i] = list(ijdict.keys())
+        assert i == RankDict[i][0]
 
-        # RankDict[i] = list(i_j.values())
+    # print(RankDict)
 
-        # rank = {}
-        # for p, tup in enumerate(ijlist):
-        #     rank[tup[0]] = p+1
-        # RankDict[i] = rank
-
-        # print(RankDict[i])
-
-    return k, W
+    return RankDict
 
 
 def CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train):
@@ -127,7 +121,7 @@ def CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train):
     for i in target_vob_train.values():
 
         i_j = []
-        testlist = list(set(target_vob.values)-set(target_vob_train.values()))
+        testlist = list(set(target_vob.values())-set(target_vob_train.values()))
         assert len(testlist) == 24
         for j in testlist:
 
@@ -138,8 +132,21 @@ def CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train):
             cos = num / denom
             W[i][j] = cos
 
+    while W.max() > 0:
+
         maxposi = np.unravel_index(np.argmax(W), W.shape)
         # maxposi = np.argwhere(W.max() == W)
+        RankDict[maxposi[1]] = maxposi[0]
+
+        print('888', maxposi[1], RankDict[maxposi[1]], W.max())
+
+        # W[maxposi[0], :] *= 0
+        W[:, maxposi[1]] *= 0
+
+    assert len(RankDict) == 24
+    print(RankDict)
+
+
 
         # ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
 
@@ -958,6 +965,59 @@ def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
     return pairs, labels0, labels1
 
 
+def CreateTriplet_RankClassify(tagDict_train, relRankDict, istest=False):
+
+
+    data_tag_all = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
+
+
+    for tag in relRankDict.keys():
+
+        ranklist = relRankDict[tag]
+
+        for i, itag in enumerate(ranklist):
+            if itag in tagDict_train.keys():
+                sents1 = tagDict_train[itag]
+
+                for j, jtag in enumerate(ranklist[(i+1):]):
+                    if jtag in tagDict_train.keys():
+                        sents2 = tagDict_train[jtag]
+
+                        ran1 = random.randrange(0, len(sents1))
+                        data_s, data_e1_posi, data_e2_posi, char_s = sents1[ran1]
+                        data_s_all_0.append(data_s)
+                        data_e1_posi_all_0.append(data_e1_posi)
+                        data_e2_posi_all_0.append(data_e2_posi)
+                        char_s_all_0.append(char_s)
+
+                        ran2 = random.randrange(0, len(sents2))
+                        data_s, data_e1_posi, data_e2_posi, char_s = sents2[ran2]
+                        data_s_all_1.append(data_s)
+                        data_e1_posi_all_1.append(data_e1_posi)
+                        data_e2_posi_all_1.append(data_e2_posi)
+                        char_s_all_1.append(char_s)
+
+                        data_tag_all.append([tag])
+
+
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_tag_all]
+
+    return pairs
+
+
 def CreateTriplet_DirectMAP_AL(tagDict, tagDict_train, tagDict_dev, tagDict_test):
 
     labels = []
@@ -1381,22 +1441,31 @@ if __name__=="__main__":
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
-    # word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
-    # print("source vocab size: ", str(len(word_vob)))
-    # print("word_id2word size: ", str(len(word_id2word)))
-    # print("target vocab size: " + str(len(target_vob)))
-    # print("target_id2word size: " + str(len(target_id2word)))
-    # if max_s > maxlen:
-    #     max_s = maxlen
-    # print('max soure sent lenth is ' + str(max_s))
-    #
-    # neg_testfile = './data/WikiReading/WikiReading.neg_instances.txt.json.2.txt'
+    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+    print("source vocab size: ", str(len(word_vob)))
+    print("word_id2word size: ", str(len(word_id2word)))
+    print("target vocab size: " + str(len(target_vob)))
+    print("target_id2word size: " + str(len(target_id2word)))
+    if max_s > maxlen:
+        max_s = maxlen
+    print('max soure sent lenth is ' + str(max_s))
 
 
-    W = np.asarray([[10,50,30],
-                    [60,20,40]])
+    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+
+    # CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train)
+    get_rel_sim_rank(type_W)
+
+    RankDict = {}
+    W = np.asarray([[10, 50, 30],
+                    [60, 20, 40],
+                    [30, 20, 90]])
 
     maxposi = np.unravel_index(np.argmax(W), W.shape)
-    print(maxposi)
-    maxposi = np.argwhere(W.max() == W)
-    print(maxposi)
+    print(maxposi, np.max(W), W.max())
+    RankDict[maxposi[1]] = maxposi[0]
+    print(RankDict)
+    W[maxposi[0], :] *= 0
+    W[:, maxposi[1]] *= 0
+    print(W, np.max(W), W.max())
