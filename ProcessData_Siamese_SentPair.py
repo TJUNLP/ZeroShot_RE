@@ -965,7 +965,7 @@ def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
     return pairs, labels0, labels1
 
 
-def CreateTriplet_RankClassify(tagDict_train, relRankDict, istest=False):
+def CreateTriplet_RankClassify(tagDict, relRankDict, istest=False):
 
 
     data_tag_all = []
@@ -980,35 +980,63 @@ def CreateTriplet_RankClassify(tagDict_train, relRankDict, istest=False):
     data_e2_posi_all_1 = []
     char_s_all_1 = []
 
+    if istest == False:
+        for tag in relRankDict.keys():
 
-    for tag in relRankDict.keys():
+            ranklist = relRankDict[tag]
 
-        ranklist = relRankDict[tag]
+            for i, itag in enumerate(ranklist):
+                if itag in tagDict.keys():
+                    sents1 = tagDict[itag]
 
-        for i, itag in enumerate(ranklist):
-            if itag in tagDict_train.keys():
-                sents1 = tagDict_train[itag]
+                    for j, jtag in enumerate(ranklist[(i+1):]):
+                        if jtag in tagDict.keys():
+                            sents2 = tagDict[jtag]
 
-                for j, jtag in enumerate(ranklist[(i+1):]):
-                    if jtag in tagDict_train.keys():
-                        sents2 = tagDict_train[jtag]
+                            ran1 = random.randrange(0, len(sents1))
+                            data_s, data_e1_posi, data_e2_posi, char_s = sents1[ran1]
+                            data_s_all_0.append(data_s)
+                            data_e1_posi_all_0.append(data_e1_posi)
+                            data_e2_posi_all_0.append(data_e2_posi)
+                            char_s_all_0.append(char_s)
 
-                        ran1 = random.randrange(0, len(sents1))
-                        data_s, data_e1_posi, data_e2_posi, char_s = sents1[ran1]
-                        data_s_all_0.append(data_s)
-                        data_e1_posi_all_0.append(data_e1_posi)
-                        data_e2_posi_all_0.append(data_e2_posi)
-                        char_s_all_0.append(char_s)
+                            ran2 = random.randrange(0, len(sents2))
+                            data_s, data_e1_posi, data_e2_posi, char_s = sents2[ran2]
+                            data_s_all_1.append(data_s)
+                            data_e1_posi_all_1.append(data_e1_posi)
+                            data_e2_posi_all_1.append(data_e2_posi)
+                            char_s_all_1.append(char_s)
 
-                        ran2 = random.randrange(0, len(sents2))
-                        data_s, data_e1_posi, data_e2_posi, char_s = sents2[ran2]
-                        data_s_all_1.append(data_s)
-                        data_e1_posi_all_1.append(data_e1_posi)
-                        data_e2_posi_all_1.append(data_e2_posi)
-                        char_s_all_1.append(char_s)
+                            data_tag_all.append([tag])
 
-                        data_tag_all.append([tag])
+    else:
+        for tag in tagDict.keys():
 
+            sents1 = tagDict[tag]
+
+            for sent1 in sents1:
+
+                for j, jtag in enumerate(tagDict.keys()):
+
+                    if jtag == tag:
+                        continue
+
+                    sents2 = tagDict[jtag]
+
+                    data_s, data_e1_posi, data_e2_posi, char_s = sent1
+                    data_s_all_0.append(data_s)
+                    data_e1_posi_all_0.append(data_e1_posi)
+                    data_e2_posi_all_0.append(data_e2_posi)
+                    char_s_all_0.append(char_s)
+
+                    ran2 = random.randrange(0, len(sents2))
+                    data_s, data_e1_posi, data_e2_posi, char_s = sents2[ran2]
+                    data_s_all_1.append(data_s)
+                    data_e1_posi_all_1.append(data_e1_posi)
+                    data_e2_posi_all_1.append(data_e2_posi)
+                    char_s_all_1.append(char_s)
+
+                    data_tag_all.append([tag])
 
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
