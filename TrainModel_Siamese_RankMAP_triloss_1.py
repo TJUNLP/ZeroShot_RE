@@ -279,15 +279,20 @@ def Dynamic_get_trainSet(istest):
     train_x1_e1_posi = np.asarray(pairs_train[1], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs_train[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs_train[3], dtype="int32")
-    train_tag_p = np.asarray(pairs_train[4], dtype="int32")
-    train_tag_n = np.asarray(pairs_train[5], dtype="int32")
+    train_x2_sent = np.asarray(pairs_train[4], dtype="int32")
+    train_x2_e1_posi = np.asarray(pairs_train[5], dtype="int32")
+    train_x2_e2_posi = np.asarray(pairs_train[6], dtype="int32")
+    train_x2_sent_cahr = np.asarray(pairs_train[7], dtype="int32")
+    train_tag = np.asarray(pairs_train[8], dtype="int32")
+
 
     train_y0 = np.zeros(len(pairs_train[0]), dtype="int32")
     # train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_tag_p, train_tag_n]
+                      train_x2_sent, train_x2_e1_posi, train_x2_e2_posi, train_x2_sent_cahr,
+                      train_tag]
     inputs_train_y = [train_y0]
 
     return inputs_train_x, inputs_train_y
