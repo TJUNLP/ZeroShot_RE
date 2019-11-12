@@ -317,6 +317,7 @@ def Model_ONBiLSTM_RankMAP_tripletloss_1(wordvocabsize, posivocabsize, charvocab
 
     tloss = Lambda(lambda x: K.relu(margin + x[0] - x[1]))([wrong_cos, right_cos])
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
+                     word_input_sent_x2, input_e1_posi_x2, input_e2_posi_x2, char_input_sent_x2,
                      input_tag], tloss)
 
     mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
