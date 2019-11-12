@@ -967,7 +967,7 @@ def CreateTriplet_DirectClassify(tagDict_train, target_vob=None, istest=False):
 
 def CreateTriplet_RankClassify(tagDict, relRankDict, istest=False):
 
-    print(tagDict.keys())
+    # print(tagDict.keys())
     data_tag_all = []
 
     data_s_all_0 = []
