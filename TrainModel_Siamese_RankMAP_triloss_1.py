@@ -341,7 +341,7 @@ if __name__ == "__main__":
 
     hasNeg = False
 
-    batch_size = 1024 # 512
+    batch_size = 512 # 512
 
     retrain = False
     Test = True
