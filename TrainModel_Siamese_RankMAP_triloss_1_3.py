@@ -256,7 +256,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     #                                               w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
     #                                               batch_size=batch_size, margin=margin, at_margin=at_margin)
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_tripletloss_01_1':
+    if modelname is 'Model_ONBiLSTM_RankMAP_tripletloss_01_3':
         margin = 0.1
         at_margin = 0.1
         print(margin, 'Model_ONBiLSTM_directMAP_tripletloss_1')
@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_tripletloss_01_1'
+    modelname = 'Model_ONBiLSTM_RankMAP_tripletloss_01_3'
 
     print(modelname)
 
