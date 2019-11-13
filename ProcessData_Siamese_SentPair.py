@@ -107,8 +107,8 @@ def get_rel_sim_rank(type_W):
         RankDict[i] = list(ijdict.keys())
         assert i == RankDict[i][0]
 
-    print(RankDict)
-    print(len(RankDict.keys()), len(RankDict[0]))
+    # print(RankDict)
+    # print(len(RankDict.keys()), len(RankDict[0]))
 
     return RankDict
 
