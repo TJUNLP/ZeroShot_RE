@@ -1132,6 +1132,93 @@ def CreateTriplet_RankClassify2(tagDict, relRankDict, target_vob_train=None, ist
     return pairs
 
 
+
+def CreateTriplet_RankClassify3(tagDict, relRankDict, target_vob_train=None, istest=False):
+
+    # testlist = list(set(relRankDict.keys()) - set(target_vob_train.values()))
+    # assert len(testlist) == 24
+
+    # print(tagDict.keys())
+
+    data_tag_all_p = []
+    data_tag_all_n = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+
+    if istest == False:
+
+        for tag in tagDict.keys():
+            sents = tagDict[tag]
+
+            if len(sents) < 2:
+                continue
+            inc = random.randrange(1, len(sents))
+            i = 0
+            while i < len(sents):
+                p0 = i
+                p1 = (inc + i) % len(sents)
+
+                i += 1
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                ranklist = relRankDict[tag]
+                span = len(ranklist)//2
+                ran1 = random.randrange(0, span)
+
+                data_tag_all_p.append([ranklist[ran1]])
+
+                keylist = list(ranklist[(ran1+span):])
+
+                ran2 = random.randrange(0, len(keylist))
+
+                data_tag_all_n.append([keylist[ran2]])
+
+    else:
+        for tag in tagDict.keys():
+            sents = tagDict[tag]
+
+            if len(sents) < 2:
+                continue
+            inc = random.randrange(1, len(sents))
+            i = 0
+            while i < len(sents):
+                p0 = i
+                p1 = (inc + i) % len(sents)
+
+                i += 1
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                data_tag_all_p.append([tag])
+
+                keylist = list(relRankDict.keys())
+
+                ran1 = random.randrange(0, len(keylist))
+                if keylist[ran1] == tag:
+                    ran1 = (ran1 + 1) % len(keylist)
+
+                data_tag_all_n.append([keylist[ran1]])
+
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all_p, data_tag_all_n]
+
+    return pairs
+
+
 def CreateTriplet_DirectMAP_AL(tagDict, tagDict_train, tagDict_dev, tagDict_test):
 
     labels = []
