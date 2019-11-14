@@ -1224,7 +1224,7 @@ def CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W
     for i in range(0, len(tagDict_train.keys())):
 
         i_j = {}
-        testlist = tagDict_dev.keys() + tagDict_test.keys()
+        testlist = list(tagDict_dev.keys()) + list(tagDict_test.keys())
         assert len(testlist) == (24+9)
 
         for j in range(0, len(testlist)):
