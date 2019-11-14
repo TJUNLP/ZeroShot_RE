@@ -1244,7 +1244,7 @@ def CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W
         ijdict = dict(ijlist)
         # print(ijdict)
         RankDict[i] = list(ijdict.keys())
-        assert i == RankDict[i][0]
+        # assert i == RankDict[i][0]
 
     # print(RankDict)
     # print(len(RankDict.keys()), len(RankDict[0]))
