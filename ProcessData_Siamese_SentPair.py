@@ -1221,13 +1221,13 @@ def CreateTriplet_RankClassify3(tagDict, relRankDict, target_vob_train=None, ist
 def CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
 
     RankDict = {}
-    for i in range(0, len(tagDict_train.keys())):
+    for ii, i in enumerate(tagDict_train.keys()):
 
         i_j = {}
         testlist = list(tagDict_dev.keys()) + list(tagDict_test.keys())
         assert len(testlist) == (24+9)
 
-        for j in range(0, len(testlist)):
+        for ji, j in enumerate(testlist):
             # if i == j:
             #     continue
             vector_a = np.mat(type_W[i])
