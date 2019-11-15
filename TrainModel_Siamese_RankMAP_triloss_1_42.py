@@ -282,7 +282,7 @@ def Dynamic_get_trainSet(istest):
         tagDict = tagDict_train
 
     pairs_train = ProcessData_Siamese_SentPair.\
-        CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
+        CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
 
     print('CreatePairs train len = ', len(pairs_train[0]))
 
