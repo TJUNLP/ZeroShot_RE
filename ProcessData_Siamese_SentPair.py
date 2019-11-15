@@ -1429,6 +1429,8 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
     data_e2_posi_all_0 = []
     char_s_all_0 = []
 
+    labels = []
+
 
     if istest == False:
 
@@ -1464,6 +1466,8 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
 
                 data_tag_all_a.append([tag])
 
+                labels.append(tag)
+
     else:
         for tag in tagDict_dev.keys():
             sents = tagDict_dev[tag]
@@ -1496,9 +1500,11 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
 
                 data_tag_all_a.append([tag])
 
+                labels.append(tag)
+
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_tag_all_p, data_tag_all_n, data_tag_all_a]
+             data_tag_all_p, data_tag_all_n, data_tag_all_a, labels]
 
     return pairs
 
@@ -2030,7 +2036,9 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
 
 if __name__=="__main__":
     print(20*2)
-
+    p = 68.50
+    r = 53.38
+    print(2*p*r/(p+r))
     alpha = 10
     maxlen = 50
     w2v_file = "./data/w2v/glove.6B.100d.txt"
@@ -2039,34 +2047,34 @@ if __name__=="__main__":
     trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
     testfile = './data/WikiReading/WikiReading_data.random.test.txt'
 
-    word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
-    print("source vocab size: ", str(len(word_vob)))
-    print("word_id2word size: ", str(len(word_id2word)))
-    print("target vocab size: " + str(len(target_vob)))
-    print("target_id2word size: " + str(len(target_id2word)))
-    if max_s > maxlen:
-        max_s = maxlen
-    print('max soure sent lenth is ' + str(max_s))
-
-
-    type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
-    print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
-
-    # # CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train)
-    # get_rel_sim_rank(type_W)
+    # word_vob, word_id2word, target_vob, target_id2word, max_s, target_vob_train = get_word_index([trainfile, testfile])
+    # print("source vocab size: ", str(len(word_vob)))
+    # print("word_id2word size: ", str(len(word_id2word)))
+    # print("target vocab size: " + str(len(target_vob)))
+    # print("target_id2word size: " + str(len(target_id2word)))
+    # if max_s > maxlen:
+    #     max_s = maxlen
+    # print('max soure sent lenth is ' + str(max_s))
     #
-    # RankDict = {}
-    # W = np.asarray([[10, 50, 30],
-    #                 [60, 20, 40],
-    #                 [30, 20, 90]])
     #
-    # maxposi = np.unravel_index(np.argmax(W), W.shape)
-    # print(maxposi, np.max(W), W.max())
-    # RankDict[maxposi[1]] = maxposi[0]
-    # print(RankDict)
-    # W[maxposi[0], :] *= 0
-    # W[:, maxposi[1]] *= 0
-    # print(W, np.max(W), W.max())
-
-    get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train)
-
+    # type_k, type_W = load_vec_KGrepresentation(t2v_file, target_vob, k=100)
+    # print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
+    #
+    # # # CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train)
+    # # get_rel_sim_rank(type_W)
+    # #
+    # # RankDict = {}
+    # # W = np.asarray([[10, 50, 30],
+    # #                 [60, 20, 40],
+    # #                 [30, 20, 90]])
+    # #
+    # # maxposi = np.unravel_index(np.argmax(W), W.shape)
+    # # print(maxposi, np.max(W), W.max())
+    # # RankDict[maxposi[1]] = maxposi[0]
+    # # print(RankDict)
+    # # W[maxposi[0], :] *= 0
+    # # W[:, maxposi[1]] *= 0
+    # # print(W, np.max(W), W.max())
+    #
+    # get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train)
+    #
