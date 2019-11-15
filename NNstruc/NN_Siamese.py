@@ -403,7 +403,7 @@ def Model_ONBiLSTM_RankMAP_fourloss_Classify_1(wordvocabsize, posivocabsize, cha
 
     loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]), name='triloss')([wrong_cos, right_cos])
 
-    anchor_classify = Dense(87, activation='softmax', name='anchor_classify')(BiLSTM_x1)
+    anchor_classify = Dense(120, activation='softmax', name='anchor_classify')(BiLSTM_x1)
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      input_tag_p, input_tag_n, input_tag_a], [loss, anchor_classify])
