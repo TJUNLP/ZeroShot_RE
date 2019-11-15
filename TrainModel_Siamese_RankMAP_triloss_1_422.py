@@ -294,7 +294,7 @@ def Dynamic_get_trainSet(istest):
     train_tag_p = np.asarray(pairs_train[4], dtype="int32")
     train_tag_n = np.asarray(pairs_train[5], dtype="int32")
     train_tag_a = np.asarray(pairs_train[6], dtype="int32")
-    class_label = keras.utils.to_categorical(pairs_train[6], num_classes=len(tagDict_train.keys()))
+    class_label = keras.utils.to_categorical(pairs_train[6], num_classes=120)
 
     train_y0 = np.zeros(len(pairs_train[0]), dtype="int32")
     # train_y = np.asarray(labels_train, dtype="int32")
