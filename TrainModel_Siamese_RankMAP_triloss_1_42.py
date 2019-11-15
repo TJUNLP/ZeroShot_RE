@@ -14,7 +14,7 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
-from NNstruc.NN_Siamese import Model_ONBiLSTM_directMAP_tripletloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_fourloss_1
 
 import keras
 
@@ -47,7 +47,7 @@ def test_model3(nn_model, tag2sentDict_test):
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)):
+        for s in range(1, len(sents)//2):
             totel_right += 1
 
             for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -77,7 +77,7 @@ def test_model3(nn_model, tag2sentDict_test):
     train_tag = np.asarray(pairs[4], dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_tag, train_tag]
+                      train_tag, train_tag, train_tag]
 
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
                                                   outputs=nn_model.get_layer('right_cos').output)
@@ -256,11 +256,11 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     #                                               w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
     #                                               batch_size=batch_size, margin=margin, at_margin=at_margin)
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_tripletloss_01_4':
+    if modelname is 'Model_ONBiLSTM_RankMAP_fourloss_01_42':
         margin = 0.1
         at_margin = 0.1
-        print(margin, 'Model_ONBiLSTM_directMAP_tripletloss_1')
-        nn_model = Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize=wordvocabsize,
+
+        nn_model = Model_ONBiLSTM_RankMAP_fourloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -293,14 +293,14 @@ def Dynamic_get_trainSet(istest):
     train_x1_sent_cahr = np.asarray(pairs_train[3], dtype="int32")
     train_tag_p = np.asarray(pairs_train[4], dtype="int32")
     train_tag_n = np.asarray(pairs_train[5], dtype="int32")
-
+    train_tag_a = np.asarray(pairs_train[6], dtype="int32")
 
     train_y0 = np.zeros(len(pairs_train[0]), dtype="int32")
     # train_y = np.asarray(labels_train, dtype="int32")
     # train_y_classifer = np.asarray(classifer_labels_train, dtype="int32")
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_tag_p, train_tag_n]
+                      train_tag_p, train_tag_n, train_tag_a]
     inputs_train_y = [train_y0]
 
     return inputs_train_x, inputs_train_y
