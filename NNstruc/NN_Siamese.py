@@ -394,7 +394,8 @@ def Model_ONBiLSTM_RankMAP_Dy_fourloss_1(wordvocabsize, posivocabsize, charvocab
     wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, tag_embedding_n])
     at_cos = Dot(axes=-1, normalize=True, name='at_cos')([tag_embedding_p, tag_embedding_n])
     anchor_cos = Dot(axes=-1, normalize=True, name='anchor_cos')([BiLSTM_x1, tag_embedding_a])
-    real_cos = Dot(axes=-1, normalize=True, name='real_cos')([tag_embedding_p, tag_embedding_n])
+    real_ap_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_a])
+    real_an_cos = Dot(axes=-1, normalize=True)([tag_embedding_n, tag_embedding_a])
 
     # margin = 1.
     # margin = 0.5
@@ -402,7 +403,7 @@ def Model_ONBiLSTM_RankMAP_Dy_fourloss_1(wordvocabsize, posivocabsize, charvocab
     # at_margin = 0.1
     gamma = 2
 
-    loss = Lambda(lambda x: K.relu((1. - x[3] - K.epsilon()) + x[0] - x[1]) + (1. - x[2]))([wrong_cos, right_cos, anchor_cos, real_cos])
+    loss = Lambda(lambda x: K.relu((x[3] - x[4] - K.epsilon()) + x[0] - x[1]) + (1. - x[2]))([wrong_cos, right_cos, anchor_cos, real_ap_cos, real_an_cos])
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      input_tag_p, input_tag_n, input_tag_a], loss)
 
