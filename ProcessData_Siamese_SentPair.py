@@ -2036,8 +2036,8 @@ def get_data(trainfile, testfile, prototypesfile, w2v_file, c2v_file, t2v_file, 
 
 if __name__=="__main__":
     print(20*2)
-    p = 68.50
-    r = 53.38
+    p = 65.95
+    r = 56.19
     print(2*p*r/(p+r))
     alpha = 10
     maxlen = 50
