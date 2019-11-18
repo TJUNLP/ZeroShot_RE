@@ -14,7 +14,8 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
-from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_Dy_fourloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_fourloss_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_two_fourloss_1
 
 import keras
 
@@ -256,11 +257,25 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     #                                               w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
     #                                               batch_size=batch_size, margin=margin, at_margin=at_margin)
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_Dy_fourloss_01_424':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_fourloss_01_423':
         margin = 0.1
         at_margin = 0.1
 
-        nn_model = Model_ONBiLSTM_RankMAP_Dy_fourloss_1(wordvocabsize=wordvocabsize,
+        nn_model = Model_ONBiLSTM_RankMAP_three_fourloss_1(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size, margin=margin, at_margin=at_margin)
+
+    if modelname is 'Model_ONBiLSTM_RankMAP_two_fourloss_01_423':
+        margin = 0.1
+        at_margin = 0.1
+
+        nn_model = Model_ONBiLSTM_RankMAP_two_fourloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -310,7 +325,8 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_Dy_fourloss_01_424'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_fourloss_01_423'
+    modelname = 'Model_ONBiLSTM_RankMAP_two_fourloss_01_423'
 
     print(modelname)
 
@@ -358,7 +374,8 @@ if __name__ == "__main__":
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
 
-    for inum in range(3, 6):
+
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \

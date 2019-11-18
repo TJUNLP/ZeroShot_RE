@@ -1384,6 +1384,137 @@ def CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W
 def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
 
     RankDict = {}
+
+    trainlist = list(tagDict_train.keys()) + list(tagDict_dev.keys())
+    assert len(trainlist) == 96
+
+    for ii, i in enumerate(trainlist):
+
+        i_j = {}
+        testlist = list(tagDict_dev.keys()) + list(tagDict_test.keys())
+        assert len(testlist) == (24 + 9)
+
+        for ji, j in enumerate(testlist):
+            # if i == j:
+            #     continue
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            i_j[j] = cos
+
+        # print(i, mw, maxs)
+
+        ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+
+        ijdict = dict(ijlist)
+        # print(ijdict)
+        RankDict[i] = list(ijdict.keys())
+        # assert i == RankDict[i][0]
+
+    # print(RankDict)
+    # print(len(RankDict.keys()), len(RankDict[0]))
+
+    # testlist = list(set(relRankDict.keys()) - set(target_vob_train.values()))
+    # assert len(testlist) == 24
+
+    # print(tagDict.keys())
+
+    relRankDict = RankDict
+
+    data_tag_all_p = []
+    data_tag_all_n = []
+    data_tag_all_a = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    labels = []
+
+    if istest == False:
+
+        for tag in tagDict_train.keys():
+            sents = tagDict_train[tag]
+
+            if len(sents) < 2:
+                continue
+            inc = random.randrange(1, len(sents))
+            i = 0
+            while i < len(sents):
+                p0 = i
+                p1 = (inc + i) % len(sents)
+
+                i += 1
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                ranklist = relRankDict[tag]
+                ran1 = random.randrange(0, len(ranklist) - 1)
+
+                data_tag_all_p.append([ranklist[ran1]])
+
+                keylist = list(ranklist[(ran1 + 1):])
+
+                ran2 = random.randrange(0, len(keylist))
+
+                data_tag_all_n.append([keylist[ran2]])
+
+                data_tag_all_a.append([tag])
+
+                labels.append(tag)
+
+    else:
+        for tag in tagDict_dev.keys():
+            sents = tagDict_dev[tag]
+
+            if len(sents) < 2:
+                continue
+            inc = random.randrange(1, len(sents))
+            i = 0
+            while i < len(sents):
+                p0 = i
+                p1 = (inc + i) % len(sents)
+
+                i += 1
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                ranklist = relRankDict[tag]
+                ran1 = random.randrange(1, len(ranklist) - 1)
+
+                data_tag_all_p.append([ranklist[ran1]])
+
+                keylist = list(ranklist[(ran1 + 1):])
+
+                ran2 = random.randrange(0, len(keylist))
+
+                data_tag_all_n.append([keylist[ran2]])
+
+                data_tag_all_a.append([tag])
+
+                labels.append(tag)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all_p, data_tag_all_n, data_tag_all_a, labels]
+
+    return pairs
+
+
+'''
+def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
+
+    RankDict = {}
     for ii, i in enumerate(tagDict_train.keys()):
 
         i_j = {}
@@ -1423,6 +1554,7 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
     data_tag_all_p = []
     data_tag_all_n = []
     data_tag_all_a = []
+    data_tag_all_n0 = []
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -1467,6 +1599,13 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
                 data_tag_all_a.append([tag])
 
                 labels.append(tag)
+                
+                keylist = list(tagDict_train.keys())
+                ran3 = random.randrange(0, len(keylist))
+                if keylist[ran3] == tag:
+                    ran3 = (ran3 + 1) % len(keylist)
+
+                data_tag_all_n0.append([keylist[ran3]])
 
     else:
         for tag in tagDict_dev.keys():
@@ -1503,10 +1642,14 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
                 labels.append(tag)
 
 
+
+
+
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_tag_all_p, data_tag_all_n, data_tag_all_a, labels]
 
     return pairs
+'''
 
 
 def CreateTriplet_RankClassify41(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
