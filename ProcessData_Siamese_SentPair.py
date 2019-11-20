@@ -1381,10 +1381,11 @@ def CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W
     return pairs
 
 
+'''
 def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
-    '''
-    version 3
-    '''
+
+    # version 3
+
 
     RankDict = {}
 
@@ -1485,7 +1486,7 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
              data_tag_all_p, data_tag_all_n, data_tag_all_a, labels]
 
     return pairs
-
+'''
 
 '''
 def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
@@ -1621,10 +1622,10 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
     return pairs
 '''
 
-'''
+
 def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
 
-    version 1
+    # version 1
 
 
     RankDict = {}
@@ -1754,15 +1755,22 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
 
                 labels.append(tag)
 
+                keylist = list(tagDict_dev.keys())
+                ran3 = random.randrange(0, len(keylist))
+                if keylist[ran3] == tag:
+                    ran3 = (ran3 + 1) % len(keylist)
+
+                data_tag_all_n0.append([keylist[ran3]])
+
 
 
 
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_tag_all_p, data_tag_all_n, data_tag_all_a, labels]
+             data_tag_all_p, data_tag_all_n, data_tag_all_a, labels, data_tag_all_n0]
 
     return pairs
-'''
+
 
 
 def CreateTriplet_RankClassify41(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
