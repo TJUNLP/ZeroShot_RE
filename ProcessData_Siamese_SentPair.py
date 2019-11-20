@@ -1893,7 +1893,7 @@ def CreateTriplet_RankClassify421(tagDict_train, tagDict_dev, tagDict_test, type
 
                 labels.append(tag)
 
-                data_tag_all_n0.append([[tag]])
+                data_tag_all_n0.append([tag])
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_tag_all_p, data_tag_all_n, data_tag_all_a, labels, data_tag_all_n0]
