@@ -516,7 +516,7 @@ def Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, charvoc
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
-                    batch_size=32, margin=0.5, at_margin=0.1):
+                    batch_size=32, margin1=0.1, margin2=0.1, margin3=0.1):
 
     word_input_sent_x1 = Input(shape=(input_sent_lenth,), dtype='int32')
 
@@ -607,9 +607,9 @@ def Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, charvoc
     # at_margin = 0.1
     gamma = 2
 
-    loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]) +
-                            K.relu(margin + x[2] - x[3]) +
-                            K.relu(margin + x[1] - x[3]))\
+    loss = Lambda(lambda x: K.relu(margin1 + x[0] - x[1]) +
+                            K.relu(margin2 + x[2] - x[3]) +
+                            K.relu(margin3 + x[1] - x[3]))\
         ([wrong_cos, right_cos, anchor_wrong_cos, anchor_cos])
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      input_tag_p, input_tag_n, input_tag_a, input_tag_n0], loss)
