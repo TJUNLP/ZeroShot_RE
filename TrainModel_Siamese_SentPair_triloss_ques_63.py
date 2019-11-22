@@ -13,7 +13,10 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_notallat
+
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m
+from NNstruc.NN_Siamese_SentTriplet import Model_BiLSTM_SentPair_tripletloss_01_
+
 import keras
 
 
@@ -98,7 +101,7 @@ def test_model3(nn_model, tag2sentDict_test):
     predict_right = 0
     predict_right05 = 0
 
-    testfuzhi = 0
+
     data_s_all_0 = []
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
@@ -199,9 +202,6 @@ def test_model3(nn_model, tag2sentDict_test):
         mindis = max(subpredictions)
         mindis_where = subpredictions.index(mindis)
 
-        if mindis < -0.0000001:
-            testfuzhi += 1
-
         if mindis > 0.5:
             predict += 1
 
@@ -218,7 +218,6 @@ def test_model3(nn_model, tag2sentDict_test):
     print('test predict_rank = ', predict_rank / totel_right)
     print('test distance > 0.5  = ', predict_right05 / totel_right)
     print('P =, R =, F = ', P, R, F)
-    print('testfuzhi############ ', testfuzhi)
     return P, R, F
 
 
@@ -433,8 +432,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_notallat':
-        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_notallat(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m':
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -443,6 +442,35 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
+
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_Hloss_01_at005_allexp_2m':
+        margin = 0.1
+        at_margin = 0.05
+        nn_model = Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size,
+                                                  margin=margin, at_margin=at_margin)
+
+    if modelname is 'Model_BiLSTM_SentPair_tripletloss_01_':
+        margin = 0.1
+        at_margin = 0.05
+        nn_model = Model_BiLSTM_SentPair_tripletloss_01_(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size,
+                                                  margin=margin, at_margin=at_margin)
+
 
     return nn_model
 
@@ -454,7 +482,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_sample(tagDict, sample_n=500)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet(tagDict, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -487,7 +515,11 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_notallat'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_05_at01_allexp_2m'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_08_at01_allexp_2m'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_01_at03_allexp_2m'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_Hloss_01_at005_allexp_2m'
+    modelname = 'Model_BiLSTM_SentPair_tripletloss_01_'
 
     print(modelname)
 
@@ -533,7 +565,7 @@ if __name__ == "__main__":
                                               w2v_file, c2v_file, t2v_file, datafile,
                  w2v_k=100, c2v_k=50, t2v_k=100, maxlen=maxlen, hasNeg=hasNeg, percent=0.05)
 
-    for inum in range(0, 3):
+    for inum in range(3, 6):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
@@ -552,7 +584,7 @@ if __name__ == "__main__":
                                w2v_k=w2v_k, posi2v_k=max_posi + 1, tag2v_k=type_k, c2v_k=c2v_k,
                                batch_size=batch_size)
 
-        modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + "_sample.h5"
+        modelfile = "./model/" + modelname + "__" + datafname + "__" + str(inum) + ".h5"
 
         if not os.path.exists(modelfile):
             print("Lstm data has extisted: " + datafile)
