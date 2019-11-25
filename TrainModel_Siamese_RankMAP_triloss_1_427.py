@@ -208,7 +208,8 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         plt.ylabel('Learning Rate')
         plt.title("CLR - 'triangular' Policy")
         plt.plot(clr_triangular.history['iterations'], clr_triangular.history['lr'])
-
+        plt.show()
+        
         if F > maxF:
             earlystop = 0
             maxF = F
