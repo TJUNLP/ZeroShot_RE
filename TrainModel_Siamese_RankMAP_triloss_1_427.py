@@ -17,7 +17,7 @@ from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1
 import keras
 from clr_callback import *
 from keras.optimizers import *
-
+import matplotlib.pyplot as plt
 
 def test_model3(nn_model, tag2sentDict_test):
 
@@ -163,7 +163,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     clr_triangular = CyclicLR(mode='triangular2',
                               base_lr=0.001,
                               max_lr=0.006,
-                              step_size=512)
+                              step_size=608)
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
     #              batch_size=batch_size,
@@ -203,6 +203,12 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model3(nn_model, tagDict_test)
+
+        plt.xlabel('Training Iterations')
+        plt.ylabel('Learning Rate')
+        plt.title("CLR - 'triangular' Policy")
+        plt.plot(clr_triangular.history['iterations'], clr_triangular.history['lr'])
+
         if F > maxF:
             earlystop = 0
             maxF = F
@@ -354,7 +360,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(0, 3):
+    for inum in range(1, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
