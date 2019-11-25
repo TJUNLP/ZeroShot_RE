@@ -567,9 +567,9 @@ def get_sentDicts(trainfile, max_s, max_posi, word_vob, target_vob, char_vob, ma
     lines = f.readlines()
 
     thd = -1
-    if needDEV == True:
-        # thd = len(lines) * 0.15
-        thd = len(lines) * 0.08
+    # if needDEV == True:
+    #     # thd = len(lines) * 0.15
+    #     thd = len(lines) * 0.08
 
     for si, line in enumerate(lines):
         jline = json.loads(line.rstrip('\r\n').rstrip('\n'))
@@ -2328,16 +2328,16 @@ def get_split_train_dev(target_vob_train):
     rel4dev = {}
     relList = list(target_vob_train.keys())
     i = 0
-    # while i * 10 + 9 < len(relList):
-    #     nd = random.randint(0, 9)
-    #     k = relList[i * 10 + nd]
-    #     rel4dev[k] = target_vob_train[k]
-    #     i += 1
-    while i * 16 + 15 < len(relList):
-        nd = random.randint(0, 15)
-        k = relList[i * 16 + nd]
+    while i * 10 + 9 < len(relList):
+        nd = random.randint(0, 9)
+        k = relList[i * 10 + nd]
         rel4dev[k] = target_vob_train[k]
         i += 1
+    # while i * 16 + 15 < len(relList):
+    #     nd = random.randint(0, 15)
+    #     k = relList[i * 16 + nd]
+    #     rel4dev[k] = target_vob_train[k]
+    #     i += 1
 
     return rel4dev
 

@@ -158,14 +158,17 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
     nn_model.summary()
 
+    inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
+    inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
+
     early_stopping = EarlyStopping(monitor='val_loss', patience=8)
     checkpointer = ModelCheckpoint(filepath=modelfile + ".best_model.h5", monitor='val_loss', verbose=0,
                                    save_best_only=True, save_weights_only=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
     clr_triangular = CyclicLR(mode='triangular2',
                               base_lr=0.001,
-                              max_lr=0.006,
-                              step_size=608)
+                              max_lr=0.01,
+                              step_size=math.ceil(len(inputs_train_y[0]) / batch_size))
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
     #              batch_size=batch_size,
@@ -190,9 +193,6 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
-
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
@@ -202,15 +202,17 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                verbose=1,
                                callbacks=[clr_triangular])
 
-        plt.xlabel('Training Iterations')
-        plt.ylabel('Learning Rate')
-        plt.title("CLR - 'triangular' Policy")
-        plt.plot(clr_triangular.history['iterations'], clr_triangular.history['lr'])
-        plt.show()
+        # if nowepoch % 3 == 0:
+        #     plt.xlabel('Training Iterations')
+        #     plt.ylabel('Learning Rate')
+        #     plt.title("CLR - 'triangular' Policy")
+        #     plt.plot(clr_triangular.history['iterations'], clr_triangular.history['lr'])
+        #     plt.show()
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model3(nn_model, tagDict_test)
+        # P, R, F = 0,0,0
         if F > maxF:
             earlystop = 0
             maxF = F
@@ -220,6 +222,9 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         if earlystop >= 15:
             break
+
+        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
 
     return nn_model
 
@@ -255,9 +260,9 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0101501_427':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_010101_427':
         margin1 = 0.1
-        margin2 = 0.15
+        margin2 = 0.1
         margin3 = 0.1
 
 
@@ -314,6 +319,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0101501_427'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_010101_427'
 
     print(modelname)
 
@@ -362,7 +368,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(1, 3):
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
