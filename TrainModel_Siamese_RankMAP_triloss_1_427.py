@@ -168,7 +168,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     clr_triangular = CyclicLR(mode='triangular2',
                               base_lr=0.001,
                               max_lr=0.006,
-                              step_size=math.ceil(len(inputs_train_y[0]) / batch_size))
+                              step_size=2 * math.ceil(len(inputs_train_y[0]) / batch_size))
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
     #              batch_size=batch_size,
