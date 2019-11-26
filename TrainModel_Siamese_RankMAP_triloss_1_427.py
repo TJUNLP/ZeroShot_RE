@@ -167,7 +167,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
     clr_triangular = CyclicLR(mode='triangular2',
                               base_lr=0.001,
-                              max_lr=0.01,
+                              max_lr=0.006,
                               step_size=math.ceil(len(inputs_train_y[0]) / batch_size))
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
