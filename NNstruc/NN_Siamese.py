@@ -7,7 +7,7 @@ from keras.models import Model
 from keras import optimizers
 from keras.layers.normalization import BatchNormalization
 from keras import backend as K
-from keras.layers import merge, Lambda,Flatten
+from keras.layers import merge, Lambda, Flatten, Permute, multiply
 from keras.layers.merge import dot
 from keras.layers.merge import dot, Dot
 from keras_ordered_neurons import ONLSTM
@@ -787,8 +787,11 @@ def Model_ONBiLSTM_Atten_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, c
     ONBiLSTM_x1 = Dropout(0.25)(ONBiLSTM_x1)
 
     attention = Dense(1, activation='tanh')(ONBiLSTM_x1)
+    attention = Flatten()(attention)
     attention = Activation('softmax')(attention)
-    Attention = Lambda(lambda x: x[0] * x[1])([attention, ONBiLSTM_x1])
+    attention = RepeatVector(200)(attention)
+    attention = Permute([2, 1])(attention)
+    Attention = multiply([ONBiLSTM_x1, attention])
 
     ONBiLSTM_x2 = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')(Attention)
     ONBiLSTM_x2 = Dropout(0.25)(ONBiLSTM_x2)
