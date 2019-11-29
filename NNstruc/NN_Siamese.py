@@ -736,7 +736,7 @@ def Model_ONBiLSTM_Atten_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, c
     word_embedding_sent_layer = Embedding(input_dim=wordvocabsize + 1,
                                     output_dim=w2v_k,
                                     input_length=input_sent_lenth,
-                                    mask_zero=True,
+                                    mask_zero=False,
                                     trainable=True,
                                     weights=[word_W])
     word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
