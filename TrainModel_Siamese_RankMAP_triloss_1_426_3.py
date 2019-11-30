@@ -276,8 +276,8 @@ def Dynamic_get_trainSet(istest, count=86):
         else:
             continue
 
-    print('len(new_tagDict_train)--------------', len(new_tagDict_train), count)
-    assert len(new_tagDict_train) == count
+    print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), count)
+    assert len(new_tagDict_train.keys()) == count
 
     pairs_train = ProcessData_Siamese_SentPair.\
         CreateTriplet_RankClassify421(tagDict_train=new_tagDict_train,
