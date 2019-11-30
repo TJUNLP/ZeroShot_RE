@@ -270,6 +270,7 @@ def Dynamic_get_trainSet(istest, count=86):
     keylist = list(tagDict_train.keys())
     while i > count:
         rand = random.randrange(0, len(keylist))
+        print(len(keylist), rand)
         if keylist[rand] not in new_tagDict_train.keys():
             new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
             i += 1
