@@ -186,7 +186,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         earlystop += 1
 
         inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False, count=percent_of_trainset)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True, count=percent_of_trainset)
 
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
@@ -275,7 +275,8 @@ def Dynamic_get_trainSet(istest, count=86):
             i += 1
         else:
             continue
-
+    assert len(new_tagDict_train) == count
+    print('len(new_tagDict_train)--------------', len(new_tagDict_train))
     pairs_train = ProcessData_Siamese_SentPair.\
         CreateTriplet_RankClassify421(tagDict_train=new_tagDict_train,
                                       tagDict_dev=tagDict_dev,
