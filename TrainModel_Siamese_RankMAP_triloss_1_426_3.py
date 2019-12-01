@@ -185,8 +185,8 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False, count=percent_of_trainset)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True, count=percent_of_trainset)
+        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
 
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
@@ -263,22 +263,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
     return nn_model
 
 
-def Dynamic_get_trainSet(istest, count=86):
-
-    new_tagDict_train = {}
-    i = 1
-    keylist = list(tagDict_train.keys())
-    while i <= count:
-        rand = random.randrange(0, len(keylist))
-        
-        if keylist[rand] not in new_tagDict_train.keys():
-            new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
-            i += 1
-        else:
-            continue
-
-    print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), count)
-    assert len(new_tagDict_train.keys()) == count
+def Dynamic_get_trainSet(istest):
 
     pairs_train = ProcessData_Siamese_SentPair.\
         CreateTriplet_RankClassify421(tagDict_train=new_tagDict_train,
@@ -374,6 +359,21 @@ if __name__ == "__main__":
         target_vob, target_id2word, \
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
+
+        new_tagDict_train = {}
+        i = 1
+        keylist = list(tagDict_train.keys())
+        while i <= percent_of_trainset:
+            rand = random.randrange(0, len(keylist))
+
+            if keylist[rand] not in new_tagDict_train.keys():
+                new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
+                i += 1
+            else:
+                continue
+
+        print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
+        assert len(new_tagDict_train.keys()) == percent_of_trainset
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
