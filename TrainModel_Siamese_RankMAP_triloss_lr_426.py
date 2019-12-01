@@ -13,14 +13,18 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-
-from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1
-from NNstruc.NN_Siamese import Model_ONBiLSTM_Atten_RankMAP_three_triloss_1
-from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1_ed
+from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1_lr
 import keras
 
 
 def test_model3(nn_model, tag2sentDict_test):
+
+    predict = 0
+    predict_right = 0
+
+    predict_class = 0
+    predict_right_class = 0
+
 
     data_s_all_0 = []
     data_e1_posi_all_0 = []
@@ -86,48 +90,56 @@ def test_model3(nn_model, tag2sentDict_test):
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
 
-    predict_class = 0
-    predict_right_class = 0
+    P, R, F = 0., 0., 0.
+    threshold = 0.0
+    while threshold == 0.0:
 
-    for i in range(len(predictions) // width) :
-        left = i * width
-        right = (i + 1) * width
-        # subpredictions = predictions[left:right]
-        # subpredictions = subpredictions.flatten().tolist()
-        #
-        # mindis = max(subpredictions)
-        # mindis_where = subpredictions.index(mindis)
-        #
-        # if mindis > 0.5:
-        #     predict += 1
-        #
-        #     if mindis_where == truth_tag_list[i]:
-        #         predict_right += 1
+        predict_class = 0
+        predict_right_class = 0
 
-        subpredictions = predictions[left:right]
-        subpredictions = subpredictions.flatten().tolist()
-        class_max = min(subpredictions)
-        class_where = subpredictions.index(class_max)
+        for i in range(len(predictions) // width) :
+            left = i * width
+            right = (i + 1) * width
+            # subpredictions = predictions[left:right]
+            # subpredictions = subpredictions.flatten().tolist()
+            #
+            # mindis = max(subpredictions)
+            # mindis_where = subpredictions.index(mindis)
+            #
+            # if mindis > 0.5:
+            #     predict += 1
+            #
+            #     if mindis_where == truth_tag_list[i]:
+            #         predict_right += 1
 
-        predict_class += 1
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
+            class_max = max(subpredictions)
+            class_where = subpredictions.index(class_max)
 
-        if class_where == truth_tag_list[i]:
-            predict_right_class += 1
+            if class_max > threshold:
+                predict_class += 1
 
-    # P = predict_right / max(predict, 0.000001)
-    # R = predict_right / totel_right
-    # F = 2 * P * R / max((P + R), 0.000001)
-    # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    # print('test predict_rank = ', predict_rank / totel_right)
-    # print('P =, R =, F = ', P, R, F)
+                if class_where == truth_tag_list[i]:
+                    predict_right_class += 1
 
-    P = predict_right_class / max(predict_class, 0.000001)
-    R = predict_right_class / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
-    print('threshold-------------------------', 1)
-    print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-    print('test class ... P =, R =, F = ', P, R, F)
 
+
+        # P = predict_right / max(predict, 0.000001)
+        # R = predict_right / totel_right
+        # F = 2 * P * R / max((P + R), 0.000001)
+        # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+        # print('test predict_rank = ', predict_rank / totel_right)
+        # print('P =, R =, F = ', P, R, F)
+
+        P = predict_right_class / max(predict_class, 0.000001)
+        R = predict_right_class / totel_right
+        F = 2 * P * R / max((P + R), 0.000001)
+        print('threshold-------------------------', threshold)
+        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+        print('test class ... P =, R =, F = ', P, R, F)
+
+        threshold += 0.2
 
     return P, R, F
 
@@ -192,7 +204,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
-        if earlystop >= 15:
+        if earlystop >= 10:
             break
 
     return nn_model
@@ -229,13 +241,13 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_lr_050505_426':
         margin1 = 0.5
         margin2 = 0.5
         margin3 = 0.5
 
 
-        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1_ed(wordvocabsize=wordvocabsize,
+        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1_lr(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -286,7 +298,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_lr_050505_426'
 
     print(modelname)
 
