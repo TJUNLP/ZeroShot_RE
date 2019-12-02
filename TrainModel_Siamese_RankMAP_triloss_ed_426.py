@@ -127,7 +127,7 @@ def test_model3(nn_model, tag2sentDict_test):
     P = predict_right_class / max(predict_class, 0.000001)
     R = predict_right_class / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
-    print('threshold-------------------------', 1, class_max_list)
+    print('threshold-------------------------', 1)
     print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
     print('test class ... P =, R =, F = ', P, R, F)
 
@@ -232,10 +232,11 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426':
-        margin1 = 0.5
-        margin2 = 0.5
-        margin3 = 0.5
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_ed_111_426':
+
+        margin1 = 1.
+        margin2 = 1.
+        margin3 = 1.
 
 
         nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1_ed(wordvocabsize=wordvocabsize,
@@ -290,6 +291,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_111_426'
 
     print(modelname)
 
