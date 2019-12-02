@@ -89,6 +89,8 @@ def test_model3(nn_model, tag2sentDict_test):
     predict_class = 0
     predict_right_class = 0
 
+    class_max_list = []
+
     for i in range(len(predictions) // width) :
         left = i * width
         right = (i + 1) * width
@@ -108,6 +110,7 @@ def test_model3(nn_model, tag2sentDict_test):
         subpredictions = subpredictions.flatten().tolist()
         class_max = min(subpredictions)
         class_where = subpredictions.index(class_max)
+        class_max_list.append(class_max)
 
         predict_class += 1
 
@@ -124,7 +127,7 @@ def test_model3(nn_model, tag2sentDict_test):
     P = predict_right_class / max(predict_class, 0.000001)
     R = predict_right_class / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
-    print('threshold-------------------------', 1)
+    print('threshold-------------------------', 1, class_max_list)
     print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
     print('test class ... P =, R =, F = ', P, R, F)
 
