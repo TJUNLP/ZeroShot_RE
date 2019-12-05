@@ -298,7 +298,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    percent_of_trainset = 65
+    percent_of_trainset = 22
 
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
