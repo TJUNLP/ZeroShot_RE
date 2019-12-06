@@ -240,16 +240,20 @@ def test_model3_topk(nn_model, tag2sentDict_test):
 
         subpredictions = predictions[left:right]
         subpredictions = subpredictions.flatten().tolist()
-        class_max = max(subpredictions)
-        class_where = subpredictions.index(class_max)
-
 
         predict_class += 1
 
-        if class_where == truth_tag_list[i]:
-            predict_right_class += 1
+        top_k = 1
+        for k in range(top_k):
 
-
+            class_max = max(subpredictions)
+            class_where = subpredictions.index(class_max)
+            if class_where == truth_tag_list[i]:
+                predict_right_class += 1
+                break
+            else:
+                subpredictions[class_where] = -999
+                
 
     # P = predict_right / max(predict, 0.000001)
     # R = predict_right / totel_right
