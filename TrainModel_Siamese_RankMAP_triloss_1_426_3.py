@@ -243,7 +243,7 @@ def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
 
         predict_class += 1
 
-        print('top_k-----------------------', top_k)
+
         for k in range(top_k):
 
             class_max = max(subpredictions)
@@ -254,6 +254,8 @@ def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
             else:
                 subpredictions[class_where] = -999
 
+
+    print('top_k-----------------------', top_k)
 
     # P = predict_right / max(predict, 0.000001)
     # R = predict_right / totel_right
