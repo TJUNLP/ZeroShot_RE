@@ -438,11 +438,12 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    percent_of_trainset = 65
+    # percent_of_trainset = 65
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p65'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p65'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
 
     print(modelname)
@@ -492,7 +493,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(1, 3):
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
@@ -501,21 +502,23 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        new_tagDict_train = {}
-        i = 1
-        keylist = list(tagDict_train.keys())
-        while i <= percent_of_trainset:
-            rand = random.randrange(0, len(keylist))
+        # new_tagDict_train = {}
+        # i = 1
+        # keylist = list(tagDict_train.keys())
+        # while i <= percent_of_trainset:
+        #     rand = random.randrange(0, len(keylist))
+        #
+        #     if keylist[rand] not in new_tagDict_train.keys():
+        #         new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
+        #         i += 1
+        #     else:
+        #         continue
+        #
+        # print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
+        # assert len(new_tagDict_train.keys()) == percent_of_trainset
 
-            if keylist[rand] not in new_tagDict_train.keys():
-                new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
-                i += 1
-            else:
-                continue
-
-        print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
-        assert len(new_tagDict_train.keys()) == percent_of_trainset
-
+        new_tagDict_train = tagDict_train
+        
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
         nn_model = SelectModel(modelname,
