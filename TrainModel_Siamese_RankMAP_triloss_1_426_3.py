@@ -147,7 +147,7 @@ def test_model3(nn_model, tag2sentDict_test):
     return P, R, F
 
 
-def test_model3_topk(nn_model, tag2sentDict_test):
+def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
 
     predict = 0
     predict_right = 0
@@ -243,7 +243,7 @@ def test_model3_topk(nn_model, tag2sentDict_test):
 
         predict_class += 1
 
-        top_k = 1
+        print('top_k-----------------------', top_k)
         for k in range(top_k):
 
             class_max = max(subpredictions)
@@ -253,7 +253,7 @@ def test_model3_topk(nn_model, tag2sentDict_test):
                 break
             else:
                 subpredictions[class_where] = -999
-                
+
 
     # P = predict_right / max(predict, 0.000001)
     # R = predict_right / totel_right
@@ -347,11 +347,19 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     # P, R, F = test_model2(nn_model, tagDict_test)
     # print('P = ', P, 'R = ', R, 'F = ', F)
     print('the test 3 result-----------------------')
-    # P, R, F = test_model3(nn_model, tagDict_test)
-    # print('P = ', P, 'R = ', R, 'F = ', F)
+    P, R, F = test_model3(nn_model, tagDict_test)
+    print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the test model3 topk result-----------------------')
-    P, R, F = test_model3_topk(nn_model, tagDict_test)
+    print('the test model3 topk-2 result-----------------------')
+    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=2)
+    print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test model3 topk-3 result-----------------------')
+    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=3)
+    print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test model3 topk-5 result-----------------------')
+    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=5)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the train sent representation-----------------------')
