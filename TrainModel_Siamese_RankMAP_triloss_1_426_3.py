@@ -268,8 +268,8 @@ def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
     R = predict_right_class / totel_right
     F = 2 * P * R / max((P + R), 0.000001)
 
-    print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-    print('test class ... P =, R =, F = ', P, R, F)
+    # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+    # print('test class ... P =, R =, F = ', P, R, F)
 
     return P, R, F
 
@@ -384,7 +384,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
@@ -438,10 +438,10 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    percent_of_trainset = 22
+    percent_of_trainset = 43
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
-    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p65'
 
 
