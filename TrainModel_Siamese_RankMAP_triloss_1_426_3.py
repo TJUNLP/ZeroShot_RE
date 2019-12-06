@@ -384,7 +384,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p65':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
@@ -518,7 +518,7 @@ if __name__ == "__main__":
         # assert len(new_tagDict_train.keys()) == percent_of_trainset
 
         new_tagDict_train = tagDict_train
-        
+
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
         nn_model = SelectModel(modelname,
