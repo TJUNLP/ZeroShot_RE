@@ -78,9 +78,7 @@ def test_model3(nn_model, tag2sentDict_test):
                       train_tag, train_tag, train_tag, train_tag]
 
     intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('right_cos').output)
-    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
+                                                  outputs=nn_model.get_layer('right_cos').get_output_at(0))
 
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 

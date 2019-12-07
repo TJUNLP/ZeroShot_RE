@@ -1137,16 +1137,26 @@ def Model_ONBiLSTM_RankMAP_three_triloss_1_lr(wordvocabsize, posivocabsize, char
     tag_embedding_n0 = tag_embedding_layer(input_tag_n0)
     tag_embedding_n0 = Flatten()(tag_embedding_n0)
 
-    # distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([BiLSTM_x1, mlp_x2_2])
-    # cos_distance = dot([BiLSTM_x1, BiLSTM_x2], axes=-1, normalize=True)
+    mlp1_layer = Dense(200, activation='tanh')
+    mlp2_layer = Dense(100, activation='tanh')
+    cos_layer = Dense(1, activation='sigmoid', name='right_cos')
+
     in_right_cos = concatenate([BiLSTM_x1, tag_embedding_p], axis=-1)
-    right_cos = Dense(1, activation='sigmoid', name='right_cos')(in_right_cos)
+    right_cos_1 = mlp1_layer(in_right_cos)
+    right_cos_2 = mlp2_layer(right_cos_1)
+    right_cos = cos_layer(right_cos_2)
     in_wrong_cos = concatenate([BiLSTM_x1, tag_embedding_n], axis=-1)
-    wrong_cos = Dense(1, activation='sigmoid', name='wrong_cos')(in_wrong_cos)
+    wrong_cos_1 = mlp1_layer(in_wrong_cos)
+    wrong_cos_2 = mlp2_layer(wrong_cos_1)
+    wrong_cos = cos_layer(wrong_cos_2)
     in_anchor_cos = concatenate([BiLSTM_x1, tag_embedding_a], axis=-1)
-    anchor_cos = Dense(1, activation='sigmoid', name='anchor_cos')(in_anchor_cos)
+    anchor_cos_1 = mlp1_layer(in_anchor_cos)
+    anchor_cos_2 = mlp2_layer(anchor_cos_1)
+    anchor_cos = cos_layer(anchor_cos_2)
     in_anchor_wrong_cos = concatenate([BiLSTM_x1, tag_embedding_n0], axis=-1)
-    anchor_wrong_cos = Dense(1, activation='sigmoid', name='anchor_wrong_cos')(in_anchor_wrong_cos)
+    anchor_wrong_cos_1 = mlp1_layer(in_anchor_wrong_cos)
+    anchor_wrong_cos_2 = mlp2_layer(anchor_wrong_cos_1)
+    anchor_wrong_cos = cos_layer(anchor_wrong_cos_2)
 
     # margin = 1.
     # margin = 0.5
