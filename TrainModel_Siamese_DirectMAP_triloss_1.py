@@ -256,7 +256,9 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
-    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_1':
+
+    if modelname is 'Model_ONBiLSTM_directMAP_tripletloss_01_1':
+        margin = 0.1
         nn_model = Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize=wordvocabsize,
                                                                                     posivocabsize=posivocabsize,
                                                                                     charvocabsize=charvocabsize,
@@ -267,7 +269,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                                                     input_maxword_length=max_c,
                                                                                     w2v_k=w2v_k, posi2v_k=posi2v_k,
                                                                                     c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                                                    batch_size=batch_size)
+                                                                                    batch_size=batch_size, margin=margin)
+
 
     if modelname is 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1':
         margin = 0.9
@@ -281,6 +284,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size, margin=margin, at_margin=at_margin)
+
 
     if modelname is 'Model_ONBiLSTM_directMAPbyLSTM_tripletloss_05_1':
         margin = 0.5
@@ -306,7 +310,7 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_DirectMAP(tagDict, target_vob=target_vob, istest=istest)
+    pairs_train, labels_train = ProcessData_Siamese_SentPair.CreateTriplet_DirectMAP(tagDict, target_vob=None, istest=istest)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
 
@@ -334,8 +338,9 @@ if __name__ == "__main__":
 
     modelname = 'Model_ONBiLSTM_directMAP_tripletloss_Hloss_05_at01_allexp_2m'
     modelname = 'Model_ONBiLSTM_directMAP_tripletloss_1'
-    modelname = 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1'
-    modelname = 'Model_ONBiLSTM_directMAPbyLSTM_tripletloss_05_1'
+    # modelname = 'Model_ONBiLSTM_directMAPbyMLP_tripletloss_09_1'
+    # modelname = 'Model_ONBiLSTM_directMAPbyLSTM_tripletloss_05_1'
+    modelname = 'Model_ONBiLSTM_directMAP_tripletloss_01_1'
 
     print(modelname)
 
