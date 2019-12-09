@@ -243,23 +243,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    # if modelname is 'Model_ONBiLSTM_RankMAP_tripletloss_01_1':
-    #     margin = 0.1
-    #     at_margin = 0.1
-    #     nn_model = Model_ONBiLSTM_RankMAP_tripletloss_1(wordvocabsize=wordvocabsize,
-    #                                               posivocabsize=posivocabsize,
-    #                                               charvocabsize=charvocabsize,
-    #                                                 tagvocabsize=tagvocabsize,
-    #                                               word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-    #                                               input_sent_lenth=input_sent_lenth,
-    #                                               input_maxword_length=max_c,
-    #                                               w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-    #                                               batch_size=batch_size, margin=margin, at_margin=at_margin)
 
     if modelname is 'Model_ONBiLSTM_RankMAP_tripletloss_01_4':
         margin = 0.1
         at_margin = 0.1
-        print(margin, 'Model_ONBiLSTM_directMAP_tripletloss_1')
         nn_model = Model_ONBiLSTM_directMAP_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
@@ -282,7 +269,7 @@ def Dynamic_get_trainSet(istest):
         tagDict = tagDict_train
 
     pairs_train = ProcessData_Siamese_SentPair.\
-        CreateTriplet_RankClassify4(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
+        CreateTriplet_RankClassify421(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
 
     print('CreatePairs train len = ', len(pairs_train[0]))
 
