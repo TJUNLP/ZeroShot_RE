@@ -143,7 +143,7 @@ def test_model3(nn_model, tag2sentDict_test):
         # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
         print('test class ... P =, R =, F = ', P, R, F)
 
-        threshold += 0.1
+        threshold += 0.05
 
     return P, R, F
 
