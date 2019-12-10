@@ -86,51 +86,56 @@ def test_model3(nn_model, tag2sentDict_test):
     assert len(truth_tag_list) == totel_right
     predict_rank = 0
 
-    predict_class = 0
-    predict_right_class = 0
+    P, R, F = 0., 0., 0.
+    threshold = 10
+    while threshold < -0.01:
 
-    class_max_list = []
+        predict_class = 0
+        predict_right_class = 0
 
-    for i in range(len(predictions) // width) :
-        left = i * width
-        right = (i + 1) * width
-        # subpredictions = predictions[left:right]
-        # subpredictions = subpredictions.flatten().tolist()
-        #
-        # mindis = max(subpredictions)
-        # mindis_where = subpredictions.index(mindis)
-        #
-        # if mindis > 0.5:
-        #     predict += 1
-        #
-        #     if mindis_where == truth_tag_list[i]:
-        #         predict_right += 1
+        class_max_list = []
 
-        subpredictions = predictions[left:right]
-        subpredictions = subpredictions.flatten().tolist()
-        class_max = min(subpredictions)
-        class_where = subpredictions.index(class_max)
-        class_max_list.append(class_max)
+        for i in range(len(predictions) // width) :
+            left = i * width
+            right = (i + 1) * width
+            # subpredictions = predictions[left:right]
+            # subpredictions = subpredictions.flatten().tolist()
+            #
+            # mindis = max(subpredictions)
+            # mindis_where = subpredictions.index(mindis)
+            #
+            # if mindis > 0.5:
+            #     predict += 1
+            #
+            #     if mindis_where == truth_tag_list[i]:
+            #         predict_right += 1
 
-        predict_class += 1
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
+            class_max = min(subpredictions)
+            class_where = subpredictions.index(class_max)
+            class_max_list.append(class_max)
+            if class_max <= threshold:
+                predict_class += 1
 
-        if class_where == truth_tag_list[i]:
-            predict_right_class += 1
+                if class_where == truth_tag_list[i]:
+                    predict_right_class += 1
 
-    # P = predict_right / max(predict, 0.000001)
-    # R = predict_right / totel_right
-    # F = 2 * P * R / max((P + R), 0.000001)
-    # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    # print('test predict_rank = ', predict_rank / totel_right)
-    # print('P =, R =, F = ', P, R, F)
+        # P = predict_right / max(predict, 0.000001)
+        # R = predict_right / totel_right
+        # F = 2 * P * R / max((P + R), 0.000001)
+        # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+        # print('test predict_rank = ', predict_rank / totel_right)
+        # print('P =, R =, F = ', P, R, F)
 
-    P = predict_right_class / max(predict_class, 0.000001)
-    R = predict_right_class / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
-    print('threshold-------------------------', 1)
-    print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-    print('test class ... P =, R =, F = ', P, R, F)
+        P = predict_right_class / max(predict_class, 0.000001)
+        R = predict_right_class / totel_right
+        F = 2 * P * R / max((P + R), 0.000001)
+        print('threshold-------------------------', threshold)
+        # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+        print('test class ... P =, R =, F = ', P, R, F)
 
+        threshold -= 0.5
 
     return P, R, F
 
@@ -232,11 +237,11 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_ed_010101_426':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_ed_111_426':
 
-        margin1 = 0.1
-        margin2 = 0.1
-        margin3 = 0.1
+        margin1 = 1
+        margin2 = 1
+        margin3 = 1
 
 
         nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1_ed(wordvocabsize=wordvocabsize,
@@ -290,9 +295,9 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_050505_426'
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_111_426'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_010101_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_ed_010101_426'
 
     print(modelname)
 
