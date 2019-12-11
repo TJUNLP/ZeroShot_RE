@@ -15,8 +15,7 @@ import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1
-from NNstruc.NN_Siamese import Model_ONBiLSTM_Atten_RankMAP_three_triloss_1
-from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1_ed
+
 import keras
 
 
@@ -45,27 +44,28 @@ def test_model3(nn_model, tag2sentDict_test):
 
 
     truth_tag_list = []
-    for tag in tag2sentDict_test.keys():
-        sents = tag2sentDict_test[tag]
 
-        for s in range(1, len(sents)//2):
-            totel_right += 1
+    tag = tag4test
+    sents = tag2sentDict_test[tag]
 
-            for si, ty in enumerate(tagDict_prototypes.keys()):
+    for s in range(1, len(sents)//2):
+        totel_right += 1
 
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
-                data_s_all_0.append(data_s)
-                data_e1_posi_all_0.append(data_e1_posi)
-                data_e2_posi_all_0.append(data_e2_posi)
-                char_s_all_0.append(char_s)
+        for si, ty in enumerate(tagDict_prototypes.keys()):
 
-                data_tag_all.append([ty])
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
 
-                if tag == ty:
-                    labels_all.append(1)
-                    truth_tag_list.append(si)
-                else:
-                    labels_all.append(0)
+            data_tag_all.append([ty])
+
+            if tag == ty:
+                labels_all.append(1)
+                truth_tag_list.append(si)
+            else:
+                labels_all.append(0)
 
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0, data_tag_all]
@@ -143,133 +143,6 @@ def test_model3(nn_model, tag2sentDict_test):
         print('test class ... P =, R =, F = ', P, R, F)
 
         threshold += 0.2
-
-    return P, R, F
-
-
-def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
-
-    predict = 0
-    predict_right = 0
-
-    predict_class = 0
-    predict_right_class = 0
-
-
-    data_s_all_0 = []
-    data_e1_posi_all_0 = []
-    data_e2_posi_all_0 = []
-    char_s_all_0 = []
-
-    data_tag_all = []
-
-    labels_all = []
-    totel_right = 0
-
-    tagDict_prototypes = ProcessData_Siamese_SentPair.\
-        get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
-    assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
-
-
-    truth_tag_list = []
-    for tag in tag2sentDict_test.keys():
-        sents = tag2sentDict_test[tag]
-
-        for s in range(1, len(sents)//2):
-            totel_right += 1
-
-            for si, ty in enumerate(tagDict_prototypes.keys()):
-
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
-                data_s_all_0.append(data_s)
-                data_e1_posi_all_0.append(data_e1_posi)
-                data_e2_posi_all_0.append(data_e2_posi)
-                char_s_all_0.append(char_s)
-
-                data_tag_all.append([ty])
-
-                if tag == ty:
-                    labels_all.append(1)
-                    truth_tag_list.append(si)
-                else:
-                    labels_all.append(0)
-
-
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0, data_tag_all]
-
-    train_x1_sent = np.asarray(pairs[0], dtype="int32")
-    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
-    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
-    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
-
-    train_tag = np.asarray(pairs[4], dtype="int32")
-
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_tag, train_tag, train_tag, train_tag]
-
-    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('right_cos').output)
-    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
-
-    predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
-
-
-    width = len(tag2sentDict_test.keys())
-    assert len(predictions) // width == totel_right
-    assert len(truth_tag_list) == totel_right
-    predict_rank = 0
-
-    predict_class = 0
-    predict_right_class = 0
-
-    for i in range(len(predictions) // width) :
-        left = i * width
-        right = (i + 1) * width
-        # subpredictions = predictions[left:right]
-        # subpredictions = subpredictions.flatten().tolist()
-        #
-        # mindis = max(subpredictions)
-        # mindis_where = subpredictions.index(mindis)
-        #
-        # if mindis > 0.5:
-        #     predict += 1
-        #
-        #     if mindis_where == truth_tag_list[i]:
-        #         predict_right += 1
-
-        subpredictions = predictions[left:right]
-        subpredictions = subpredictions.flatten().tolist()
-
-        predict_class += 1
-
-
-        for k in range(top_k):
-
-            class_max = max(subpredictions)
-            class_where = subpredictions.index(class_max)
-            if class_where == truth_tag_list[i]:
-                predict_right_class += 1
-                break
-            else:
-                subpredictions[class_where] = -999
-
-
-    print('top_k-----------------------', top_k)
-
-    # P = predict_right / max(predict, 0.000001)
-    # R = predict_right / totel_right
-    # F = 2 * P * R / max((P + R), 0.000001)
-    # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
-    # print('test predict_rank = ', predict_rank / totel_right)
-    # print('P =, R =, F = ', P, R, F)
-
-    P = predict_right_class / max(predict_class, 0.000001)
-    R = predict_right_class / totel_right
-    F = 2 * P * R / max((P + R), 0.000001)
-
-    # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-    # print('test class ... P =, R =, F = ', P, R, F)
 
     return P, R, F
 
@@ -352,17 +225,6 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     P, R, F = test_model3(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the test model3 topk-2 result-----------------------')
-    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=2)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-    print('the test model3 topk-3 result-----------------------')
-    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=3)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-    print('the test model3 topk-5 result-----------------------')
-    P, R, F = test_model3_topk(nn_model, tagDict_test, top_k=5)
-    print('P = ', P, 'R = ', R, 'F = ', F)
 
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
@@ -434,20 +296,36 @@ def Dynamic_get_trainSet(istest):
     return inputs_train_x, inputs_train_y
 
 
-def get_new_tagDict_train(percent_of_trainset):
+def get_new_tagDict_train_rankTop(percent_of_trainset=43):
+
+
+    i_j = {}
+    j = tag4test
+
+    for ii, i in enumerate(tagDict_train.keys()):
+
+        vector_a = np.mat(type_W[i])
+        vector_b = np.mat(type_W[j])
+        num = float(vector_a * vector_b.T)
+        denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+        cos = num / denom
+        i_j[j] = cos
+
+    ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
+
+    ijdict = dict(ijlist)
+
+    Ranklist = list(ijdict.keys())
 
     new_tagDict_train = {}
 
-    i = 1
-    keylist = list(tagDict_train.keys())
-    while i <= percent_of_trainset:
-        rand = random.randrange(0, len(keylist))
+    i = 0
 
-        if keylist[rand] not in new_tagDict_train.keys():
-            new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
-            i += 1
-        else:
-            continue
+    while i < percent_of_trainset:
+
+        assert Ranklist[i] not in new_tagDict_train.keys()
+        new_tagDict_train[Ranklist[i]] = tagDict_train[Ranklist[i]]
+        i += 1
 
     print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
     assert len(new_tagDict_train.keys()) == percent_of_trainset
@@ -459,12 +337,11 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    percent_of_trainset = 65
+    # 100 place of death  106 father 98 programming language 103 publication date
+    tag4test = 100
+    percent_of_trainset = 43
 
-    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
-    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
-    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p65'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100'
 
 
     print(modelname)
@@ -523,9 +400,7 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-
-        new_tagDict_train = tagDict_train
-        new_tagDict_train = get_new_tagDict_train(percent_of_trainset)
+        new_tagDict_train = get_new_tagDict_train_rankTop()
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 

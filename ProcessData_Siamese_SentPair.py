@@ -143,18 +143,23 @@ def get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train):
 
         ijdict = dict(ijlist)
         # print(ijdict)
-        RankDict[i] = list(ijdict.keys())
+        # RankDict[i] = list(ijdict.keys())
         # assert i == RankDict[i][0]
+        RankDict[i] = ijdict
 
-    tmpdict = {}
-    for r in RankDict:
-        print(r, RankDict[r][0])
-        if RankDict[r][0] not in tmpdict:
-            tmpdict[RankDict[r][0]] = []
-        tmpdict[RankDict[r][0]].append(r)
+    for k in RankDict.keys():
+        print(k, target_id2word[k])
+        print(RankDict[k])
 
-    print(len(RankDict.keys()))
-    print(tmpdict)
+    # tmpdict = {}
+    # for r in RankDict:
+    #     print(r, RankDict[r][0])
+    #     if RankDict[r][0] not in tmpdict:
+    #         tmpdict[RankDict[r][0]] = []
+    #     tmpdict[RankDict[r][0]].append(r)
+    #
+    # print(len(RankDict.keys()))
+    # print(tmpdict)
 
     return RankDict
 
@@ -480,7 +485,6 @@ def get_prototypes_byques(target_vob, word_vob):
     f.close()
 
     return max_s, tagDict
-
 
 
 def get_sentDicts_neg(trainfile, max_s, max_posi, word_vob, char_vob, max_c):
@@ -1764,7 +1768,6 @@ def CreateTriplet_RankClassify42(tagDict_train, tagDict_dev, tagDict_test, type_
     return pairs
 
 
-
 def CreateTriplet_RankClassify421(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
     # version 1
 
@@ -2453,8 +2456,8 @@ if __name__=="__main__":
     print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
     # CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train)
-    get_rel_sim_rank(type_W)
+    # get_rel_sim_rank(type_W)
 
 
-    # get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train)
+    get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train)
 
