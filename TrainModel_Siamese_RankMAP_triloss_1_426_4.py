@@ -359,7 +359,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     # 100 place of death  106 father 98 programming language 103 publication date 109 chairperson
-    tag4test = 109
+    tag4test = 106
     percent_of_trainset = 20
 
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100'
