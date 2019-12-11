@@ -434,11 +434,53 @@ def Dynamic_get_trainSet(istest):
     return inputs_train_x, inputs_train_y
 
 
+def get_new_tagDict_train(percent_of_trainset):
+
+    new_tagDict_train = {}
+
+    i = 1
+    keylist = list(tagDict_train.keys())
+    while i <= percent_of_trainset:
+        rand = random.randrange(0, len(keylist))
+
+        if keylist[rand] not in new_tagDict_train.keys():
+            new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
+            i += 1
+        else:
+            continue
+
+    print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
+    assert len(new_tagDict_train.keys()) == percent_of_trainset
+
+    return new_tagDict_train
+
+
+def get_new_tagDict_train_rankTop(percent_of_trainset,):
+
+    new_tagDict_train = {}
+
+    i = 1
+    keylist = list(tagDict_train.keys())
+    while i <= percent_of_trainset:
+        rand = random.randrange(0, len(keylist))
+
+        if keylist[rand] not in new_tagDict_train.keys():
+            new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
+            i += 1
+        else:
+            continue
+
+    print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
+    assert len(new_tagDict_train.keys()) == percent_of_trainset
+
+    return new_tagDict_train
+
+
 if __name__ == "__main__":
 
     maxlen = 100
 
-    # percent_of_trainset = 65
+    percent_of_trainset = 65
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p22'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_p43'
@@ -502,22 +544,10 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        # new_tagDict_train = {}
-        # i = 1
-        # keylist = list(tagDict_train.keys())
-        # while i <= percent_of_trainset:
-        #     rand = random.randrange(0, len(keylist))
-        #
-        #     if keylist[rand] not in new_tagDict_train.keys():
-        #         new_tagDict_train[keylist[rand]] = tagDict_train[keylist[rand]]
-        #         i += 1
-        #     else:
-        #         continue
-        #
-        # print('len(new_tagDict_train)--------------', len(new_tagDict_train.keys()), percent_of_trainset)
-        # assert len(new_tagDict_train.keys()) == percent_of_trainset
 
-        new_tagDict_train = tagDict_train
+        # new_tagDict_train = tagDict_train
+
+        new_tagDict_train = get_new_tagDict_train(percent_of_trainset)
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
