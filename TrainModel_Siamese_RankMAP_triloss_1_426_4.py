@@ -309,7 +309,7 @@ def get_new_tagDict_train_rankTop(percent_of_trainset=43):
         num = float(vector_a * vector_b.T)
         denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
         cos = num / denom
-        i_j[j] = cos
+        i_j[i] = cos
 
     ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
 
