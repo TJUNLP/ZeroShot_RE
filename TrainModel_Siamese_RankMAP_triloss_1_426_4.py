@@ -422,8 +422,8 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        # new_tagDict_train = get_new_tagDict_train_rankTop()
-        new_tagDict_train = get_new_tagDict_train()
+        # new_tagDict_train = get_new_tagDict_train_rankTop(percent_of_trainset=percent_of_trainset)
+        new_tagDict_train = get_new_tagDict_train(percent_of_trainset=percent_of_trainset)
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
