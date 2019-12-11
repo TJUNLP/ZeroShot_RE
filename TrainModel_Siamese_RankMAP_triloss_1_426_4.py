@@ -207,7 +207,7 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
-        if earlystop >= 15:
+        if earlystop >= 10:
             break
 
     return nn_model
