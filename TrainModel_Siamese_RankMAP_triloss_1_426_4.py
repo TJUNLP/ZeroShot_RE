@@ -362,8 +362,8 @@ if __name__ == "__main__":
     tag4test = 100
     percent_of_trainset = 20
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_random_20'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_ascend_20'
     ascend = True
@@ -424,8 +424,8 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        # new_tagDict_train = get_new_tagDict_train_rankTop(dis_s2b=ascend, percent_of_trainset=percent_of_trainset)
-        new_tagDict_train = get_new_tagDict_train(percent_of_trainset=percent_of_trainset)
+        new_tagDict_train = get_new_tagDict_train_rankTop(dis_s2b=ascend, percent_of_trainset=percent_of_trainset)
+        # new_tagDict_train = get_new_tagDict_train(percent_of_trainset=percent_of_trainset)
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
 
