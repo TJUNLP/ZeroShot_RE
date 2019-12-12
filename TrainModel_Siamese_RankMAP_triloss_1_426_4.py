@@ -257,7 +257,7 @@ def test_model3_all(nn_model, tag2sentDict_test):
 
                 predict_class += 1
 
-                if labels_all == 1:
+                if labels_all[i] == 1:
                     predict_right_class += 1
 
 
