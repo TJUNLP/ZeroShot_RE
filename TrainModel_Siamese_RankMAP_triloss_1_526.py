@@ -1,26 +1,23 @@
 # -*- encoding:utf-8 -*-
 
-import tensorflow as tf
-config = tf.ConfigProto(allow_soft_placement=True)
-#最多占gpu资源的70%
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
-#开始不会给tensorflow全部gpu资源 而是按需增加
-config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
+# import tensorflow as tf
+# config = tf.ConfigProto(allow_soft_placement=True)
+# #最多占gpu资源的70%
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+# #开始不会给tensorflow全部gpu资源 而是按需增加
+# config.gpu_options.allow_growth = True
+# sess = tf.Session(config=config)
 
 import pickle, datetime, codecs, math, gc
 import os.path
 import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+
 from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1
-from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_3
+
 import keras
-from clr_callback import *
-from keras.optimizers import *
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+
 
 def test_model3(nn_model, tag2sentDict_test):
 
@@ -97,7 +94,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold == 0.0:
+    while threshold < 1.001:
 
         predict_class = 0
         predict_right_class = 0
@@ -141,10 +138,10 @@ def test_model3(nn_model, tag2sentDict_test):
         R = predict_right_class / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
         print('threshold-------------------------', threshold)
-        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+        # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
         print('test class ... P =, R =, F = ', P, R, F)
 
-        threshold += 0.2
+        threshold += 0.05
 
     return P, R, F
 
@@ -159,17 +156,10 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
     nn_model.summary()
 
-    inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
-    inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
-
     early_stopping = EarlyStopping(monitor='val_loss', patience=8)
     checkpointer = ModelCheckpoint(filepath=modelfile + ".best_model.h5", monitor='val_loss', verbose=0,
                                    save_best_only=True, save_weights_only=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=8, min_lr=0.00001)
-    clr_triangular = CyclicLR(mode='triangular2',
-                              base_lr=0.001,
-                              max_lr=0.006,
-                              step_size=2 * math.ceil(len(inputs_train_y[0]) / batch_size))
 
     # nn_model.fit(inputs_train_x, inputs_train_y,
     #              batch_size=batch_size,
@@ -194,6 +184,9 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
+        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
+
         nn_model.fit(inputs_train_x, inputs_train_y,
                                batch_size=batch_size,
                                epochs=increment,
@@ -201,19 +194,11 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
-                               callbacks=[clr_triangular])
-
-        # if nowepoch % 3 == 0:
-        #     plt.xlabel('Training Iterations')
-        #     plt.ylabel('Learning Rate')
-        #     plt.title("CLR - 'triangular' Policy")
-        #     plt.plot(clr_triangular.history['iterations'], clr_triangular.history['lr'])
-        #     plt.show()
+                               callbacks=[reduce_lr])
 
         print('the test result-----------------------')
         # loss, acc = nn_model.evaluate(inputs_dev_x, inputs_dev_y, batch_size=batch_size, verbose=0)
         P, R, F = test_model3(nn_model, tagDict_test)
-        # P, R, F = 0,0,0
         if F > maxF:
             earlystop = 0
             maxF = F
@@ -221,11 +206,8 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
 
         print(str(inum), nowepoch, earlystop, F, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>maxF=', maxF)
 
-        if earlystop >= 10:
+        if earlystop >= 15:
             break
-
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet(istest=False)
-        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet(istest=True)
 
     return nn_model
 
@@ -261,11 +243,10 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_010101_427':
-        margin1 = 0.1
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426':
+        margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
-
 
         nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
@@ -277,23 +258,6 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size,
                                                   margin1=margin1, margin2=margin2, margin3=margin3)
-
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_RMSprop_0080101_427':
-        margin1 = 0.08
-        margin2 = 0.1
-        margin3 = 0.1
-
-        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_3(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                    tagvocabsize=tagvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size,
-                                                  margin1=margin1, margin2=margin2, margin3=margin3)
-
 
     return nn_model
 
@@ -335,9 +299,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0101501_427'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_010101_427'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_RMSprop_0080101_427'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
     print(modelname)
 
