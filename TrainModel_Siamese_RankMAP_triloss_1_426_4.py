@@ -174,8 +174,7 @@ def test_model3_all(nn_model, tag2sentDict_test):
 
 
     for tag in tag2sentDict_test.keys():
-        if tag != tag4test:
-            continue
+
         sents = tag2sentDict_test[tag]
 
         for s in range(1, len(sents)//2):
