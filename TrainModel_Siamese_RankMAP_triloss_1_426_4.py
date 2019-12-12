@@ -147,7 +147,6 @@ def test_model3(nn_model, tag2sentDict_test):
     return P, R, F
 
 
-
 def test_model3_all(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -358,11 +357,6 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     P, R, F = test_model3(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
-    print('the test_model3_all result-----------------------')
-    P, R, F = test_model3_all(nn_model, tagDict_test)
-    print('P = ', P, 'R = ', R, 'F = ', F)
-
-
     # print('the train sent representation-----------------------')
     # P, R, F = test_model(nn_model, tagDict_train, needembed=True, w2file=w2file+'.train.txt')
     # print('P = ', P, 'R = ', R, 'F = ', F)
@@ -383,7 +377,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id109_ascend_20':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
@@ -496,13 +490,14 @@ if __name__ == "__main__":
     maxlen = 100
 
     # 100 place of death  106 father 98 programming language 103 publication date 109 chairperson
-    tag4test = 100
+    tag4test = 109
     percent_of_trainset = 20
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_ascend_20'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id109_ascend_20'
     ascend = True
 
     print(modelname)
