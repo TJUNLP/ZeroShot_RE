@@ -147,6 +147,140 @@ def test_model3(nn_model, tag2sentDict_test):
     return P, R, F
 
 
+
+def test_model3_all(nn_model, tag2sentDict_test):
+
+    predict = 0
+    predict_right = 0
+
+    predict_class = 0
+    predict_right_class = 0
+
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    data_tag_all = []
+
+    labels_all = []
+    tag4test_posi = []
+    totel_right = 0
+
+    tagDict_prototypes = ProcessData_Siamese_SentPair.\
+        get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
+    assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
+
+
+    for tag in tag2sentDict_test.keys():
+        if tag != tag4test:
+            continue
+        sents = tag2sentDict_test[tag]
+
+        for s in range(1, len(sents)//2):
+            totel_right += 1
+
+            for si, ty in enumerate(tagDict_prototypes.keys()):
+
+                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
+
+                data_tag_all.append([ty])
+
+                if ty == tag4test:
+                    if si not in tag4test_posi:
+                        tag4test_posi.append(si)
+                    assert len(tag4test_posi) == 1
+
+            if tag == tag4test:
+                labels_all.append(1)
+            else:
+                labels_all.append(0)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0, data_tag_all]
+
+    train_x1_sent = np.asarray(pairs[0], dtype="int32")
+    train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
+    train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
+    train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+
+    train_tag = np.asarray(pairs[4], dtype="int32")
+
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
+                      train_tag, train_tag, train_tag, train_tag]
+
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('right_cos').output)
+    # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+    #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
+
+    predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+
+
+    width = len(tag2sentDict_test.keys())
+    assert len(predictions) // width == totel_right
+    assert len(labels_all) == totel_right
+    predict_rank = 0
+
+    P, R, F = 0., 0., 0.
+    threshold = 0.0
+    while threshold == 0.0:
+
+        predict_class = 0
+        predict_right_class = 0
+
+        for i in range(len(predictions) // width) :
+            left = i * width
+            right = (i + 1) * width
+            # subpredictions = predictions[left:right]
+            # subpredictions = subpredictions.flatten().tolist()
+            #
+            # mindis = max(subpredictions)
+            # mindis_where = subpredictions.index(mindis)
+            #
+            # if mindis > 0.5:
+            #     predict += 1
+            #
+            #     if mindis_where == truth_tag_list[i]:
+            #         predict_right += 1
+
+            subpredictions = predictions[left:right]
+            subpredictions = subpredictions.flatten().tolist()
+            class_max = max(subpredictions)
+            class_where = subpredictions.index(class_max)
+
+            if tag4test_posi[0] == class_where:
+
+                predict_class += 1
+
+                if labels_all == 1:
+                    predict_right_class += 1
+
+
+
+        # P = predict_right / max(predict, 0.000001)
+        # R = predict_right / totel_right
+        # F = 2 * P * R / max((P + R), 0.000001)
+        # print('predict_right =, predict =, totel_right = ', predict_right, predict, totel_right)
+        # print('test predict_rank = ', predict_rank / totel_right)
+        # print('P =, R =, F = ', P, R, F)
+
+        P = predict_right_class / max(predict_class, 0.000001)
+        R = predict_right_class / totel_right
+        F = 2 * P * R / max((P + R), 0.000001)
+        print('threshold-------------------------', threshold)
+        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+        print('test class ... P =, R =, F = ', P, R, F)
+
+        threshold += 0.2
+
+    return P, R, F
+
+
 def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
                     resultdir,
                     npoches=100, batch_size=50, retrain=False, inum=0):
@@ -223,6 +357,10 @@ def infer_e2e_model(nnmodel, modelname, modelfile, resultdir, w2file=''):
     # print('P = ', P, 'R = ', R, 'F = ', F)
     print('the test 3 result-----------------------')
     P, R, F = test_model3(nn_model, tagDict_test)
+    print('P = ', P, 'R = ', R, 'F = ', F)
+
+    print('the test_model3_all result-----------------------')
+    P, R, F = test_model3_all(nn_model, tagDict_test)
     print('P = ', P, 'R = ', R, 'F = ', F)
 
 
