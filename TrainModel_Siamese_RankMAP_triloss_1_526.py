@@ -1,12 +1,12 @@
 # -*- encoding:utf-8 -*-
 
-# import tensorflow as tf
-# config = tf.ConfigProto(allow_soft_placement=True)
-# #最多占gpu资源的70%
-# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
-# #开始不会给tensorflow全部gpu资源 而是按需增加
-# config.gpu_options.allow_growth = True
-# sess = tf.Session(config=config)
+import tensorflow as tf
+config = tf.ConfigProto(allow_soft_placement=True)
+#最多占gpu资源的70%
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+#开始不会给tensorflow全部gpu资源 而是按需增加
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
 
 import pickle, datetime, codecs, math, gc
 import os.path
@@ -243,7 +243,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_526':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
@@ -269,8 +269,8 @@ def Dynamic_get_trainSet(istest):
     else:
         tagDict = tagDict_train
 
-    pairs_train = ProcessData_Siamese_SentPair.\
-        CreateTriplet_RankClassify421(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
+    pairs_train = ProcessData_Siamese_SentPair. \
+        CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
 
     print('CreatePairs train len = ', len(pairs_train[0]))
 
@@ -299,7 +299,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_526'
 
     print(modelname)
 

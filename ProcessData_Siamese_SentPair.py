@@ -1905,18 +1905,51 @@ def CreateTriplet_RankClassify421(tagDict_train, tagDict_dev, tagDict_test, type
 
 
 def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=False):
-    # version 1
 
-    RankDict = {}
+    testlist = list(tagDict_dev.keys()) + list(tagDict_test.keys())
+    assert len(testlist) == (24 + 9)
+
+    Rank_te2tr_Dict = {}
+    for ji, j in enumerate(testlist):
+        j_i = {}
+
+        for ii, i in enumerate(tagDict_train.keys()):
+            vector_a = np.mat(type_W[i])
+            vector_b = np.mat(type_W[j])
+            num = float(vector_a * vector_b.T)
+            denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+            cos = num / denom
+            j_i[i] = cos
+
+        ijlist = sorted(j_i.items(), key=lambda x: x[1], reverse=True)
+
+        ijdict = dict(ijlist)
+
+        Rank_te2tr_Dict[j] = list(ijdict.keys())
+
+
+    tr_in_te_Dict = {}
+
+    top_K = 20
+
+    for ki in list(Rank_te2tr_Dict.keys()):
+        for vi in Rank_te2tr_Dict[ki][:top_K]:
+
+            va = Rank_te2tr_Dict[ki][vi]
+            if va not in tr_in_te_Dict.keys():
+                tr_in_te_Dict[va] = []
+
+            assert ki not in tr_in_te_Dict[va]
+            tr_in_te_Dict[va].append(ki)
+
+
+    Rank_tr2te_Dict = {}
+
     for ii, i in enumerate(tagDict_train.keys()):
 
         i_j = {}
-        testlist = list(tagDict_dev.keys()) + list(tagDict_test.keys())
-        assert len(testlist) == (24 + 9)
 
         for ji, j in enumerate(testlist):
-            # if i == j:
-            #     continue
             vector_a = np.mat(type_W[i])
             vector_b = np.mat(type_W[j])
             num = float(vector_a * vector_b.T)
@@ -1924,14 +1957,10 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
             cos = num / denom
             i_j[j] = cos
 
-        # print(i, mw, maxs)
-
         ijlist = sorted(i_j.items(), key=lambda x: x[1], reverse=True)
 
         ijdict = dict(ijlist)
-        # print(ijdict)
-        RankDict[i] = list(ijdict.keys())
-        # assert i == RankDict[i][0]
+        Rank_tr2te_Dict[i] = list(ijdict.keys())
 
     # print(RankDict)
     # print(len(RankDict.keys()), len(RankDict[0]))
@@ -1941,7 +1970,6 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
 
     # print(tagDict.keys())
 
-    relRankDict = RankDict
 
     data_tag_all_p = []
     data_tag_all_n = []
@@ -1976,7 +2004,13 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
 
-                ranklist = relRankDict[tag]
+                data_tag_all_a.append([tag])
+
+                labels.append(tag)
+
+
+
+                ranklist = Rank_tr2te_Dict[tag]
                 ran1 = random.randrange(0, len(ranklist) - 1)
 
                 data_tag_all_p.append([ranklist[ran1]])
@@ -1987,16 +2021,17 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
 
                 data_tag_all_n.append([keylist[ran2]])
 
-                data_tag_all_a.append([tag])
 
-                labels.append(tag)
-
-                keylist = list(tagDict_train.keys())
+                keylist = tr_in_te_Dict[tag]
                 ran3 = random.randrange(0, len(keylist))
-                if keylist[ran3] == tag:
-                    ran3 = (ran3 + 1) % len(keylist)
+                assert keylist[ran3] in testlist
+                ranklist = Rank_te2tr_Dict[keylist[ran3]][:top_K]
 
-                data_tag_all_n0.append([keylist[ran3]])
+                ran3 = random.randrange(0, len(ranklist))
+                if ranklist[ran3] == tag:
+                    ran3 = (ran3 + 1) % len(ranklist)
+
+                data_tag_all_n0.append([ranklist[ran3]])
 
     else:
         for tag in tagDict_dev.keys():
@@ -2020,7 +2055,7 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
 
                 data_tag_all_p.append([tag])
 
-                keylist = list(relRankDict.keys())
+                keylist = list(Rank_tr2te_Dict.keys())
 
                 ran1 = random.randrange(0, len(keylist))
                 if keylist[ran1] == tag:
