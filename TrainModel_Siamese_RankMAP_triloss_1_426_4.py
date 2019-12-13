@@ -496,14 +496,14 @@ if __name__ == "__main__":
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_ascend_20'
-    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id109_ascend_20'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id109_ascend_20'
     ascend = True
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_descend_20'
     ascend = False
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_random_20'
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
     print(modelname)
 
