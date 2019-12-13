@@ -148,7 +148,6 @@ import keras
 #     return P, R, F
 
 
-
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -176,9 +175,10 @@ def test_model3(nn_model, tag2sentDict_test):
     truth_tag_list = []
 
     tag = 109
+
     sents = tag2sentDict_test[tag]
 
-    for s in range(1, len(sents)//2):
+    for s in range(1, len(sents)):
         totel_right += 1
 
         for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -205,15 +205,16 @@ def test_model3(nn_model, tag2sentDict_test):
     train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
 
-    train_tag = np.asarray(pairs[4], dtype="int32")
+    train_tag_p = np.asarray(pairs[4], dtype="int32")
+    train_tag_n = train_tag_p
 
     inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr,
-                      train_tag, train_tag, train_tag, train_tag]
+                      train_tag_p, train_tag_n]
 
-    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-                                                  outputs=nn_model.get_layer('right_cos').output)
     # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
-    #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
+    #                                               outputs=nn_model.get_layer('right_cos').output)
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('right_cos').get_output_at(0))
 
     predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
 
