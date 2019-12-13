@@ -377,7 +377,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_descend_20':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
@@ -488,21 +488,22 @@ def get_new_tagDict_train_rankTop(percent_of_trainset=43, dis_s2b=True):
 if __name__ == "__main__":
 
     maxlen = 100
+    percent_of_trainset = 20
 
     # 100 place of death  106 father 98 programming language 103 publication date 109 chairperson
+
     tag4test = 109
-    percent_of_trainset = 20
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_ascend_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_ascend_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id109_ascend_20'
     ascend = True
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_descend_20'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_descend_20'
     ascend = False
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id100_random_20'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_id106_random_20'
 
-
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
     print(modelname)
 
