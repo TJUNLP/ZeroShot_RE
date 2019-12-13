@@ -2014,20 +2014,16 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
 
                 ranklist = Rank_tr2te_Dict[tag]
                 ran1 = random.randrange(0, len(ranklist) - 1)
-
-                data_tag_all_p.append([ranklist[ran1]])
+                now_tag = ranklist[ran1]
+                data_tag_all_p.append([now_tag])
 
                 keylist = list(ranklist[(ran1 + 1):])
-
                 ran2 = random.randrange(0, len(keylist))
-
                 data_tag_all_n.append([keylist[ran2]])
 
 
-                keylist = tr_in_te_Dict[tag]
-                ran3 = random.randrange(0, len(keylist))
-                assert keylist[ran3] in testlist
-                ranklist = Rank_te2tr_Dict[keylist[ran3]][:top_K]
+                assert now_tag in testlist
+                ranklist = Rank_te2tr_Dict[now_tag][:top_K]
 
                 ran3 = random.randrange(0, len(ranklist))
                 if ranklist[ran3] == tag:
