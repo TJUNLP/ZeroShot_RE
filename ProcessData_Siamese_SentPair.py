@@ -1985,6 +1985,10 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
     if istest == False:
 
         for tag in tagDict_train.keys():
+
+            if tag not in tr_in_te_Dict:
+                continue
+
             sents = tagDict_train[tag]
 
             if len(sents) < 2:
@@ -2006,7 +2010,6 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
                 data_tag_all_a.append([tag])
 
                 labels.append(tag)
-
 
 
                 ranklist = Rank_tr2te_Dict[tag]
