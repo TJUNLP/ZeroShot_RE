@@ -1933,9 +1933,8 @@ def CreateTriplet_RankClassify521(tagDict_train, tagDict_dev, tagDict_test, type
     top_K = 20
 
     for ki in list(Rank_te2tr_Dict.keys()):
-        for vi in Rank_te2tr_Dict[ki][:top_K]:
+        for va in Rank_te2tr_Dict[ki][:top_K]:
 
-            va = Rank_te2tr_Dict[ki][vi]
             if va not in tr_in_te_Dict.keys():
                 tr_in_te_Dict[va] = []
 
