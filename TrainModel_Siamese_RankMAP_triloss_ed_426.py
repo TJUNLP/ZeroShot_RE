@@ -87,8 +87,8 @@ def test_model3(nn_model, tag2sentDict_test):
     predict_rank = 0
 
     P, R, F = 0., 0., 0.
-    threshold = 10
-    while threshold > -0.01:
+    threshold = 8
+    while threshold > 2.0:
 
         predict_class = 0
         predict_right_class = 0
