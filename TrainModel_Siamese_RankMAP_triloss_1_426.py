@@ -139,11 +139,11 @@ def test_model3(nn_model, tag2sentDict_test):
         P = predict_right_class / max(predict_class, 0.000001)
         R = predict_right_class / totel_right
         F = 2 * P * R / max((P + R), 0.000001)
-        print('threshold-------------------------', threshold)
-        print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-        print('test class ... P =, R =, F = ', P, R, F)
-
-        threshold += 0.05
+        # print('threshold-------------------------', threshold)
+        # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
+        # print('test class ... P =, R =, F = ', P, R, F)
+        print(str(P) + ' ' + str(R))
+        threshold += 0.02
 
     return P, R, F
 
@@ -345,8 +345,8 @@ if __name__ == "__main__":
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_00801015_426'
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100505_426'
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100101_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100505_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100101_426'
 
 
     # modelname = 'Model_ONBiLSTM_Atten_RankMAP_three_triloss_0080101_426'
