@@ -136,7 +136,7 @@ def test_model3(nn_model, tag2sentDict_test):
         # print('test class ... P =, R =, F = ', P, R, F)
         print(str(P) + ' ' + str(R))
 
-        threshold -= 0.05
+        threshold -= 0.1
 
     return P, R, F
 
