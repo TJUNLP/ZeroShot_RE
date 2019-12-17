@@ -94,7 +94,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
     P, R, F = 0., 0., 0.
     threshold = 0.0
-    while threshold == 0.0:
+    while threshold <= 1.01:
 
         predict_class = 0
         predict_right_class = 0
@@ -141,7 +141,7 @@ def test_model3(nn_model, tag2sentDict_test):
         # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
         print('test class ... P =, R =, F = ', P, R, F)
 
-        threshold += 0.05
+        threshold += 0.02
 
     return P, R, F
 
