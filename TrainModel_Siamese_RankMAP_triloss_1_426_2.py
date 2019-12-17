@@ -139,8 +139,8 @@ def test_model3(nn_model, tag2sentDict_test):
         F = 2 * P * R / max((P + R), 0.000001)
         # print('threshold-------------------------', threshold)
         # print('predict_right_class =, predict_class =, totel_right = ', predict_right_class, predict_class, totel_right)
-        # print('test class ... P =, R =, F = ', P, R, F)
-        print(str(P) + ' ' + str(R))
+        print('test class ... P =, R =, F = ', P, R, F)
+        # print(str(P) + ' ' + str(R))
         threshold += 0.05
 
     return P, R, F
