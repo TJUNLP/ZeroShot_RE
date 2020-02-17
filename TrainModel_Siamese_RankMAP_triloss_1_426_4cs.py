@@ -48,7 +48,7 @@ def test_model3(nn_model, tag2sentDict_test):
     tag = tag4test
     sents = tag2sentDict_test[tag]
 
-    for s in range(1, len(sents)//2):
+    for s in range(1, 2):
         totel_right += 1
 
         for si, ty in enumerate(tagDict_prototypes.keys()):
@@ -125,6 +125,16 @@ def test_model3(nn_model, tag2sentDict_test):
 
                 if class_where == truth_tag_list[i]:
                     predict_right_class += 1
+
+            tempdict = {}
+            j = left
+            while j < right:
+                tempdict[target_id2word[j]] = 1 - predictions[j]
+
+            print(list(tempdict))
+
+
+
 
 
 
@@ -489,7 +499,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    percent_of_trainset = 20
+    # percent_of_trainset = 20
 
     # 100 place of death  106 father 98 programming language 103 publication date 109 chairperson
 
@@ -562,7 +572,8 @@ if __name__ == "__main__":
         posi_W, posi_k, type_W, type_k, \
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
-        new_tagDict_train = get_new_tagDict_train_rankTop(dis_s2b=ascend, percent_of_trainset=percent_of_trainset)
+        new_tagDict_train = tagDict_train
+        # new_tagDict_train = get_new_tagDict_train_rankTop(dis_s2b=ascend, percent_of_trainset=percent_of_trainset)
         # new_tagDict_train = get_new_tagDict_train(percent_of_trainset=percent_of_trainset)
 
         relRankDict = ProcessData_Siamese_SentPair.get_rel_sim_rank(type_W)
