@@ -48,7 +48,8 @@ def test_model3(nn_model, tag2sentDict_test):
     tag = tag4test
     sents = tag2sentDict_test[tag]
 
-    for s in range(1, 2):
+    # for s in range(1, 2):
+    for s in [22]:
         totel_right += 1
 
         for si, ty in enumerate(tagDict_prototypes.keys()):
