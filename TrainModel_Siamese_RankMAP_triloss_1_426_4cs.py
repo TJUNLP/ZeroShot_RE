@@ -129,7 +129,9 @@ def test_model3(nn_model, tag2sentDict_test):
             tempdict = {}
             j = left
             while j < right:
-                tempdict[target_id2word[j]] = 1 - predictions[j]
+                num = tagDict_prototypes.keys()[j]
+                tempdict[num+'_'+target_id2word[num]] = 1 - predictions[j]
+                j+=1
 
             print(list(tempdict))
 
