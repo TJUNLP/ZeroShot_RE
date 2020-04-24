@@ -18,6 +18,7 @@ from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_1
 from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_chain_2
 from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_chain_1
 from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_weight_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_Dense_1
 import keras
 
 
@@ -262,13 +263,12 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   batch_size=batch_size,
                                                   margin1=margin1, margin2=margin2, margin3=margin3)
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_ptrain':
+    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_Dense_0080101_426':
         margin1 = 0.08
         margin2 = 0.1
         margin3 = 0.1
-        ptrain = True
 
-        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize=wordvocabsize,
+        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_Dense_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -277,8 +277,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   input_maxword_length=max_c,
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size,
-                                                  margin1=margin1, margin2=margin2, margin3=margin3,
-                                                  ptrainable=ptrain)
+                                                  margin1=margin1, margin2=margin2, margin3=margin3)
 
     if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100101_426':
         margin1 = 0.08
@@ -364,7 +363,7 @@ if __name__ == "__main__":
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_00801015_426'
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_ptrain'
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_Dense_0080101_426'
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100505_426'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100101_426'
