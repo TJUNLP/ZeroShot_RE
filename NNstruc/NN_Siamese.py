@@ -639,7 +639,7 @@ def Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, charvoc
                                     output_dim=posi2v_k,
                                     input_length=input_sent_lenth,
                                     mask_zero=False,
-                                    trainable=ptrainable,
+                                    trainable=False,
                                     weights=[posi_W])
 
     embedding_e1_posi_x1 = embedding_posi_layer(input_e1_posi_x1)
@@ -664,7 +664,7 @@ def Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize, posivocabsize, charvoc
                                     output_dim=tag2v_k,
                                     input_length=1,
                                     mask_zero=False,
-                                    trainable=False,
+                                    trainable=ptrainable,
                                     weights=[tag_W])
 
     tag_embedding_p = tag_embedding_layer(input_tag_p)
