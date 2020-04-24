@@ -14,6 +14,8 @@ import numpy as np
 import ProcessData_Siamese_SentPair
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Siamese import Model_ONBiLSTM_directClassifybyLSTM_1
+from NNstruc.NN_Siamese import Model_ONBiLSTM_directClassifybyLSTM_3
+
 
 import keras
 

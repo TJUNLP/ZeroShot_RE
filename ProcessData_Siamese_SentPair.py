@@ -127,7 +127,7 @@ def get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train):
 
         i_j = {}
 
-        for ji, j in enumerate(trainlist):
+        for ji, j in enumerate(testlist):
             # if i == j:
             #     continue
             vector_a = np.mat(type_W[i])
