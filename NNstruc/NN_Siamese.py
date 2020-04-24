@@ -759,9 +759,9 @@ def Model_ONBiLSTM_RankMAP_three_triloss_Dense_1(wordvocabsize, posivocabsize, c
     BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
 
     Dense_layer = Dense(tag2v_k, activation=None, use_bias=False,
-                        # kernel_constraint=UnitNorm(axis=0),
-                        kernel_regularizer=l2(0.01),
-                        activity_regularizer=l2(0.01))
+                        kernel_constraint=UnitNorm(axis=0),
+                        # kernel_regularizer=l2(0.01),activity_regularizer=l2(0.01)
+                        )
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
