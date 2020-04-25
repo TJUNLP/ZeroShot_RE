@@ -545,6 +545,37 @@ def get_rel2v_ave_glove100():
     fw.close()
 
 
+def noises_4_rel2v():
+    rel2v_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.txt"
+    rel2v_noise10_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.noise10.txt"
+    fr = codecs.open(rel2v_file, 'r', encoding='utf-8')
+    fw = open(rel2v_noise10_file, 'w', encoding='utf-8')
+
+    for line in fr.readlines():
+        values = line.rstrip('\n').split()
+        word = values[0:-100]
+        coefs = values[-100:]
+        print(word)
+
+        noise_count = 100 * 0.1
+
+        i = 0
+        while(i < noise_count):
+            w = random.randint(0, 99)
+            coefs[w] = 0.0
+            i +=1
+
+        wstring = ''
+        for item in word:
+            wstring += ' ' + str(item)
+        for item in coefs:
+            wstring += ' ' + str(item)
+        fw.write(wstring[1:] + '\n')
+
+    fr.close()
+    fw.close()
+
+
 def find_rel_from_corpus():
 
     f = './data/WikiReading/'
@@ -643,6 +674,8 @@ if __name__ == '__main__':
 
     # get_rel2v_ave_glove100()
 
+    noises_4_rel2v()
+
     # find_rel_from_corpus()
 
     # find_rel_questions_from_corpus()
@@ -651,7 +684,7 @@ if __name__ == '__main__':
 
     # change_neg2Unknow()
 
-    Process_Corpus_2()
+    # Process_Corpus_2()
 
     # Split_zeroshotData_2_train_test()
 
