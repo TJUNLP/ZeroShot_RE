@@ -71,7 +71,8 @@ def test_model3(nn_model, tag2sentDict_test):
 
         if mindis > 0.0:
             predict += 1
-
+            if(mindis_where <= 95 or mindis_where >= 120):
+                print(mindis_where, class_labels[i], len(subpredictions))
             assert mindis_where > 95 and mindis_where < 120
             assert class_labels[i] > 95 and class_labels[i] < 120
 
