@@ -12,7 +12,7 @@ from keras import backend as K
 from keras.layers import merge, Lambda, Flatten, Activation
 from keras.layers.merge import dot, Dot
 from flipGradientTF import GradientReversal
-
+from keras_ordered_neurons import ONLSTM
 
 def Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
@@ -310,15 +310,15 @@ def Model_BiLSTM_Classifier(wordvocabsize, posivocabsize, charvocabsize, tagvoca
 
     embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
 
-    BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')
+    # BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')
+    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
     BiLSTM_x1 = BiLSTM_layer(embedding_x1)
-    BiLSTM_x1 = Dropout(0.25)(BiLSTM_x1)
+    class_BiLSTM = Dropout(0.5)(BiLSTM_x1)
 
-    class_BiLSTM = Dense(200, activation='tanh', name='class_BiLSTM')(BiLSTM_x1)
-    class_BiLSTM = Dropout(0.5)(class_BiLSTM)
     class_output = Dense(120)(class_BiLSTM)
     class_output = Activation('softmax', name='CLASS')(class_output)
 
