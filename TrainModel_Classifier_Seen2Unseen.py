@@ -42,7 +42,7 @@ def test_model3(nn_model, tag2sentDict_test):
             char_s_all_0.append(char_s)
 
             class_labels.append(tag)
-            
+
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0]
 
@@ -71,6 +71,9 @@ def test_model3(nn_model, tag2sentDict_test):
 
         if mindis > 0.0:
             predict += 1
+
+            assert mindis_where > 95 and mindis_where < 120
+            assert class_labels[i] > 95 and class_labels[i] < 120
 
             if mindis_where == class_labels[i]:
                 predict_right += 1
