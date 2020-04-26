@@ -67,7 +67,7 @@ def test_model3(nn_model, tag2sentDict_test):
         subpredictions = subpredictions.flatten().tolist()
 
         mindis = max(subpredictions)
-        mindis_where = subpredictions.index(mindis)+95
+        mindis_where = subpredictions.index(mindis)+96
 
         if mindis > 0.0:
             predict += 1
