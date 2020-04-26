@@ -244,21 +244,21 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_noise10':
-        margin1 = 0.08
-        margin2 = 0.1
-        margin3 = 0.1
 
-        nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize=wordvocabsize,
-                                                  posivocabsize=posivocabsize,
-                                                  charvocabsize=charvocabsize,
-                                                    tagvocabsize=tagvocabsize,
-                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
-                                                  input_sent_lenth=input_sent_lenth,
-                                                  input_maxword_length=max_c,
-                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
-                                                  batch_size=batch_size,
-                                                  margin1=margin1, margin2=margin2, margin3=margin3)
+    margin1 = 0.08
+    margin2 = 0.1
+    margin3 = 0.1
+
+    nn_model = Model_ONBiLSTM_RankMAP_three_triloss_1(wordvocabsize=wordvocabsize,
+                                              posivocabsize=posivocabsize,
+                                              charvocabsize=charvocabsize,
+                                                tagvocabsize=tagvocabsize,
+                                              word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                              input_sent_lenth=input_sent_lenth,
+                                              input_maxword_length=max_c,
+                                              w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                              batch_size=batch_size,
+                                              margin1=margin1, margin2=margin2, margin3=margin3)
 
     return nn_model
 
@@ -300,9 +300,10 @@ if __name__ == "__main__":
 
     maxlen = 100
 
+    noise = 'noise10'
+    noise = 'noise5'
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_noise10'
-
+    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_' + noise
 
 
 
@@ -312,7 +313,7 @@ if __name__ == "__main__":
     w2v_file = "./data/w2v/glove.6B.100d.txt"
     c2v_file = "./data/w2v/C0NLL2003.NER.c2v.txt"
     t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
-    t2v_noise10_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.noise10.txt"
+    t2v_noise_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d." + noise + ".txt"
 
     # trainfile = './data/annotated_fb__zeroshot_RE.random.train.txt'
     # testfile = './data/annotated_fb__zeroshot_RE.random.test.txt'
@@ -364,7 +365,7 @@ if __name__ == "__main__":
         max_s, max_posi, max_c = pickle.load(open(datafile, 'rb'))
 
         type_k, type_W = ProcessData_Siamese_SentPair\
-            .load_vec_KGrepresentation(t2v_noise10_file, target_vob, k=type_k)
+            .load_vec_KGrepresentation(t2v_noise_file, target_vob, k=type_k)
         print('TYPE_k, TYPE_W', type_k, len(type_W[0]))
 
         nn_model = SelectModel(modelname,

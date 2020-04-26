@@ -547,9 +547,9 @@ def get_rel2v_ave_glove100():
 
 def noises_4_rel2v():
     rel2v_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.txt"
-    rel2v_noise10_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.noise10.txt"
+    rel2v_noise5_file = "./data/WikiReading/WikiReading.rel2v.by_glove.100d.noise5.txt"
     fr = codecs.open(rel2v_file, 'r', encoding='utf-8')
-    fw = open(rel2v_noise10_file, 'w', encoding='utf-8')
+    fw = open(rel2v_noise5_file, 'w', encoding='utf-8')
 
     for line in fr.readlines():
         values = line.rstrip('\n').split()
@@ -557,7 +557,7 @@ def noises_4_rel2v():
         coefs = values[-100:]
         print(word)
 
-        noise_count = 100 * 0.1
+        noise_count = 100 * 0.05
 
         i = 0
         while(i < noise_count):
