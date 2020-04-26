@@ -61,9 +61,9 @@ def test_model3(nn_model, tag2sentDict_test):
     predict = 0
     predict_right = 0
 
-    for i in range(len(predictions)) :
+    for i in range(len(predictions)):
 
-        subpredictions = predictions[-24:]
+        subpredictions = predictions[i][-24:]
         subpredictions = subpredictions.flatten().tolist()
 
         mindis = max(subpredictions)
