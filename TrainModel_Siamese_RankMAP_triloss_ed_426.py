@@ -85,8 +85,8 @@ def test_model3(nn_model, tag2sentDict_test):
         predict_right = 0
         best_F = 0
 
-        threshold = 0.0
-        while threshold <= 1.01:
+        threshold = 8
+        while threshold > 2.0:
 
             predict_class = 0
             predict_right_class = 0
@@ -97,10 +97,9 @@ def test_model3(nn_model, tag2sentDict_test):
 
                 subpredictions = predictions[left:right]
                 subpredictions = subpredictions.flatten().tolist()
-                class_max = max(subpredictions)
+                class_max = min(subpredictions)
                 class_where = subpredictions.index(class_max)
-
-                if class_max > threshold:
+                if class_max <= threshold:
                     predict_class += 1
 
                     if class_where == truth_tag_list[i]:
@@ -116,7 +115,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 best_F = F
 
 
-            threshold += 0.025
+            threshold -= 0.1
 
         # print(ii, '  best_F=', best_F)
 
@@ -460,7 +459,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(2, 3):
+    for inum in range(0, 3):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
