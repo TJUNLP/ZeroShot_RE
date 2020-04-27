@@ -114,7 +114,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 best_F = F
 
 
-            threshold += 0.025
+            threshold += 0.01
 
         # print(ii, '  best_F=', best_F)
 
