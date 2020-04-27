@@ -22,7 +22,7 @@ from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_Dense_1
 import keras
 
 
-'''
+
 def test_model3(nn_model, tag2sentDict_test):
 
     predict_all = 0
@@ -131,9 +131,9 @@ def test_model3(nn_model, tag2sentDict_test):
     print('P =, R =, F = ', P, R, F)
 
     return P, R, F
+
+
 '''
-
-
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -259,7 +259,7 @@ def test_model3(nn_model, tag2sentDict_test):
         threshold += 0.05
 
     return P, R, F
-
+'''
 
 
 def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
