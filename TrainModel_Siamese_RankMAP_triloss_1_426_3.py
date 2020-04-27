@@ -98,11 +98,14 @@ def test_model3_topk(nn_model, tag2sentDict_test, top_k=1):
                 subpredictions = predictions[left:right]
                 subpredictions = subpredictions.flatten().tolist()
 
+                hasadd = False
                 for k in range(top_k):
                     class_max = max(subpredictions)
                     class_where = subpredictions.index(class_max)
                     if class_max > threshold:
-                        predict_class += 1
+                        if hasadd == False:
+                            predict_class += 1
+                            hasadd = True
                         if class_where == truth_tag_list[i]:
                             predict_right_class += 1
                             break
