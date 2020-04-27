@@ -22,7 +22,7 @@ from NNstruc.NN_Siamese import Model_ONBiLSTM_RankMAP_three_triloss_Dense_1
 import keras
 
 
-
+'''
 def test_model3(nn_model, tag2sentDict_test):
 
     predict_all = 0
@@ -33,7 +33,7 @@ def test_model3(nn_model, tag2sentDict_test):
         get_rel_prototypes(rel_prototypes_file, max_s, max_posi, word_vob, target_vob, char_vob, max_c)
     assert tagDict_prototypes.keys() == tag2sentDict_test.keys()
 
-    for tag in tag2sentDict_test.keys():
+    for ii, tag in enumerate(tag2sentDict_test.keys()):
         sents = tag2sentDict_test[tag]
 
         truth_tag_list = []
@@ -77,7 +77,7 @@ def test_model3(nn_model, tag2sentDict_test):
         # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
         #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
 
-        predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+        predictions = intermediate_layer_model.predict(inputs_train_x, verbose=0, batch_size=batch_size)
 
         width = len(tag2sentDict_test.keys())
         assert len(predictions) // width == totel_right
@@ -117,9 +117,10 @@ def test_model3(nn_model, tag2sentDict_test):
                 predict_right = predict_right_class
                 best_F = F
 
-            print('P =, R =, F = best_F=', P, R, F, best_F)
 
-            threshold += 0.05
+            threshold += 0.025
+
+        # print(ii, '  best_F=', best_F)
 
         predict_all += predict
         predict_right_all += predict_right
@@ -130,9 +131,9 @@ def test_model3(nn_model, tag2sentDict_test):
     print('P =, R =, F = ', P, R, F)
 
     return P, R, F
-
-
 '''
+
+
 def test_model3(nn_model, tag2sentDict_test):
 
     predict = 0
@@ -258,7 +259,7 @@ def test_model3(nn_model, tag2sentDict_test):
         threshold += 0.05
 
     return P, R, F
-'''
+
 
 
 def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
@@ -474,7 +475,7 @@ if __name__ == "__main__":
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_00801015_426'
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426'
 
-    modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_Dense_0080101_426'
+    # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_Dense_0080101_426'
 
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100505_426'
     # modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_100101_426'
