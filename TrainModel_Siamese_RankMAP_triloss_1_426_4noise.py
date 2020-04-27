@@ -73,7 +73,7 @@ def test_model3(nn_model, tag2sentDict_test):
         # intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
         #                                               outputs=nn_model.get_layer('right_cos').get_output_at(0))
 
-        predictions = intermediate_layer_model.predict(inputs_train_x, verbose=1, batch_size=batch_size)
+        predictions = intermediate_layer_model.predict(inputs_train_x, verbose=0, batch_size=batch_size)
 
         width = len(tag2sentDict_test.keys())
         assert len(predictions) // width == totel_right
@@ -116,7 +116,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
             threshold += 0.025
 
-        print(ii, '  best_F=', best_F)
+        # print(ii, '  best_F=', best_F)
 
         predict_all += predict
         predict_right_all += predict_right
@@ -412,7 +412,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     noise = 'noise10'
-    noise = 'noise5'
+    # noise = 'noise5'
 
     modelname = 'Model_ONBiLSTM_RankMAP_three_triloss_0080101_426_' + noise
 
