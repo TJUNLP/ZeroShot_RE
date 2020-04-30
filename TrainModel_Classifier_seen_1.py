@@ -25,7 +25,6 @@ def test_model3(nn_model, tag2sentDict_test):
     data_e2_posi_all_0 = []
     char_s_all_0 = []
 
-    data_tag_all = []
     class_labels = []
 
     totel_right = 0
@@ -36,20 +35,16 @@ def test_model3(nn_model, tag2sentDict_test):
         for s in range(1, len(sents)):
             totel_right += 1
 
-            for si, ty in enumerate(target_vob.values()):
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
 
-                data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
-                data_s_all_0.append(data_s)
-                data_e1_posi_all_0.append(data_e1_posi)
-                data_e2_posi_all_0.append(data_e2_posi)
-                char_s_all_0.append(char_s)
-                data_tag_all.append([ty])
+            targetvec = np.zeros(120)
+            targetvec[tag] = 1
 
-
-                targetvec = np.zeros(120)
-                targetvec[tag] = 1
-
-                class_labels.append(targetvec)
+            class_labels.append(targetvec)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0]
 
