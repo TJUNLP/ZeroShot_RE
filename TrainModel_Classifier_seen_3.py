@@ -63,7 +63,7 @@ def test_model3(nn_model, tag2sentDict_test):
 
         class_max = np.max(predictions[i])
 
-        if class_max >=0.5:
+        if class_max >= 0.5:
             predict += 1
             if data_tag_all[i] == item:
                 predict_right += 1

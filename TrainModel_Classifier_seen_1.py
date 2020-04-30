@@ -14,7 +14,6 @@ import numpy as np
 import ProcessData_Siamese_onlySeen
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Classifier import Model_BiLSTM_Classifier
-
 import keras
 
 
