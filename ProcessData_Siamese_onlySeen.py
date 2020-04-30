@@ -558,6 +558,61 @@ def Create4Classifier(tagDict_train, shuffle=True, class_num=120):
     return pairs, labels
 
 
+
+def Create4Classifier_Double(tagDict_train, shuffle=True, class_num=120):
+
+    labels = []
+    data_tag_all = []
+
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc = random.randrange(1, len(sents))
+        i = 0
+        while i < len(sents):
+            p0 = i
+            i += 1
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            targetvec_0 = np.ones((class_num, 1))
+            targetvec_1 = np.zeros((class_num, 1))
+            targetvec_0[tag][0] = 0
+            targetvec_1[tag][0] = 1
+            targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
+            # print(targetvec)
+            targetvec = targetvec.reshape((class_num * 2, 1))
+            # print(targetvec)
+
+            data_tag_all.append([tag])
+
+            labels.append(targetvec)
+
+    if shuffle:
+        sh = list(zip(data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+                 data_tag_all, labels))
+        random.shuffle(sh)
+        data_s_all_0[:], data_e1_posi_all_0[:], data_e2_posi_all_0[:], char_s_all_0[:],\
+        data_tag_all[:], labels[:] = zip(*sh)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all]
+
+    return pairs, labels
+
+
 def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
 
     data_tag_all = []
@@ -678,13 +733,21 @@ def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=
 if __name__=="__main__":
     print(20*2)
 
-    alpha = 10
-    maxlen = 50
-    w2v_file = "./data/w2v/glove.6B.100d.txt"
-    rel_prototypes_file = './data/WikiReading/rel_class_prototypes.txt.json.txt'
-    t2v_file = './data/WikiReading/WikiReading.rel2v.by_glove.100d.txt'
-    trainfile = './data/WikiReading/WikiReading_data.random.train.txt'
-    testfile = './data/WikiReading/WikiReading_data.random.test.txt'
+    class_num = 5
+    tag = 3
+    targetvec_0 = np.ones((class_num, 1))
+    targetvec_1 = np.zeros((class_num, 1))
+    targetvec_0[tag][0] = 0
+    targetvec_1[tag][0] = 1
+    targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
+    print(targetvec)
+    targetvec = targetvec.reshape((class_num * 2, 1))
+    print(targetvec)
+
+    ii = [1,2,3]
+    ii.append(23)
+    print(ii)
+
 
 
 

@@ -387,13 +387,14 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
     embedding_e2_posi_x1 = embedding_posi_layer(input_e2_posi_x1)
 
     # BiLSTM_layer = Bidirectional(LSTM(200, activation='tanh'), merge_mode='concat')
-    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
+    # BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
 
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
     BiLSTM_x1 = BiLSTM_layer(embedding_x1)
-    class_BiLSTM = Dropout(0.5)(BiLSTM_x1)
+    class_BiLSTM = Dropout(0.25)(BiLSTM_x1)
 
     text_present = RepeatVector(tagvocabsize)(class_BiLSTM)
     Seqsoftmax = TimeDistributed(Dense(2, activation='softmax'))(text_present)
@@ -402,8 +403,6 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1],
                     class_output)
-
-    # mymodel.compile(loss=lambda y_true,y_pred: y_pred, optimizer=optimizers.Adam(lr=0.001))
 
     mymodel.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(lr=0.001),
