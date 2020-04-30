@@ -596,11 +596,8 @@ def Create4Classifier_Double(tagDict_train, shuffle=True, class_num=120):
             # targetvec = targetvec.reshape((class_num * 2))
             # # print(targetvec)
 
-            targetvec_0 = np.zeros((class_num, 1))
-            targetvec_1 = np.zeros((class_num, 1))
-            targetvec_1[tag][0] = 1
-            targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
-            targetvec = targetvec.reshape((class_num * 2))
+            targetvec = np.zeros(class_num)
+            targetvec[tag] = 1
 
             data_tag_all.append([tag])
 
@@ -750,12 +747,14 @@ if __name__=="__main__":
     targetvec = targetvec.reshape((class_num * 2))
     print(targetvec)
 
-    targetvec_0 = np.zeros((class_num, 1))
-    targetvec_1 = np.zeros((class_num, 1))
-    targetvec_1[tag][0] = 1
-    targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
-    targetvec = targetvec.reshape((class_num * 2))
+    targetvec = np.zeros(class_num)
+    targetvec[tag] = 1
     print(targetvec)
+
+    item = np.argmax(targetvec)
+
+    class_max = np.max(targetvec)
+    print(item, class_max)
 
 
 

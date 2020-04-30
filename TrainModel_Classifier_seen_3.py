@@ -58,16 +58,14 @@ def test_model3(nn_model, tag2sentDict_test):
     assert len(predictions) == len(data_tag_all)
     class_num = len(target_vob.values())
     for i in range(len(data_tag_all)):
-        assert len(predictions[i]) == class_num *2
-        item = predictions[i].reshape((class_num, 2))
-        isonelist = []
-        for j in range(class_num):
-            if(np.argmax(item[j]) == 1):
-                isonelist.append(j)
+        assert len(predictions[i]) == class_num
+        item = np.argmax(predictions[i])
 
-        if len(isonelist) == 1:
+        class_max = np.max(predictions[i])
+
+        if class_max >=0.5:
             predict += 1
-            if data_tag_all[i] in isonelist:
+            if data_tag_all[i] == item:
                 predict_right += 1
 
     P = predict_right / max(predict, 0.00001)

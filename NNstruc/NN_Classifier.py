@@ -397,7 +397,7 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
     class_BiLSTM = Dropout(0.25)(BiLSTM_x1)
 
     text_present = RepeatVector(tagvocabsize)(class_BiLSTM)
-    Seqsoftmax = TimeDistributed(Dense(2, activation='softmax'))(text_present)
+    Seqsoftmax = TimeDistributed(Dense(1, activation='sigmoid'))(text_present)
     class_output = Flatten()(Seqsoftmax)
 
 
