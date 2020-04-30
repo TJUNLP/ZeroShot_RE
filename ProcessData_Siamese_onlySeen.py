@@ -593,7 +593,7 @@ def Create4Classifier_Double(tagDict_train, shuffle=True, class_num=120):
             targetvec_1[tag][0] = 1
             targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
             # print(targetvec)
-            targetvec = targetvec.reshape((class_num * 2, 1))
+            targetvec = targetvec.reshape((class_num * 2))
             # print(targetvec)
 
             data_tag_all.append([tag])
@@ -741,7 +741,7 @@ if __name__=="__main__":
     targetvec_1[tag][0] = 1
     targetvec = np.concatenate([targetvec_0, targetvec_1], axis=-1)
     print(targetvec)
-    targetvec = targetvec.reshape((class_num * 2, 1))
+    targetvec = targetvec.reshape((class_num * 2))
     print(targetvec)
 
     ii = [1,2,3]
