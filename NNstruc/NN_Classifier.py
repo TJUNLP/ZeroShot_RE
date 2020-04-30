@@ -500,7 +500,7 @@ def Model_ONBiLSTM_RankMAP_tripletloss_1(wordvocabsize, posivocabsize, charvocab
     return mymodel
 
 
-def Model_ONBiLSTM_RankMAP_DyMax_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+def Model_BiLSTM_RankMAP_DyMax_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,

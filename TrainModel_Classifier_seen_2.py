@@ -13,7 +13,7 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_onlySeen
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Classifier import Model_ONBiLSTM_RankMAP_DyMax_tripletloss_1
+from NNstruc.NN_Classifier import Model_BiLSTM_RankMAP_DyMax_tripletloss_1
 
 import keras
 
@@ -186,8 +186,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_ONBiLSTM_RankMAP_DyMax_tripletloss_1':
-        nn_model = Model_ONBiLSTM_RankMAP_DyMax_tripletloss_1(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_RankMAP_DyMax_tripletloss_1':
+        nn_model = Model_BiLSTM_RankMAP_DyMax_tripletloss_1(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_ONBiLSTM_RankMAP_DyMax_tripletloss_1'
+    modelname = 'Model_BiLSTM_RankMAP_DyMax_tripletloss_1'
 
     print(modelname)
 

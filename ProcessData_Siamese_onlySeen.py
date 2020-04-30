@@ -561,7 +561,6 @@ def Create4Classifier(tagDict_train, shuffle=True, class_num=120):
 def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
 
     data_tag_all = []
-    labels = []
     data_s_all_0 = []
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
@@ -594,10 +593,10 @@ def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
 
     if shuffle:
         sh = list(zip(data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-                 data_tag_all, labels))
+                 data_tag_all))
         random.shuffle(sh)
         data_s_all_0[:], data_e1_posi_all_0[:], data_e2_posi_all_0[:], char_s_all_0[:],\
-        data_tag_all[:], labels[:] = zip(*sh)
+        data_tag_all[:]  = zip(*sh)
 
     pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
              data_tag_all]
