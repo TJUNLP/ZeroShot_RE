@@ -403,7 +403,7 @@ def Model_BiLSTM_MultiClassifier(wordvocabsize, posivocabsize, charvocabsize, ta
     loss = Lambda(lambda x: K.sum(K.abs(x), axis=-1, keepdims=False))(subs)
 
 
-    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1],
+    mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1, input_tag_seq],
                     loss)
 
     mymodel.compile(loss=lambda y_true, y_pred: y_pred,
