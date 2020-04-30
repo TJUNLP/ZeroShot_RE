@@ -400,7 +400,7 @@ def Model_BiLSTM_MultiClassifier(wordvocabsize, posivocabsize, charvocabsize, ta
 
     input_tag_seq = Input(shape=(tagvocabsize,), dtype='float32')
     subs = Subtract()([input_tag_seq, class_output])
-    loss = Lambda(lambda x: K.sum(K.abs(x), axis=-1, keepdims=False))(subs)
+    loss = Lambda(lambda x: K.sum(K.abs(x), axis=-1, keepdims=True))(subs)
 
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1, input_tag_seq],
