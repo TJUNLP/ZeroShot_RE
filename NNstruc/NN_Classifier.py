@@ -10,7 +10,7 @@ from keras.layers.normalization import BatchNormalization
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import merge, Lambda, Flatten, Activation
-from keras.layers.merge import dot, Dot
+from keras.layers.merge import dot, Dot, Subtract
 from flipGradientTF import GradientReversal
 from keras_ordered_neurons import ONLSTM
 
@@ -334,7 +334,7 @@ def Model_BiLSTM_Classifier(wordvocabsize, posivocabsize, charvocabsize, tagvoca
     return mymodel
 
 
-def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+def Model_BiLSTM_MultiClassifier(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
@@ -351,7 +351,6 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
     word_embedding_sent_x1 = word_embedding_sent_layer(word_input_sent_x1)
     word_embedding_sent_x1 = Dropout(0.25)(word_embedding_sent_x1)
 
-
     char_input_sent_x1 = Input(shape=(input_sent_lenth, input_maxword_length,), dtype='int32')
 
     char_embedding_sent_layer = TimeDistributed(Embedding(input_dim=charvocabsize,
@@ -362,7 +361,6 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
                                weights=[char_W]))
 
     char_embedding_sent_x1 = char_embedding_sent_layer(char_input_sent_x1)
-
 
     char_cnn_sent_layer = TimeDistributed(Conv1D(50, 3, activation='relu', padding='valid'))
 
@@ -398,13 +396,17 @@ def Model_BiLSTM_DoubleClassifier(wordvocabsize, posivocabsize, charvocabsize, t
 
     text_present = RepeatVector(tagvocabsize)(class_BiLSTM)
     Seqsoftmax = TimeDistributed(Dense(1, activation='sigmoid'))(text_present)
-    class_output = Flatten()(Seqsoftmax)
+    class_output = Flatten(name="Seqsoftmax")(Seqsoftmax)
+
+    input_tag_seq = Input(shape=(tagvocabsize,), dtype='float32')
+    subs = Subtract()([input_tag_seq, class_output])
+    loss = Lambda(lambda x: K.sum(K.abs(x), axis=-1, keepdims=False))(subs)
 
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1],
-                    class_output)
+                    loss)
 
-    mymodel.compile(loss='mse',
+    mymodel.compile(loss=lambda y_true, y_pred: y_pred,
                     optimizer=optimizers.Adam(lr=0.001),
                     metrics=['acc'])
     return mymodel

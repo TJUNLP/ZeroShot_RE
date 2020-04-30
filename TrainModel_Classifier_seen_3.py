@@ -13,7 +13,7 @@ import os.path
 import numpy as np
 import ProcessData_Siamese_onlySeen
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from NNstruc.NN_Classifier import Model_BiLSTM_DoubleClassifier
+from NNstruc.NN_Classifier import Model_BiLSTM_MultiClassifier
 
 import keras
 
@@ -25,39 +25,45 @@ def test_model3(nn_model, tag2sentDict_test):
     data_e2_posi_all_0 = []
     char_s_all_0 = []
     data_tag_all = []
-
-    totel_right = 0
+    labels = []
 
     for tag in tag2sentDict_test.keys():
         sents = tag2sentDict_test[tag]
 
         for s in range(1, len(sents)):
-            totel_right += 1
 
             data_s, data_e1_posi, data_e2_posi, char_s = sents[s]
             data_s_all_0.append(data_s)
             data_e1_posi_all_0.append(data_e1_posi)
             data_e2_posi_all_0.append(data_e2_posi)
             char_s_all_0.append(char_s)
-            data_tag_all.append(tag)
+            labels.append(tag)
+
+            targetvec = np.zeros(len(tag2sentDict_test.keys()))
+            targetvec[tag] = 1
+            data_tag_all.append(targetvec)
 
 
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0]
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0, data_tag_all]
 
     train_x1_sent = np.asarray(pairs[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs[1], dtype="int32")
     train_x1_e2_posi = np.asarray(pairs[2], dtype="int32")
     train_x1_sent_cahr = np.asarray(pairs[3], dtype="int32")
+    train_tag = np.asarray(pairs[4], dtype="float32")
 
-    inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr]
+    inputs_test_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr, train_tag]
 
-    predictions = nn_model.predict(inputs_test_x, verbose=1, batch_size=batch_size)
+    intermediate_layer_model = keras.models.Model(inputs=nn_model.input,
+                                                  outputs=nn_model.get_layer('Seqsoftmax').output)
+
+    predictions = intermediate_layer_model.predict(inputs_test_x, verbose=1, batch_size=batch_size)
 
     predict_right = 0
     predict = 0
-    assert len(predictions) == len(data_tag_all)
+    assert len(predictions) == len(labels)
     class_num = len(target_vob.values())
-    for i in range(len(data_tag_all)):
+    for i in range(len(labels)):
         assert len(predictions[i]) == class_num
         item = np.argmax(predictions[i])
 
@@ -65,11 +71,11 @@ def test_model3(nn_model, tag2sentDict_test):
 
         if class_max >= 0.5:
             predict += 1
-            if data_tag_all[i] == item:
+            if labels[i] == item:
                 predict_right += 1
 
     P = predict_right / max(predict, 0.00001)
-    R = predict_right / len(data_tag_all)
+    R = predict_right / len(labels)
     F = 2 * P * R / max((P + R), 0.0001)
     print('test class ... P =, R =, F = ', P, R, F)
 
@@ -172,8 +178,8 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                      batch_size=32):
     nn_model = None
 
-    if modelname is 'Model_BiLSTM_DoubleClassifier':
-        nn_model = Model_BiLSTM_DoubleClassifier(wordvocabsize=wordvocabsize,
+    if modelname is 'Model_BiLSTM_MultiClassifier':
+        nn_model = Model_BiLSTM_MultiClassifier(wordvocabsize=wordvocabsize,
                                                   posivocabsize=posivocabsize,
                                                   charvocabsize=charvocabsize,
                                                     tagvocabsize=tagvocabsize,
@@ -188,7 +194,7 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(shuffle=True):
 
-    pairs_train, labels_train = ProcessData_Siamese_onlySeen.Create4Classifier_Double(tagDict_train, shuffle, class_num=120)
+    pairs_train, labels_train = ProcessData_Siamese_onlySeen.Create4Classifier_Multi(tagDict_train, shuffle, class_num=120)
     print('CreatePairs train len = ', len(pairs_train[0]), len(labels_train))
 
     train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
@@ -198,9 +204,10 @@ def Dynamic_get_trainSet(shuffle=True):
     train_tag = np.asarray(pairs_train[4], dtype="int32")
 
     train_y = np.asarray(labels_train, dtype="int32")
+    train_y0 = np.zeros(len(pairs_train[0]), dtype="float32")
 
-    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr]
-    inputs_train_y = [train_y]
+    inputs_train_x = [train_x1_sent, train_x1_e1_posi, train_x1_e2_posi, train_x1_sent_cahr, train_y]
+    inputs_train_y = [train_y0]
 
     return inputs_train_x, inputs_train_y
 
@@ -209,7 +216,7 @@ if __name__ == "__main__":
 
     maxlen = 100
 
-    modelname = 'Model_BiLSTM_DoubleClassifier'
+    modelname = 'Model_BiLSTM_MultiClassifier'
 
     print(modelname)
 

@@ -559,7 +559,7 @@ def Create4Classifier(tagDict_train, shuffle=True, class_num=120):
 
 
 
-def Create4Classifier_Double(tagDict_train, shuffle=True, class_num=120):
+def Create4Classifier_Multi(tagDict_train, shuffle=True, class_num=120):
 
     labels = []
     data_tag_all = []
@@ -755,6 +755,8 @@ if __name__=="__main__":
 
     class_max = np.max(targetvec)
     print(item, class_max)
+
+
 
 
 
