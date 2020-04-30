@@ -558,6 +558,53 @@ def Create4Classifier(tagDict_train, shuffle=True, class_num=120):
     return pairs, labels
 
 
+def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
+
+    data_tag_all = []
+    labels = []
+    data_s_all_0 = []
+    data_e1_posi_all_0 = []
+    data_e2_posi_all_0 = []
+    char_s_all_0 = []
+
+    assert len(tagDict_train.keys()) == class_num
+
+    for tag in tagDict_train.keys():
+        sents = tagDict_train[tag]
+
+        if len(sents) < 2:
+            continue
+        inc = random.randrange(1, len(sents))
+        i = 0
+        while i < len(sents):
+            p0 = i
+            i += 1
+
+            data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
+            data_s_all_0.append(data_s)
+            data_e1_posi_all_0.append(data_e1_posi)
+            data_e2_posi_all_0.append(data_e2_posi)
+            char_s_all_0.append(char_s)
+
+            tag_list_all = [i for i in range(len(tagDict_train.keys()))]
+            tag_list_all[0] = tag
+            tag_list_all[tag] = 0
+            data_tag_all.append(tag_list_all)
+
+
+    if shuffle:
+        sh = list(zip(data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+                 data_tag_all, labels))
+        random.shuffle(sh)
+        data_s_all_0[:], data_e1_posi_all_0[:], data_e2_posi_all_0[:], char_s_all_0[:],\
+        data_tag_all[:], labels[:] = zip(*sh)
+
+    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all]
+
+    return pairs
+
+
 def get_data(trainfile, testfile, w2v_file, c2v_file, t2v_file, datafile, w2v_k=300, c2v_k=25, t2v_k=100, maxlen = 50):
 
     """
