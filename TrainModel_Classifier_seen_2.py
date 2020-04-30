@@ -27,7 +27,7 @@ def test_model3(nn_model, tag2sentDict_test):
     char_s_all_0 = []
 
     data_tag_all = []
-    tag_list_all = [i for i in range(len(tag2sentDict_test.keys()))]
+
 
     totel_right = 0
     truth_tag_list = []
@@ -45,6 +45,8 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e1_posi_all_0.append(data_e1_posi)
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
+                tag_list_all = [i for i in range(len(tag2sentDict_test.keys()))]
+                tag_list_all[0] = tag
                 data_tag_all.append(tag_list_all)
 
                 if tag == ty:
