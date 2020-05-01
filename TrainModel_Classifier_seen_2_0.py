@@ -45,7 +45,7 @@ def test_model3(nn_model, tag2sentDict_test):
                 data_e2_posi_all_0.append(data_e2_posi)
                 char_s_all_0.append(char_s)
 
-                data_tag_all.append([tag])
+                data_tag_all.append([ty])
 
                 if tag == ty:
                     truth_tag_list.append(si)
@@ -88,7 +88,6 @@ def test_model3(nn_model, tag2sentDict_test):
             subpredictions = subpredictions.flatten().tolist()
             class_max = max(subpredictions)
             class_where = subpredictions.index(class_max)
-            print(class_max)
 
             if class_max > threshold:
                 predict_class += 1
