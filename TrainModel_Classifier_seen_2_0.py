@@ -88,6 +88,7 @@ def test_model3(nn_model, tag2sentDict_test):
             subpredictions = subpredictions.flatten().tolist()
             class_max = max(subpredictions)
             class_where = subpredictions.index(class_max)
+            print(class_max)
 
             if class_max > threshold:
                 predict_class += 1
