@@ -412,7 +412,7 @@ def Model_BiLSTM_MultiClassifier(wordvocabsize, posivocabsize, charvocabsize, ta
     return mymodel
 
 
-def Model_ONBiLSTM_RankMAP_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
+def Model_BiLSTM_RankMAP_Random_tripletloss_1(wordvocabsize, posivocabsize, charvocabsize, tagvocabsize,
                      word_W, posi_W, char_W, tag_W,
                      input_sent_lenth, input_maxword_length,
                      w2v_k, posi2v_k, c2v_k, tag2v_k,
@@ -464,8 +464,8 @@ def Model_ONBiLSTM_RankMAP_tripletloss_1(wordvocabsize, posivocabsize, charvocab
 
 
     # BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
-    BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
-
+    # BiLSTM_layer = Bidirectional(ONLSTM(100, chunk_size=5, recurrent_dropconnect=0.2), merge_mode='ave')
+    BiLSTM_layer = Bidirectional(LSTM(100, activation='tanh'), merge_mode='ave')
 
     embedding_x1 = concatenate([word_embedding_sent_x1, char_embedding_sent_x1,
                                 embedding_e1_posi_x1, embedding_e2_posi_x1], axis=-1)
