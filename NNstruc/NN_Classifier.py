@@ -669,16 +669,26 @@ def Model_BiLSTM_RankMAP_All_tripletloss_1(wordvocabsize, posivocabsize, charvoc
     right2i_tag_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_1])
     wrong_cos_1 = Dot(axes=-1, normalize=True)([BiLSTM_x1, tag_embedding_1])
 
-    loss = Lambda(lambda x: K.relu(1.0 - x[2] + x[0] - x[1]))\
-        ([wrong_cos_1, right_cos, right2i_tag_cos])
+    # loss = Lambda(lambda x: K.relu(1.0 - x[2] + x[0] - x[1]))([wrong_cos_1, right_cos, right2i_tag_cos])
+    # loss = Lambda(lambda x: K.relu(K.maximum(0.1, 1.0 - x[2]) + x[0] - x[1]))([wrong_cos_1, right_cos, right2i_tag_cos])
+
+    # loss = Lambda(lambda x: K.relu(K.exp(K.maximum(0.1, 1.0 - x[2]) + x[0] - x[1]
+    #                                      ) - 1.0
+    #                                )
+    #               )([wrong_cos_1, right_cos, right2i_tag_cos])
+
+    loss = Lambda(lambda x: K.relu(K.exp(x[2]) * (K.maximum(0.1, 1.0 - x[2]) + x[0] - x[1])
+                                   )
+                  )([wrong_cos_1, right_cos, right2i_tag_cos])
 
     for i in range(2, tagvocabsize):
 
         tag_embedding_n = Lambda(lambda x: x[:, i])(tag_embedding)
         right2i_tag_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_n])
         wrong_cos_i = Dot(axes=-1, normalize=True)([BiLSTM_x1, tag_embedding_n])
-        loss = Lambda(lambda x: x[3] + K.relu(K.maximum(0.1, 1.0 - x[2]) + x[0] - x[1])) \
-            ([wrong_cos_i, right_cos, right2i_tag_cos, loss])
+        loss = Lambda(lambda x: x[3] + K.relu(K.exp(x[2]) * (K.maximum(0.1, 1.0 - x[2]) + x[0] - x[1])
+                                       )
+                      )([wrong_cos_i, right_cos, right2i_tag_cos, loss])
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
                      input_tag_all], loss)
