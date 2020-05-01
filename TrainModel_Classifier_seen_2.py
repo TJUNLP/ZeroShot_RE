@@ -8,14 +8,13 @@
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
 
-import pickle, datetime, codecs, math, gc, random
+import pickle, datetime, codecs, math, gc, random, keras
 import os.path
 import numpy as np
 import ProcessData_Siamese_onlySeen
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from NNstruc.NN_Classifier import Model_BiLSTM_RankMAP_DyMax_tripletloss_1
-
-import keras
+from NNstruc.NN_Classifier import Model_BiLSTM_RankMAP_All_tripletloss_1
 
 
 
@@ -199,6 +198,17 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
                                                   w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
                                                   batch_size=batch_size)
 
+    elif modelname is 'Model_BiLSTM_RankMAP_All_tripletloss_1':
+        nn_model = Model_BiLSTM_RankMAP_All_tripletloss_1(wordvocabsize=wordvocabsize,
+                                                  posivocabsize=posivocabsize,
+                                                  charvocabsize=charvocabsize,
+                                                    tagvocabsize=tagvocabsize,
+                                                  word_W=word_W, posi_W=posi_W, char_W=char_W, tag_W=tag_W,
+                                                  input_sent_lenth=input_sent_lenth,
+                                                  input_maxword_length=max_c,
+                                                  w2v_k=w2v_k, posi2v_k=posi2v_k, c2v_k=c2v_k, tag2v_k=tag2v_k,
+                                                  batch_size=batch_size)
+
     return nn_model
 
 
@@ -228,6 +238,7 @@ if __name__ == "__main__":
     maxlen = 100
 
     modelname = 'Model_BiLSTM_RankMAP_DyMax_tripletloss_1'
+    modelname = 'Model_BiLSTM_RankMAP_All_tripletloss_1'
 
     print(modelname)
 
