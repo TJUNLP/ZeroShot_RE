@@ -670,7 +670,7 @@ def Model_BiLSTM_RankMAP_All_tripletloss_1(wordvocabsize, posivocabsize, charvoc
 
     right2i_tag_dis_layer = Dense(1, activation='sigmoid')
     right2i_tag_concat = concatenate([tag_embedding_p, tag_embedding_1], axis=-1)
-    right2i_tag_dis = right2i_tag_dis_layer()(right2i_tag_concat)
+    right2i_tag_dis = right2i_tag_dis_layer(right2i_tag_concat)
     wrong_cos_1 = Dot(axes=-1, normalize=True)([BiLSTM_x1, tag_embedding_1])
 
     # loss = Lambda(lambda x: K.relu(1.0 - x[2] + x[0] - x[1]))([wrong_cos_1, right_cos, right2i_tag_cos])
