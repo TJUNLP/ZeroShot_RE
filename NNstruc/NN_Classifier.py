@@ -658,7 +658,7 @@ def Model_BiLSTM_RankMAP_All_tripletloss_1(wordvocabsize, posivocabsize, charvoc
                                     output_dim=tag2v_k,
                                     input_length=tagvocabsize,
                                     mask_zero=False,
-                                    trainable=False,
+                                    trainable=True,
                                     weights=[tag_W])
     tag_embedding = tag_embedding_layer(input_tag_all)
 
