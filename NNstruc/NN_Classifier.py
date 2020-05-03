@@ -680,7 +680,7 @@ def Model_BiLSTM_RankMAP_DyMax_TiedExp_tripletloss_1(wordvocabsize, posivocabsiz
 
         loss_i = Lambda(lambda x: K.exp(x[2]) * K.relu(0.1 + x[0] - x[1]))\
             ([wrong_cos_i, right_cos, right2i_tag_cos])
-        loss_max = Lambda(lambda x: K.maximum(x[0], x[1]))(loss_max, loss_i)
+        loss_max = Lambda(lambda x: K.maximum(x[0], x[1]))([loss_max, loss_i])
 
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,
