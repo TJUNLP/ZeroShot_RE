@@ -145,12 +145,14 @@ def train_e2e_model(nn_model, modelfile, inputs_train_x, inputs_train_y,
         nowepoch += increment
         earlystop += 1
 
-        inputs_train_x, inputs_train_y = Dynamic_get_trainSet()
+        inputs_train_x, inputs_train_y, \
+        inputs_dev_x, inputs_dev_y = Dynamic_get_trainSet()
 
         nn_model.fit(inputs_train_x, inputs_train_y,
-                               batch_size=batch_size,
-                               epochs=increment,
-                               validation_split=0.2,
+                     batch_size=batch_size,
+                     epochs=increment,
+                     validation_data=[inputs_dev_x, inputs_dev_y],
+                               # validation_split=0.2,
                                shuffle=True,
                                # class_weight={0: 1., 1: 3.},
                                verbose=1,
@@ -239,9 +241,9 @@ def SelectModel(modelname, wordvocabsize, tagvocabsize, posivocabsize,charvocabs
 
 def Dynamic_get_trainSet(shuffle=True):
 
-    pairs_train = ProcessData_Siamese_onlySeen.Create4Classifier_DyMax(tagDict_train, shuffle,
+    pairs_train, pairs_dev = ProcessData_Siamese_onlySeen.Create4Classifier_DyMax(tagDict_train, shuffle,
                                                                        class_num=120)
-    print('CreatePairs train len = ', len(pairs_train[0]))
+    print('CreatePairs train len = ', len(pairs_train[0]), len(pairs_dev[0]))
 
     train_x1_sent = np.asarray(pairs_train[0], dtype="int32")
     train_x1_e1_posi = np.asarray(pairs_train[1], dtype="int32")
@@ -255,7 +257,19 @@ def Dynamic_get_trainSet(shuffle=True):
                       train_tag]
     inputs_train_y = [train_y0]
 
-    return inputs_train_x, inputs_train_y
+    dev_x1_sent = np.asarray(pairs_dev[0], dtype="int32")
+    dev_x1_e1_posi = np.asarray(pairs_dev[1], dtype="int32")
+    dev_x1_e2_posi = np.asarray(pairs_dev[2], dtype="int32")
+    dev_x1_sent_cahr = np.asarray(pairs_dev[3], dtype="int32")
+    dev_tag = np.asarray(pairs_dev[4], dtype="int32")
+
+    dev_y0 = np.zeros(len(pairs_dev[0]), dtype="float32")
+
+    inputs_dev_x = [dev_x1_sent, dev_x1_e1_posi, dev_x1_e2_posi, dev_x1_sent_cahr,
+                    dev_tag]
+    inputs_dev_y = [dev_y0]
+
+    return inputs_train_x, inputs_train_y, inputs_dev_x, inputs_dev_y
 
 
 if __name__ == "__main__":

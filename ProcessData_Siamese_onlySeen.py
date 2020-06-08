@@ -618,11 +618,17 @@ def Create4Classifier_Multi(tagDict_train, shuffle=True, class_num=120):
 
 def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
 
-    data_tag_all = []
+    data_tag_all_0 = []
     data_s_all_0 = []
     data_e1_posi_all_0 = []
     data_e2_posi_all_0 = []
     char_s_all_0 = []
+
+    data_tag_all_1 = []
+    data_s_all_1 = []
+    data_e1_posi_all_1 = []
+    data_e2_posi_all_1 = []
+    char_s_all_1 = []
 
     assert len(tagDict_train.keys()) == class_num
 
@@ -635,31 +641,51 @@ def Create4Classifier_DyMax(tagDict_train, shuffle=True, class_num=120):
         i = 0
         while i < len(sents):
             p0 = i
-            i += 1
 
             data_s, data_e1_posi, data_e2_posi, char_s = sents[p0]
-            data_s_all_0.append(data_s)
-            data_e1_posi_all_0.append(data_e1_posi)
-            data_e2_posi_all_0.append(data_e2_posi)
-            char_s_all_0.append(char_s)
 
-            tag_list_all = [i for i in range(len(tagDict_train.keys()))]
-            tag_list_all[0] = tag
-            tag_list_all[tag] = 0
-            data_tag_all.append(tag_list_all)
+            if i < (len(sents) // 10 * 8):
+                data_s_all_0.append(data_s)
+                data_e1_posi_all_0.append(data_e1_posi)
+                data_e2_posi_all_0.append(data_e2_posi)
+                char_s_all_0.append(char_s)
 
+                tag_list_all = [i for i in range(len(tagDict_train.keys()))]
+                tag_list_all[0] = tag
+                tag_list_all[tag] = 0
+                data_tag_all_0.append(tag_list_all)
+            else:
+                data_s_all_1.append(data_s)
+                data_e1_posi_all_1.append(data_e1_posi)
+                data_e2_posi_all_1.append(data_e2_posi)
+                char_s_all_1.append(char_s)
+
+                tag_list_all = [i for i in range(len(tagDict_train.keys()))]
+                tag_list_all[0] = tag
+                tag_list_all[tag] = 0
+                data_tag_all_1.append(tag_list_all)
+
+            i += 1
 
     if shuffle:
         sh = list(zip(data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-                 data_tag_all))
+                 data_tag_all_0))
         random.shuffle(sh)
         data_s_all_0[:], data_e1_posi_all_0[:], data_e2_posi_all_0[:], char_s_all_0[:],\
-        data_tag_all[:]  = zip(*sh)
+        data_tag_all_0[:] = zip(*sh)
 
-    pairs = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
-             data_tag_all]
+        sh = list(zip(data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+                 data_tag_all_1))
+        random.shuffle(sh)
+        data_s_all_1[:], data_e1_posi_all_1[:], data_e2_posi_all_1[:], char_s_all_1[:],\
+        data_tag_all_1[:] = zip(*sh)
 
-    return pairs
+    pairs_train = [data_s_all_0, data_e1_posi_all_0, data_e2_posi_all_0, char_s_all_0,
+             data_tag_all_0]
+    pairs_dev = [data_s_all_1, data_e1_posi_all_1, data_e2_posi_all_1, char_s_all_1,
+             data_tag_all_1]
+
+    return pairs_train, pairs_dev
 
 
 def Create4Classifier_Random(tagDict_train, shuffle=True, class_num=120):
