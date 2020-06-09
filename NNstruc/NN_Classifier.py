@@ -769,7 +769,7 @@ def Model_BiLSTM_RankMAP_DyMax_FocusExp_tripletloss_1(wordvocabsize, posivocabsi
 
     right2i_tag_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_1])
     sub = subtract([wrong_cos_1, right_cos])
-    max_relu_layer = Dense(1, activation='relu')(sub)
+    max_relu_layer = Dense(1, activation='relu')
     max_relu_1 = max_relu_layer(sub)
     loss_max = Lambda(lambda x: K.exp(1.0 - x[1]) * x[0])([max_relu_1, right2i_tag_cos])
 
