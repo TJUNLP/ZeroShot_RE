@@ -768,8 +768,10 @@ def Model_BiLSTM_RankMAP_DyMax_FocusExp_tripletloss_1(wordvocabsize, posivocabsi
     wrong_cos_1 = Dot(axes=-1, normalize=True)([BiLSTM_x1, tag_embedding_1])
 
     right2i_tag_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_1])
-    loss_max = Lambda(lambda x: K.exp(1.0 - x[2]) * K.relu(0.1 + x[0] - x[1]))\
-        ([wrong_cos_1, right_cos, right2i_tag_cos])
+    sub = subtract([wrong_cos_1, right_cos])
+    max_relu_layer = Dense(1, activation='relu')(sub)
+    max_relu_1 = max_relu_layer(sub)
+    loss_max = Lambda(lambda x: K.exp(1.0 - x[1]) * x[0])([max_relu_1, right2i_tag_cos])
 
     for i in range(1, tagvocabsize):
 
@@ -777,8 +779,9 @@ def Model_BiLSTM_RankMAP_DyMax_FocusExp_tripletloss_1(wordvocabsize, posivocabsi
         wrong_cos_i = Dot(axes=-1, normalize=True)([BiLSTM_x1, tag_embedding_n])
         right2i_tag_cos = Dot(axes=-1, normalize=True)([tag_embedding_p, tag_embedding_n])
 
-        loss_i = Lambda(lambda x: K.exp(1.0 - x[2]) * K.relu(0.1 + x[0] - x[1]))\
-            ([wrong_cos_i, right_cos, right2i_tag_cos])
+        sub = subtract([wrong_cos_i, right_cos])
+        max_relu_i = max_relu_layer(sub)
+        loss_i = Lambda(lambda x: K.exp(1.0 - x[1]) * x[0])([max_relu_i, right2i_tag_cos])
         loss_max = Lambda(lambda x: K.maximum(x[0], x[1]))([loss_max, loss_i])
 
 
