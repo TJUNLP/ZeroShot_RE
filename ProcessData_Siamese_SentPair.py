@@ -2217,7 +2217,6 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
     assert len(testlist) == (24 + 9)
 
     Rank_te2tr_Dict = {}
-
     for ji, j in enumerate(testlist):
         j_i = {}
 
@@ -2232,11 +2231,12 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
         ijlist = sorted(j_i.items(), key=lambda x: x[1], reverse=True)
 
         threshold = 0.5
-        rlist = []
-        for ki, value in enumerate(ijlist):
-            if ijlist[ki][1] > threshold:
-                rlist.append(ijlist[ki][0])
-        Rank_te2tr_Dict[j] = rlist
+        if ijlist[0][1] < threshold:
+            continue
+        else:
+            ijdict = dict(ijlist)
+            Rank_te2tr_Dict[j] = list(ijdict.keys())
+
 
     Rank_tr2te_Dict = {}
 
@@ -2256,6 +2256,15 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
 
         ijdict = dict(ijlist)
         Rank_tr2te_Dict[i] = list(ijdict.keys())
+
+    # print(RankDict)
+    # print(len(RankDict.keys()), len(RankDict[0]))
+
+    # testlist = list(set(relRankDict.keys()) - set(target_vob_train.values()))
+    # assert len(testlist) == 24
+
+    # print(tagDict.keys())
+
 
     data_tag_all_p = []
     data_tag_all_n = []
@@ -2277,10 +2286,11 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
 
             if len(sents) < 2:
                 continue
-
+            inc = random.randrange(1, len(sents))
             i = 0
             while i < len(sents):
                 p0 = i
+                p1 = (inc + i) % len(sents)
 
                 i += 1
 
@@ -2296,18 +2306,21 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
 
 
                 ranklist = Rank_tr2te_Dict[tag]
-                ran1 = random.randrange(0, len(ranklist) - 1)
-                now_tag = ranklist[ran1]
-                if tag in Rank_te2tr_Dict[now_tag]:
-                    data_tag_all_p.append([now_tag])
+                whiletag = True
+                ran1 = -1
+                while whiletag:
+                    ran1 = random.randrange(0, len(ranklist) - 1)
+                    now_tag = ranklist[ran1]
+                    if now_tag in Rank_te2tr_Dict.keys():
+                        data_tag_all_p.append([now_tag])
+                        whiletag = False
+                    else:
+                        continue
 
-                    keylist = list(ranklist[(ran1 + 1):])
-                    ran2 = random.randrange(0, len(keylist))
-                    data_tag_all_n.append([keylist[ran2]])
+                keylist = list(ranklist[(ran1 + 1):])
+                ran2 = random.randrange(0, len(keylist))
+                data_tag_all_n.append([keylist[ran2]])
 
-                else:
-                    data_tag_all_p.append([tag])
-                    data_tag_all_n.append([tag])
 
                 keylist = list(tagDict_train.keys())
                 ran3 = random.randrange(0, len(keylist))
@@ -2338,7 +2351,6 @@ def CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type
 
                 data_tag_all_p.append([tag])
 
-                # keylist = list(Rank_tr2te_Dict.keys())
                 keylist = testlist
 
                 ran1 = random.randrange(0, len(keylist))
