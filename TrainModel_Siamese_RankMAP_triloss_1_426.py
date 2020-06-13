@@ -445,8 +445,11 @@ def Dynamic_get_trainSet(istest):
     # pairs_train = ProcessData_Siamese_SentPair.\
     #     CreateTriplet_RankClassify422(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
 
+    # pairs_train = ProcessData_Siamese_SentPair.\
+    #     CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
+
     pairs_train = ProcessData_Siamese_SentPair.\
-        CreateTriplet_RankClassify621(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
+        CreateTriplet_RankClassify423(tagDict_train, tagDict_dev, tagDict_test, type_W, istest=istest)
 
     print('CreatePairs train len = ', len(pairs_train[0]))
 
@@ -538,7 +541,7 @@ if __name__ == "__main__":
 
 
 
-    for inum in range(600, 602):
+    for inum in range(4230, 4233):
 
         tagDict_train, tagDict_dev, tagDict_test, \
         word_vob, word_id2word, word_W, w2v_k, \
