@@ -113,7 +113,7 @@ def Model_BiLSTM_SentPair_tripletloss_1(wordvocabsize, posivocabsize, charvocabs
     wrong_cos = Dot(axes=-1, normalize=True, name='wrong_cos')([BiLSTM_x1, BiLSTM_x3])
 
     # margin = 1.
-    margin = 0.5
+    margin = 0.1
     loss = Lambda(lambda x: K.relu(margin + x[0] - x[1]))([wrong_cos, right_cos])
 
     mymodel = Model([word_input_sent_x1, input_e1_posi_x1, input_e2_posi_x1, char_input_sent_x1,

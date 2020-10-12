@@ -3063,6 +3063,5 @@ if __name__=="__main__":
     # CombineLabel_by_relembed_sim_rank(type_W, target_vob, target_vob_train)
     # get_rel_sim_rank(type_W)
 
-
     get_rel_sim_rank_onlytest(type_W, target_vob, target_vob_train)
 
